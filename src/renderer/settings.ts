@@ -17,9 +17,21 @@ type HotkeyAction =
   | 'copy'
   | 'cancel';
 
+type FilenameMode = 'datetime' | 'sequential';
+type FilenameDateStyle = 'iso' | 'latin';
+type FilenameTimeStyle = 'h24' | 'h12';
+
 type AppSettings = {
   language: Language;
   launchAtStartup: boolean;
+  autoSaveCaptures: boolean;
+  saveDirectory: string;
+  useCaptureSubfolders: boolean;
+  saveAsJpeg: boolean;
+  jpegQuality: number;
+  filenameMode: FilenameMode;
+  filenameDateStyle: FilenameDateStyle;
+  filenameTimeStyle: FilenameTimeStyle;
   hotkeys: Record<HotkeyAction, string>;
 };
 
@@ -31,6 +43,24 @@ type SettingsUi = {
   languageEn: string;
   languageEs: string;
   launchAtStartup: string;
+  autoSaveCaptures: string;
+  saveDirectory: string;
+  browseSaveDirectory: string;
+  useCaptureSubfolders: string;
+  useCaptureSubfoldersHint: string;
+  filenameSection: string;
+  filenameMode: string;
+  filenameModeDatetime: string;
+  filenameModeSequential: string;
+  filenameDateStyle: string;
+  filenameDateIso: string;
+  filenameDateLatin: string;
+  filenameTimeStyle: string;
+  filenameTime24: string;
+  filenameTime12: string;
+  filenamePreview: string;
+  saveAsJpeg: string;
+  jpegQuality: string;
   hotkeys: string;
   hotkeysHint: string;
   globalHotkeys: string;
@@ -63,6 +93,9 @@ type WiPrintSettingsApi = {
     language: Language,
   ): Promise<AssignHotkeyResult>;
   saveSettings(settings: AppSettings): Promise<{ ok: true } | { ok: false; error: string }>;
+  browseSaveDirectory(): Promise<string | null>;
+  getResolvedSaveDirectory(): Promise<string>;
+  previewFilename(settings: AppSettings): Promise<string>;
   closeWindow(): void;
 };
 
@@ -92,6 +125,30 @@ const languageLabelEl = document.getElementById('language-label') as HTMLLabelEl
 const languageSelect = document.getElementById('language') as HTMLSelectElement;
 const launchCheckbox = document.getElementById('launch-at-startup') as HTMLInputElement;
 const launchLabelEl = document.getElementById('launch-label') as HTMLSpanElement;
+const autoSaveCheckbox = document.getElementById('auto-save-captures') as HTMLInputElement;
+const autoSaveLabelEl = document.getElementById('auto-save-label') as HTMLSpanElement;
+const saveDirectoryLabelEl = document.getElementById('save-directory-label') as HTMLLabelElement;
+const saveDirectoryInput = document.getElementById('save-directory') as HTMLInputElement;
+const browseSaveDirectoryBtn = document.getElementById('browse-save-directory') as HTMLButtonElement;
+const useSubfoldersCheckbox = document.getElementById('use-capture-subfolders') as HTMLInputElement;
+const useSubfoldersLabelEl = document.getElementById('use-subfolders-label') as HTMLSpanElement;
+const subfoldersHintEl = document.getElementById('subfolders-hint') as HTMLParagraphElement;
+const filenameSectionTitleEl = document.getElementById('filename-section-title') as HTMLHeadingElement;
+const filenameModeLabelEl = document.getElementById('filename-mode-label') as HTMLLabelElement;
+const filenameModeSelect = document.getElementById('filename-mode') as HTMLSelectElement;
+const filenameDateFieldEl = document.getElementById('filename-date-field') as HTMLDivElement;
+const filenameDateLabelEl = document.getElementById('filename-date-label') as HTMLLabelElement;
+const filenameDateStyleSelect = document.getElementById('filename-date-style') as HTMLSelectElement;
+const filenameTimeFieldEl = document.getElementById('filename-time-field') as HTMLDivElement;
+const filenameTimeLabelEl = document.getElementById('filename-time-label') as HTMLLabelElement;
+const filenameTimeStyleSelect = document.getElementById('filename-time-style') as HTMLSelectElement;
+const filenamePreviewLabelEl = document.getElementById('filename-preview-label') as HTMLParagraphElement;
+const filenamePreviewEl = document.getElementById('filename-preview') as HTMLParagraphElement;
+const saveAsJpegCheckbox = document.getElementById('save-as-jpeg') as HTMLInputElement;
+const saveAsJpegLabelEl = document.getElementById('save-as-jpeg-label') as HTMLSpanElement;
+const jpegQualityLabelEl = document.getElementById('jpeg-quality-label') as HTMLLabelElement;
+const jpegQualityInput = document.getElementById('jpeg-quality') as HTMLInputElement;
+const jpegQualityValueEl = document.getElementById('jpeg-quality-value') as HTMLSpanElement;
 const hotkeysTitleEl = document.getElementById('hotkeys-title') as HTMLHeadingElement;
 const hotkeysHintEl = document.getElementById('hotkeys-hint') as HTMLParagraphElement;
 const globalHotkeysTitleEl = document.getElementById('global-hotkeys-title') as HTMLHeadingElement;
@@ -143,7 +200,26 @@ function applyLanguage(): void {
   generalTitleEl.textContent = ui.general;
   languageLabelEl.textContent = ui.language;
   launchLabelEl.textContent = ui.launchAtStartup;
+  autoSaveLabelEl.textContent = ui.autoSaveCaptures;
+  saveDirectoryLabelEl.textContent = ui.saveDirectory;
+  browseSaveDirectoryBtn.textContent = ui.browseSaveDirectory;
+  useSubfoldersLabelEl.textContent = ui.useCaptureSubfolders;
+  subfoldersHintEl.textContent = ui.useCaptureSubfoldersHint;
+  filenameSectionTitleEl.textContent = ui.filenameSection;
+  filenameModeLabelEl.textContent = ui.filenameMode;
+  filenameDateLabelEl.textContent = ui.filenameDateStyle;
+  filenameTimeLabelEl.textContent = ui.filenameTimeStyle;
+  filenamePreviewLabelEl.textContent = ui.filenamePreview;
+  saveAsJpegLabelEl.textContent = ui.saveAsJpeg;
+  jpegQualityLabelEl.textContent = ui.jpegQuality;
   hotkeysTitleEl.textContent = ui.hotkeys;
+
+  filenameModeSelect.options[0].textContent = ui.filenameModeDatetime;
+  filenameModeSelect.options[1].textContent = ui.filenameModeSequential;
+  filenameDateStyleSelect.options[0].textContent = ui.filenameDateIso;
+  filenameDateStyleSelect.options[1].textContent = ui.filenameDateLatin;
+  filenameTimeStyleSelect.options[0].textContent = ui.filenameTime24;
+  filenameTimeStyleSelect.options[1].textContent = ui.filenameTime12;
   hotkeysHintEl.textContent = ui.hotkeysHint;
   globalHotkeysTitleEl.textContent = ui.globalHotkeys;
   captureHotkeysTitleEl.textContent = ui.captureHotkeys;
@@ -295,9 +371,37 @@ function stopRecording(action: HotkeyAction, input: HTMLInputElement): void {
   input.value = displayHotkeyValue(action);
 }
 
+function syncFilenameFieldsVisibility(): void {
+  const sequential = filenameModeSelect.value === 'sequential';
+  filenameDateFieldEl.style.display = sequential ? 'none' : '';
+  filenameTimeFieldEl.style.display = sequential ? 'none' : '';
+}
+
+async function refreshFilenamePreview(): Promise<void> {
+  if (!draft) {
+    return;
+  }
+
+  filenamePreviewEl.textContent = await window.wiPrintSettings.previewFilename(draft);
+}
+
+function syncDraftFromFilenameControls(): void {
+  if (!draft) {
+    return;
+  }
+
+  draft.filenameMode = filenameModeSelect.value as FilenameMode;
+  draft.filenameDateStyle = filenameDateStyleSelect.value as FilenameDateStyle;
+  draft.filenameTimeStyle = filenameTimeStyleSelect.value as FilenameTimeStyle;
+  draft.saveAsJpeg = saveAsJpegCheckbox.checked;
+  draft.jpegQuality = Number.parseInt(jpegQualityInput.value, 10);
+}
+
 async function refreshUi(language: Language): Promise<void> {
   ui = await window.wiPrintSettings.getUi(language);
   applyLanguage();
+  syncFilenameFieldsVisibility();
+  await refreshFilenamePreview();
 }
 
 async function init(): Promise<void> {
@@ -309,6 +413,16 @@ async function init(): Promise<void> {
     draft = await window.wiPrintSettings.getSettings();
     languageSelect.value = draft.language;
     launchCheckbox.checked = draft.launchAtStartup;
+    autoSaveCheckbox.checked = draft.autoSaveCaptures;
+    saveDirectoryInput.value = draft.saveDirectory;
+    useSubfoldersCheckbox.checked = draft.useCaptureSubfolders;
+    filenameModeSelect.value = draft.filenameMode;
+    filenameDateStyleSelect.value = draft.filenameDateStyle;
+    filenameTimeStyleSelect.value = draft.filenameTimeStyle;
+    saveAsJpegCheckbox.checked = draft.saveAsJpeg;
+    jpegQualityInput.value = String(draft.jpegQuality);
+    jpegQualityValueEl.textContent = String(draft.jpegQuality);
+    saveDirectoryInput.placeholder = await window.wiPrintSettings.getResolvedSaveDirectory();
     await refreshUi(draft.language);
     buildHotkeyRows(draft);
   } catch (error) {
@@ -332,6 +446,62 @@ async function init(): Promise<void> {
     draft.launchAtStartup = launchCheckbox.checked;
   });
 
+  autoSaveCheckbox.addEventListener('change', () => {
+    if (!draft) {
+      return;
+    }
+    draft.autoSaveCaptures = autoSaveCheckbox.checked;
+  });
+
+  saveDirectoryInput.addEventListener('input', () => {
+    if (!draft) {
+      return;
+    }
+    draft.saveDirectory = saveDirectoryInput.value.trim();
+  });
+
+  useSubfoldersCheckbox.addEventListener('change', () => {
+    if (!draft) {
+      return;
+    }
+    draft.useCaptureSubfolders = useSubfoldersCheckbox.checked;
+  });
+
+  browseSaveDirectoryBtn.addEventListener('click', async () => {
+    const selected = await window.wiPrintSettings.browseSaveDirectory();
+    if (!selected || !draft) {
+      return;
+    }
+    draft.saveDirectory = selected;
+    saveDirectoryInput.value = selected;
+  });
+
+  filenameModeSelect.addEventListener('change', async () => {
+    syncDraftFromFilenameControls();
+    syncFilenameFieldsVisibility();
+    await refreshFilenamePreview();
+  });
+
+  filenameDateStyleSelect.addEventListener('change', async () => {
+    syncDraftFromFilenameControls();
+    await refreshFilenamePreview();
+  });
+
+  filenameTimeStyleSelect.addEventListener('change', async () => {
+    syncDraftFromFilenameControls();
+    await refreshFilenamePreview();
+  });
+
+  saveAsJpegCheckbox.addEventListener('change', async () => {
+    syncDraftFromFilenameControls();
+    await refreshFilenamePreview();
+  });
+
+  jpegQualityInput.addEventListener('input', () => {
+    jpegQualityValueEl.textContent = jpegQualityInput.value;
+    syncDraftFromFilenameControls();
+  });
+
   cancelBtn.addEventListener('click', () => {
     window.wiPrintSettings.closeWindow();
   });
@@ -340,6 +510,14 @@ async function init(): Promise<void> {
     if (!draft) {
       return;
     }
+
+    if (!draft) {
+      return;
+    }
+
+    draft.saveDirectory = saveDirectoryInput.value.trim();
+    draft.useCaptureSubfolders = useSubfoldersCheckbox.checked;
+    syncDraftFromFilenameControls();
 
     setStatus('');
     const result = await window.wiPrintSettings.saveSettings(draft);

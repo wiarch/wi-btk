@@ -20,6 +20,18 @@ export function normalizeAccelerator(accelerator: string): string {
     .join('+');
 }
 
+export function normalizeForElectron(accelerator: string): string {
+  return normalizeAccelerator(accelerator)
+    .split('+')
+    .map((part) => {
+      if (/^print\s*screen$/i.test(part) || /^snapshot$/i.test(part)) {
+        return 'PrintScreen';
+      }
+      return part;
+    })
+    .join('+');
+}
+
 export function isValidAccelerator(accelerator: string): boolean {
   const normalized = normalizeAccelerator(accelerator);
   if (!normalized) {

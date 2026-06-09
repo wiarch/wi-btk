@@ -2,6 +2,7 @@ import type { HotkeyAction, Language } from './settings';
 
 type TrayStrings = {
   capture: string;
+  captureFullScreen: string;
   settings: string;
   quit: string;
   tooltip: string;
@@ -12,8 +13,12 @@ type NotificationStrings = {
   hotkeyUnavailable: string;
   hotkeyUbuntuConflict: string;
   saved: string;
+  savedHint: string;
   copied: string;
+  copiedAndSaved: string;
+  copiedAndSavedHint: string;
   fullScreenCaptured: string;
+  fullScreenCapturedHint: string;
 };
 
 type ErrorStrings = {
@@ -36,6 +41,24 @@ type SettingsStrings = {
   languageEn: string;
   languageEs: string;
   launchAtStartup: string;
+  autoSaveCaptures: string;
+  saveDirectory: string;
+  browseSaveDirectory: string;
+  useCaptureSubfolders: string;
+  useCaptureSubfoldersHint: string;
+  filenameSection: string;
+  filenameMode: string;
+  filenameModeDatetime: string;
+  filenameModeSequential: string;
+  filenameDateStyle: string;
+  filenameDateIso: string;
+  filenameDateLatin: string;
+  filenameTimeStyle: string;
+  filenameTime24: string;
+  filenameTime12: string;
+  filenamePreview: string;
+  saveAsJpeg: string;
+  jpegQuality: string;
   hotkeys: string;
   hotkeysHint: string;
   hotkeyCapture: string;
@@ -77,6 +100,7 @@ type Dictionary = {
 const en: Dictionary = {
   tray: {
     capture: 'Capture screen',
+    captureFullScreen: 'Capture full screen',
     settings: 'Settings',
     quit: 'Quit',
     tooltip: 'WI-Print — {hotkey}',
@@ -85,9 +109,13 @@ const en: Dictionary = {
     active: 'Active. {hotkey} or tray click.',
     hotkeyUnavailable: '{hotkey} unavailable. Use tray → Capture screen.',
     hotkeyUbuntuConflict: 'Disable the screenshot shortcut in Ubuntu Settings → Keyboard.',
-    saved: 'Saved to {path}',
+    saved: '{filename}',
+    savedHint: 'Saved — click to open folder',
     copied: 'Copied to clipboard',
-    fullScreenCaptured: 'Full screen saved to {path} and copied to clipboard',
+    copiedAndSaved: '{filename}',
+    copiedAndSavedHint: 'Copied and saved — click to open folder',
+    fullScreenCaptured: '{filename}',
+    fullScreenCapturedHint: 'Full screen saved and copied — click to open folder',
   },
   errors: {
     captureFailed: 'Could not capture the screen:\n\n{message}',
@@ -107,6 +135,24 @@ const en: Dictionary = {
     languageEn: 'English',
     languageEs: 'Spanish',
     launchAtStartup: 'Launch at system startup',
+    autoSaveCaptures: 'Always save captures to disk (including copy)',
+    saveDirectory: 'Save folder',
+    browseSaveDirectory: 'Browse…',
+    useCaptureSubfolders: 'Organize into subfolders (rango / edit / completa)',
+    useCaptureSubfoldersHint: 'rango: region only · edit: region with annotations · completa: full screen',
+    filenameSection: 'File name',
+    filenameMode: 'Naming mode',
+    filenameModeDatetime: 'Date and time',
+    filenameModeSequential: 'Sequential (WI-Print-1, 2, 3…)',
+    filenameDateStyle: 'Date format',
+    filenameDateIso: 'ISO (YYYY-MM-DD)',
+    filenameDateLatin: 'Latin (DD-MM-YYYY)',
+    filenameTimeStyle: 'Time format',
+    filenameTime24: '24 hours (17:45:32)',
+    filenameTime12: '12 hours (05:45:32 PM)',
+    filenamePreview: 'Example',
+    saveAsJpeg: 'Save as JPEG (lighter files)',
+    jpegQuality: 'JPEG quality',
     hotkeys: 'Hotkeys',
     hotkeysHint: 'Click a field and press the desired key combination.',
     hotkeyCapture: 'Capture with region selection',
@@ -144,6 +190,7 @@ const en: Dictionary = {
 const es: Dictionary = {
   tray: {
     capture: 'Capturar pantalla',
+    captureFullScreen: 'Capturar pantalla completa',
     settings: 'Configuración',
     quit: 'Salir',
     tooltip: 'WI-Print — {hotkey}',
@@ -152,9 +199,13 @@ const es: Dictionary = {
     active: 'Activo. {hotkey} o click en bandeja.',
     hotkeyUnavailable: '{hotkey} no disponible. Usa bandeja → Capturar pantalla.',
     hotkeyUbuntuConflict: 'Desactiva el atajo de captura en Ajustes de Ubuntu → Teclado.',
-    saved: 'Guardado en {path}',
+    saved: '{filename}',
+    savedHint: 'Guardado — clic para abrir carpeta',
     copied: 'Copiado al portapapeles',
-    fullScreenCaptured: 'Pantalla completa guardada en {path} y copiada al portapapeles',
+    copiedAndSaved: '{filename}',
+    copiedAndSavedHint: 'Copiado y guardado — clic para abrir carpeta',
+    fullScreenCaptured: '{filename}',
+    fullScreenCapturedHint: 'Pantalla completa guardada y copiada — clic para abrir carpeta',
   },
   errors: {
     captureFailed: 'No se pudo capturar la pantalla:\n\n{message}',
@@ -174,6 +225,24 @@ const es: Dictionary = {
     languageEn: 'Inglés',
     languageEs: 'Español',
     launchAtStartup: 'Iniciar al arrancar el sistema',
+    autoSaveCaptures: 'Guardar siempre las capturas en disco (también al copiar)',
+    saveDirectory: 'Carpeta de guardado',
+    browseSaveDirectory: 'Examinar…',
+    useCaptureSubfolders: 'Organizar en subcarpetas (rango / edit / completa)',
+    useCaptureSubfoldersHint: 'rango: solo región · edit: región con anotaciones · completa: pantalla completa',
+    filenameSection: 'Nombre de archivo',
+    filenameMode: 'Modo de nombre',
+    filenameModeDatetime: 'Fecha y hora',
+    filenameModeSequential: 'Enumerado (WI-Print-1, 2, 3…)',
+    filenameDateStyle: 'Formato de fecha',
+    filenameDateIso: 'ISO (AAAA-MM-DD)',
+    filenameDateLatin: 'Latino (DD-MM-AAAA)',
+    filenameTimeStyle: 'Formato de hora',
+    filenameTime24: '24 horas (17:45:32)',
+    filenameTime12: '12 horas (05:45:32 PM)',
+    filenamePreview: 'Ejemplo',
+    saveAsJpeg: 'Guardar como JPEG (archivos más livianos)',
+    jpegQuality: 'Calidad JPEG',
     hotkeys: 'Atajos de teclado',
     hotkeysHint: 'Haz clic en un campo y pulsa la combinación deseada.',
     hotkeyCapture: 'Capturar con selección de región',

@@ -24,9 +24,26 @@ function mergeSettings(partial: Partial<AppSettings> & { captureFullScreen?: boo
     }
   }
 
+  const legacyFullScreen = hotkeys.captureFullScreen;
+  if (
+    legacyFullScreen === 'PrintScreen' ||
+    legacyFullScreen === 'Ctrl+PrintScreen' ||
+    legacyFullScreen === 'Ctrl+Print Screen'
+  ) {
+    hotkeys.captureFullScreen = DEFAULT_SETTINGS.hotkeys.captureFullScreen;
+  }
+
   return {
     language: partial.language ?? DEFAULT_SETTINGS.language,
     launchAtStartup: partial.launchAtStartup ?? DEFAULT_SETTINGS.launchAtStartup,
+    autoSaveCaptures: partial.autoSaveCaptures ?? DEFAULT_SETTINGS.autoSaveCaptures,
+    saveDirectory: partial.saveDirectory ?? DEFAULT_SETTINGS.saveDirectory,
+    useCaptureSubfolders: partial.useCaptureSubfolders ?? DEFAULT_SETTINGS.useCaptureSubfolders,
+    saveAsJpeg: partial.saveAsJpeg ?? DEFAULT_SETTINGS.saveAsJpeg,
+    jpegQuality: partial.jpegQuality ?? DEFAULT_SETTINGS.jpegQuality,
+    filenameMode: partial.filenameMode ?? DEFAULT_SETTINGS.filenameMode,
+    filenameDateStyle: partial.filenameDateStyle ?? DEFAULT_SETTINGS.filenameDateStyle,
+    filenameTimeStyle: partial.filenameTimeStyle ?? DEFAULT_SETTINGS.filenameTimeStyle,
     hotkeys,
   };
 }

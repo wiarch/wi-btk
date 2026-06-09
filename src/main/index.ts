@@ -9,16 +9,16 @@ import {
   Menu,
   nativeImage,
   net,
-  Notification,
   protocol,
   screen,
   Tray,
 } from 'electron';
-import { mkdir, unlink, writeFile } from 'node:fs/promises';
-import { homedir } from 'node:os';
+import { unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { applyLaunchAtStartup } from './autostart';
+import { buildCaptureSavePath, getBaseSaveDirectory } from './capturePaths';
+import { encodeCaptureForClipboard, encodeCaptureForSave } from './imageEncode';
 import { captureScreen } from './capture';
 import { captureScreenElectron } from './captureElectron';
 import { assignHotkeyWithConflictCheck } from './hotkeyAssign';
@@ -28,11 +28,14 @@ import {
   isSafeGlobalAccelerator,
   isValidAccelerator,
   normalizeAccelerator,
+  normalizeForElectron,
 } from './hotkeys';
 import { log } from './logger';
+import { notifyCaptureSaved, notifySimple } from './notifications';
 import { closeSettingsWindow, openSettingsWindow } from './settingsWindow';
 import { loadSettings, saveSettings } from './settingsStore';
 import { getTrayIconPath } from './trayIcon';
+import { previewCaptureFilename } from '../shared/filenameFormat';
 import { getDictionary, hotkeyLabel, t } from '../shared/i18n';
 import type { AppSettings, HotkeyAction } from '../shared/settings';
 import { DEFAULT_SETTINGS, GLOBAL_HOTKEY_ACTIONS, OVERLAY_HOTKEY_ACTIONS } from '../shared/settings';
@@ -80,7 +83,7 @@ function getOverlayHtmlPath(): string {
 function formatHotkeyForUi(accelerator: string): string {
   return accelerator
     .replace(/CommandOrControl/g, 'Ctrl')
-    .replace(/PrintScreen/g, 'Print Screen');
+    .replace(/PrintScreen/g, 'PrtSc');
 }
 
 async function clearCaptureFile(): Promise<void> {
@@ -100,21 +103,8 @@ function closeOverlay(): void {
   void clearCaptureFile();
 }
 
-async function defaultSavePath(): Promise<string> {
-  const picturesDir = join(homedir(), 'Pictures', 'WI-Print');
-  await mkdir(picturesDir, { recursive: true });
-  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  return join(picturesDir, `WI-Print-${stamp}.png`);
-}
-
-function notify(title: string, body: string): void {
-  if (Notification.isSupported()) {
-    new Notification({ title, body }).show();
-  }
-}
-
 function showError(message: string): void {
-  notify('WI-Print', message);
+  notifySimple('WI-Print', message);
   dialog.showErrorBox('WI-Print', message);
 }
 
@@ -208,6 +198,15 @@ function buildOverlayPayload(
       cancel: settings.hotkeys.cancel,
     },
     overlayLabels: dict.overlay,
+    hotkeyDisplay: {
+      arrow: formatHotkeyForUi(settings.hotkeys.arrow),
+      rect: formatHotkeyForUi(settings.hotkeys.rect),
+      copy: formatHotkeyForUi(settings.hotkeys.copy),
+      save: formatHotkeyForUi(settings.hotkeys.save),
+      close: formatHotkeyForUi(settings.hotkeys.cancel),
+    },
+    saveAsJpeg: settings.saveAsJpeg,
+    jpegQuality: settings.jpegQuality,
   };
 }
 
@@ -245,8 +244,10 @@ async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<vo
   }
 
   const bounds = getVirtualBounds();
-  const capturePath = join(app.getPath('temp'), `wi-print-capture-${Date.now()}.png`);
-  await writeFile(capturePath, image.toPNG());
+  const settings = getSettings();
+  const tempExt = settings.saveAsJpeg ? 'jpg' : 'png';
+  const capturePath = join(app.getPath('temp'), `wi-print-capture-${Date.now()}.${tempExt}`);
+  await writeFile(capturePath, encodeCaptureForSave(image, settings));
   currentCapturePath = capturePath;
 
   overlayWindow = new BrowserWindow({
@@ -301,13 +302,15 @@ async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<vo
 async function saveFullScreenCapture(imageBuffer: Buffer): Promise<void> {
   const settings = getSettings();
   const image = nativeImage.createFromBuffer(imageBuffer);
-  const filePath = await defaultSavePath();
+  const filePath = await buildCaptureSavePath(settings, 'completa');
 
-  await writeFile(filePath, image.toPNG());
-  clipboard.writeImage(image);
-  notify(
-    'WI-Print',
-    t(settings.language, 'notifications.fullScreenCaptured', { path: filePath }),
+  await writeFile(filePath, encodeCaptureForSave(image, settings));
+  clipboard.writeImage(nativeImage.createFromBuffer(encodeCaptureForClipboard(image)));
+  notifyCaptureSaved(
+    settings.language,
+    'notifications.fullScreenCaptured',
+    'notifications.fullScreenCapturedHint',
+    filePath,
   );
 }
 
@@ -346,7 +349,7 @@ function registerHotkey(): void {
   globalShortcut.unregisterAll();
 
   for (const action of GLOBAL_HOTKEY_ACTIONS) {
-    const accelerator = normalizeAccelerator(settings.hotkeys[action]);
+    const accelerator = normalizeForElectron(settings.hotkeys[action]);
     if (!accelerator || !isValidAccelerator(accelerator)) {
       void log(`hotkey skipped (${action}): not assigned`);
       continue;
@@ -368,7 +371,7 @@ function registerHotkey(): void {
         action === 'captureFullScreen' && accelerator.includes('PrintScreen')
           ? ` ${t(settings.language, 'notifications.hotkeyUbuntuConflict')}`
           : '';
-      notify(
+      notifySimple(
         'WI-Print',
         `${t(settings.language, 'notifications.hotkeyUnavailable', {
           hotkey: formatHotkeyForUi(accelerator),
@@ -402,7 +405,13 @@ function rebuildTray(): void {
     {
       label: t(settings.language, 'tray.capture'),
       click: () => {
-        void triggerCapture('tray-menu');
+        void triggerCapture('tray-menu', false);
+      },
+    },
+    {
+      label: `${t(settings.language, 'tray.captureFullScreen')} (${formatHotkeyForUi(settings.hotkeys.captureFullScreen)})`,
+      click: () => {
+        void triggerCapture('tray-menu-full', true);
       },
     },
     {
@@ -473,7 +482,7 @@ function createTray(): void {
     void triggerCapture('tray-double-click');
   });
 
-  notify(
+  notifySimple(
     'WI-Print',
     t(settings.language, 'notifications.active', {
       hotkey: formatHotkeyForUi(settings.hotkeys.capture),
@@ -482,24 +491,52 @@ function createTray(): void {
 }
 
 function setupIpc(): void {
-  ipcMain.handle('overlay:save', async (_event, imageBase64: string) => {
-    const settings = getSettings();
-    closeOverlay();
+  ipcMain.handle(
+    'overlay:save',
+    async (_event, payload: { imageBase64: string; edited: boolean }) => {
+      const settings = getSettings();
+      closeOverlay();
 
-    const png = Buffer.from(imageBase64, 'base64');
-    const filePath = await defaultSavePath();
-    await writeFile(filePath, png);
-    notify('WI-Print', t(settings.language, 'notifications.saved', { path: filePath }));
-  });
+      const raw = Buffer.from(payload.imageBase64, 'base64');
+      const category = payload.edited ? 'edit' : 'rango';
+      const filePath = await buildCaptureSavePath(settings, category);
+      await writeFile(filePath, encodeCaptureForSave(raw, settings));
+      notifyCaptureSaved(
+        settings.language,
+        'notifications.saved',
+        'notifications.savedHint',
+        filePath,
+      );
+    },
+  );
 
-  ipcMain.handle('overlay:copy', (_event, imageBase64: string) => {
-    const settings = getSettings();
-    closeOverlay();
+  ipcMain.handle(
+    'overlay:copy',
+    async (_event, payload: { imageBase64: string; edited: boolean }) => {
+      const settings = getSettings();
+      closeOverlay();
 
-    const png = Buffer.from(imageBase64, 'base64');
-    clipboard.writeImage(nativeImage.createFromBuffer(png));
-    notify('WI-Print', t(settings.language, 'notifications.copied'));
-  });
+      const raw = Buffer.from(payload.imageBase64, 'base64');
+      clipboard.writeImage(
+        nativeImage.createFromBuffer(encodeCaptureForClipboard(raw)),
+      );
+
+      if (settings.autoSaveCaptures) {
+        const category = payload.edited ? 'edit' : 'rango';
+        const filePath = await buildCaptureSavePath(settings, category);
+        await writeFile(filePath, encodeCaptureForSave(raw, settings));
+        notifyCaptureSaved(
+          settings.language,
+          'notifications.copiedAndSaved',
+          'notifications.copiedAndSavedHint',
+          filePath,
+        );
+        return;
+      }
+
+      notifySimple('WI-Print', t(settings.language, 'notifications.copied'));
+    },
+  );
 
   ipcMain.on('overlay:cancel', () => {
     closeOverlay();
@@ -553,6 +590,14 @@ function setupIpc(): void {
     const nextSettings: AppSettings = {
       language: settings.language,
       launchAtStartup: settings.launchAtStartup,
+      autoSaveCaptures: settings.autoSaveCaptures,
+      saveDirectory: settings.saveDirectory.trim(),
+      useCaptureSubfolders: settings.useCaptureSubfolders,
+      saveAsJpeg: settings.saveAsJpeg,
+      jpegQuality: Math.min(100, Math.max(50, Math.round(settings.jpegQuality))),
+      filenameMode: settings.filenameMode,
+      filenameDateStyle: settings.filenameDateStyle,
+      filenameTimeStyle: settings.filenameTimeStyle,
       hotkeys: normalizedHotkeys,
     };
 
@@ -621,6 +666,28 @@ function setupIpc(): void {
 
     await applySettings(nextSettings);
     return { ok: true as const };
+  });
+
+  ipcMain.handle('settings:getResolvedSaveDirectory', () => {
+    return getBaseSaveDirectory(getSettings());
+  });
+
+  ipcMain.handle('settings:previewFilename', (_event, draft: AppSettings) => {
+    return previewCaptureFilename(draft);
+  });
+
+  ipcMain.handle('settings:browseSaveDirectory', async () => {
+    const settings = getSettings();
+    const result = await dialog.showOpenDialog({
+      title: t(settings.language, 'settings.saveDirectory'),
+      properties: ['openDirectory', 'createDirectory'],
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return null;
+    }
+
+    return result.filePaths[0];
   });
 
   ipcMain.on('settings:close', () => {

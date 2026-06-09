@@ -28,6 +28,55 @@
           <input id="launch-at-startup" type="checkbox" />
           <span id="launch-label">Launch at system startup</span>
         </label>
+        <label class="checkbox-row">
+          <input id="auto-save-captures" type="checkbox" />
+          <span id="auto-save-label">Always save captures to disk (including copy)</span>
+        </label>
+        <div class="field">
+          <label id="save-directory-label" for="save-directory">Save folder</label>
+          <div class="path-row">
+            <input id="save-directory" type="text" spellcheck="false" placeholder="~/Pictures/WI-Print" />
+            <button type="button" id="browse-save-directory" class="btn secondary compact">Browse…</button>
+          </div>
+        </div>
+        <label class="checkbox-row">
+          <input id="use-capture-subfolders" type="checkbox" checked />
+          <span id="use-subfolders-label">Organize into subfolders (rango / edit / completa)</span>
+        </label>
+        <p id="subfolders-hint" class="hint inline-hint">rango: region only · edit: region with annotations · completa: full screen</p>
+        <h3 id="filename-section-title" class="section-label">File name</h3>
+        <div class="field">
+          <label id="filename-mode-label" for="filename-mode">Naming mode</label>
+          <select id="filename-mode">
+            <option value="datetime">Date and time</option>
+            <option value="sequential">Sequential (WI-Print-1, 2, 3…)</option>
+          </select>
+        </div>
+        <div class="field" id="filename-date-field">
+          <label id="filename-date-label" for="filename-date-style">Date format</label>
+          <select id="filename-date-style">
+            <option value="iso">ISO (YYYY-MM-DD)</option>
+            <option value="latin">Latin (DD-MM-YYYY)</option>
+          </select>
+        </div>
+        <div class="field" id="filename-time-field">
+          <label id="filename-time-label" for="filename-time-style">Time format</label>
+          <select id="filename-time-style">
+            <option value="h24">24 hours (17:45:32)</option>
+            <option value="h12">12 hours (05:45:32 PM)</option>
+          </select>
+        </div>
+        <p id="filename-preview-label" class="hint">Example</p>
+        <p id="filename-preview" class="filename-preview">WI-Print-2026-06-09_17:45:32.jpg</p>
+        <label class="checkbox-row">
+          <input id="save-as-jpeg" type="checkbox" checked />
+          <span id="save-as-jpeg-label">Save as JPEG (lighter files)</span>
+        </label>
+        <div class="field">
+          <label id="jpeg-quality-label" for="jpeg-quality">JPEG quality</label>
+          <input id="jpeg-quality" type="range" min="50" max="100" value="85" />
+          <span id="jpeg-quality-value" class="range-value">85</span>
+        </div>
       </section>
 
       <section class="card">

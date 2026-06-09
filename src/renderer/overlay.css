@@ -46,14 +46,16 @@ body.mode-annotate #canvas {
 
 .tool-btn,
 .action-btn {
-  width: 34px;
   height: 34px;
+  min-width: 34px;
+  padding: 0 8px;
   border: 0;
-  border-radius: 50%;
-  font: 600 15px/1 system-ui, sans-serif;
+  border-radius: 17px;
+  font: 600 11px/1 system-ui, sans-serif;
   color: #f4f4f5;
   background: rgba(124, 58, 237, 0.85);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .tool-btn:hover,
@@ -68,7 +70,7 @@ body.mode-annotate #canvas {
 
 .action-btn {
   background: rgba(63, 63, 70, 0.95);
-  font-size: 14px;
+  font-size: 11px;
 }
 
 .action-btn.danger {

@@ -9,18 +9,38 @@ export type HotkeyAction =
   | 'copy'
   | 'cancel';
 
+export type FilenameMode = 'datetime' | 'sequential';
+export type FilenameDateStyle = 'iso' | 'latin';
+export type FilenameTimeStyle = 'h24' | 'h12';
+
 export type AppSettings = {
   language: Language;
   launchAtStartup: boolean;
+  autoSaveCaptures: boolean;
+  saveDirectory: string;
+  useCaptureSubfolders: boolean;
+  saveAsJpeg: boolean;
+  jpegQuality: number;
+  filenameMode: FilenameMode;
+  filenameDateStyle: FilenameDateStyle;
+  filenameTimeStyle: FilenameTimeStyle;
   hotkeys: Record<HotkeyAction, string>;
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
   language: 'es',
   launchAtStartup: false,
+  autoSaveCaptures: false,
+  saveDirectory: '',
+  useCaptureSubfolders: true,
+  saveAsJpeg: true,
+  jpegQuality: 85,
+  filenameMode: 'datetime',
+  filenameDateStyle: 'iso',
+  filenameTimeStyle: 'h24',
   hotkeys: {
     capture: 'Alt+Shift+S',
-    captureFullScreen: 'Ctrl+PrintScreen',
+    captureFullScreen: 'Ctrl+Shift+F11',
     arrow: 'A',
     rect: 'R',
     save: 'CommandOrControl+S',

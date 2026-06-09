@@ -100,6 +100,66 @@ select:focus,
   user-select: none;
 }
 
+.checkbox-row + .checkbox-row {
+  margin-top: 10px;
+}
+
+.path-row {
+  display: flex;
+  gap: 8px;
+}
+
+.path-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--input-bg);
+  font: inherit;
+}
+
+.path-row input:focus {
+  outline: 2px solid rgba(99, 70, 242, 0.45);
+  border-color: var(--primary);
+}
+
+.btn.compact {
+  min-width: auto;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+
+.inline-hint {
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+.filename-preview {
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: #d5daf0;
+  font: 600 12px/1.4 ui-monospace, monospace;
+  word-break: break-all;
+}
+
+.range-value {
+  display: inline-block;
+  min-width: 28px;
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+#jpeg-quality {
+  width: calc(100% - 40px);
+  vertical-align: middle;
+  accent-color: var(--primary);
+}
+
 .checkbox-row input {
   width: 16px;
   height: 16px;

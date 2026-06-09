@@ -26,6 +26,15 @@ type ScreenshotPayload = {
     save: string;
     close: string;
   };
+  hotkeyDisplay: {
+    arrow: string;
+    rect: string;
+    copy: string;
+    save: string;
+    close: string;
+  };
+  saveAsJpeg: boolean;
+  jpegQuality: number;
 };
 
 type Tool = 'arrow' | 'rect';
@@ -36,8 +45,8 @@ type Annotation =
 
 type WiPrintApi = {
   onScreenshotReady(callback: (payload: ScreenshotPayload) => void): () => void;
-  saveImage(imageBase64: string): Promise<void>;
-  copyImage(imageBase64: string): Promise<void>;
+  saveImage(imageBase64: string, edited: boolean): Promise<void>;
+  copyImage(imageBase64: string, edited: boolean): Promise<void>;
   cancel(): void;
   ready(): void;
 };
@@ -82,7 +91,13 @@ const state = {
     copy: 'CommandOrControl+C',
     cancel: 'Escape',
   },
+  saveAsJpeg: true,
+  jpegQuality: 85,
 };
+
+function hasEdits(): boolean {
+  return state.annotations.length > 0;
+}
 
 function setActiveTool(tool: Tool): void {
   state.tool = tool;
@@ -286,6 +301,11 @@ function exportImage(): string {
   }
   offCtx.restore();
 
+  if (state.saveAsJpeg) {
+    const quality = Math.min(1, Math.max(0.5, state.jpegQuality / 100));
+    return off.toDataURL('image/jpeg', quality).split(',')[1] ?? '';
+  }
+
   return off.toDataURL('image/png').split(',')[1] ?? '';
 }
 
@@ -460,11 +480,11 @@ toolbar.addEventListener('click', (event) => {
   }
 
   if (action === 'save') {
-    void window.wiPrint.saveImage(imageBase64);
+    void window.wiPrint.saveImage(imageBase64, hasEdits());
   }
 
   if (action === 'copy') {
-    void window.wiPrint.copyImage(imageBase64);
+    void window.wiPrint.copyImage(imageBase64, hasEdits());
   }
 });
 
@@ -494,13 +514,13 @@ window.addEventListener('keydown', (event) => {
 
     if (eventMatchesAccelerator(event, state.hotkeys.save)) {
       event.preventDefault();
-      void window.wiPrint.saveImage(imageBase64);
+      void window.wiPrint.saveImage(imageBase64, hasEdits());
       return;
     }
 
     if (eventMatchesAccelerator(event, state.hotkeys.copy)) {
       event.preventDefault();
-      void window.wiPrint.copyImage(imageBase64);
+      void window.wiPrint.copyImage(imageBase64, hasEdits());
     }
   }
 });
@@ -509,18 +529,36 @@ window.addEventListener('resize', () => {
   positionToolbar();
 });
 
-function applyOverlayLabels(labels: ScreenshotPayload['overlayLabels']): void {
+function applyOverlayButtons(
+  labels: ScreenshotPayload['overlayLabels'],
+  hotkeys: ScreenshotPayload['hotkeyDisplay'],
+): void {
   const arrowBtn = toolbar.querySelector('[data-tool="arrow"]') as HTMLButtonElement | null;
   const rectBtn = toolbar.querySelector('[data-tool="rect"]') as HTMLButtonElement | null;
   const copyBtn = toolbar.querySelector('[data-action="copy"]') as HTMLButtonElement | null;
   const saveBtn = toolbar.querySelector('[data-action="save"]') as HTMLButtonElement | null;
   const closeBtn = toolbar.querySelector('[data-action="close"]') as HTMLButtonElement | null;
 
-  if (arrowBtn) arrowBtn.title = labels.arrow;
-  if (rectBtn) rectBtn.title = labels.rect;
-  if (copyBtn) copyBtn.title = labels.copy;
-  if (saveBtn) saveBtn.title = labels.save;
-  if (closeBtn) closeBtn.title = labels.close;
+  if (arrowBtn) {
+    arrowBtn.textContent = `↗ (${hotkeys.arrow})`;
+    arrowBtn.title = labels.arrow;
+  }
+  if (rectBtn) {
+    rectBtn.textContent = `□ (${hotkeys.rect})`;
+    rectBtn.title = labels.rect;
+  }
+  if (copyBtn) {
+    copyBtn.textContent = `⧉ (${hotkeys.copy})`;
+    copyBtn.title = labels.copy;
+  }
+  if (saveBtn) {
+    saveBtn.textContent = `💾 (${hotkeys.save})`;
+    saveBtn.title = labels.save;
+  }
+  if (closeBtn) {
+    closeBtn.textContent = `✕ (${hotkeys.close})`;
+    closeBtn.title = labels.close;
+  }
 }
 
 window.wiPrint.onScreenshotReady((payload: ScreenshotPayload) => {
@@ -534,7 +572,9 @@ window.wiPrint.onScreenshotReady((payload: ScreenshotPayload) => {
   state.resizeHandle = null;
   state.resizeBase = null;
   state.hotkeys = { ...payload.hotkeys };
-  applyOverlayLabels(payload.overlayLabels);
+  state.saveAsJpeg = payload.saveAsJpeg;
+  state.jpegQuality = payload.jpegQuality;
+  applyOverlayButtons(payload.overlayLabels, payload.hotkeyDisplay);
   hideToolbar();
 
   canvas.width = payload.width;
