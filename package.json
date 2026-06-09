@@ -1,0 +1,91 @@
+{
+  "name": "wi-print",
+  "productName": "WI-Print",
+  "version": "1.0.0",
+  "description": "Global screenshot tool for Windows and Linux",
+  "author": {
+    "name": "wiarch",
+    "email": "dev@wiarch.local"
+  },
+  "desktopName": "wi-print",
+  "license": "MIT",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "build": "tsc && node scripts/copy-static.mjs",
+    "dev": "npm run build && electron . --enable-logging",
+    "start": "npm run build && electron .",
+    "build:win": "npm run build && electron-builder --win",
+    "build:ubuntu": "npm run build && electron-builder --linux deb AppImage",
+    "build:arch": "npm run build && electron-builder --linux pacman"
+  },
+  "dependencies": {
+    "dbus-next": "^0.10.2",
+    "screenshot-desktop": "^1.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "electron": "^35.1.5",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.8.3"
+  },
+  "build": {
+    "appId": "com.wiarch.wiprint",
+    "productName": "WI-Print",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "assets/tray-icon.png",
+        "to": "assets/tray-icon.png"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "WI-Print-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "category": "Graphics",
+      "maintainer": "wiarch <dev@wiarch.local>",
+      "executableName": "wi-print",
+      "artifactName": "WI-Print-${version}-${arch}.${ext}",
+      "syncDesktopName": true,
+      "desktop": {
+        "entry": {
+          "StartupWMClass": "wi-print"
+        }
+      }
+    },
+    "deb": {
+      "recommends": [
+        "libnotify-bin",
+        "scrot",
+        "grim",
+        "xdg-desktop-portal",
+        "xdg-desktop-portal-gtk"
+      ]
+    }
+  }
+}

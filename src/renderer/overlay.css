@@ -1,0 +1,88 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+  user-select: none;
+}
+
+#canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+body.mode-annotate #canvas {
+  cursor: default;
+}
+
+.toolbar {
+  position: fixed;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(24, 24, 28, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.toolbar.hidden {
+  display: none;
+}
+
+.tool-btn,
+.action-btn {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  font: 600 15px/1 system-ui, sans-serif;
+  color: #f4f4f5;
+  background: rgba(124, 58, 237, 0.85);
+  cursor: pointer;
+}
+
+.tool-btn:hover,
+.action-btn:hover {
+  filter: brightness(1.08);
+}
+
+.tool-btn.active {
+  outline: 2px solid #ede9fe;
+  outline-offset: 1px;
+}
+
+.action-btn {
+  background: rgba(63, 63, 70, 0.95);
+  font-size: 14px;
+}
+
+.action-btn.danger {
+  background: rgba(185, 28, 28, 0.9);
+}
+
+.size-label {
+  min-width: 88px;
+  padding: 0 6px;
+  font: 600 12px/1.2 ui-monospace, monospace;
+  color: #e4e4e7;
+  text-align: center;
+}
+
+.spacer {
+  width: 4px;
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Print</title>
+    <link rel="stylesheet" href="overlay.css" />
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <div id="toolbar" class="toolbar hidden" role="toolbar" aria-hidden="true">
+      <button type="button" class="tool-btn active" data-tool="arrow" title="Flecha">↗</button>
+      <button type="button" class="tool-btn" data-tool="rect" title="Rectángulo">□</button>
+      <span id="size-label" class="size-label">0 × 0</span>
+      <span class="spacer"></span>
+      <button type="button" class="action-btn" data-action="copy" title="Copiar">⧉</button>
+      <button type="button" class="action-btn" data-action="save" title="Guardar">💾</button>
+      <button type="button" class="action-btn danger" data-action="close" title="Cerrar">✕</button>
+    </div>
+    <script src="overlay.js"></script>
+  </body>
+</html>
