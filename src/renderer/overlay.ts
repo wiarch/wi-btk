@@ -1,3 +1,5 @@
+import { eventMatchesAccelerator } from './hotkeyMatch.js';
+
 export {};
 
 type SelectionBounds = { x: number; y: number; width: number; height: number };
@@ -8,6 +10,22 @@ type ScreenshotPayload = {
   height: number;
   displayWidth: number;
   displayHeight: number;
+  captureFullScreen: boolean;
+  language: 'en' | 'es';
+  hotkeys: {
+    arrow: string;
+    rect: string;
+    save: string;
+    copy: string;
+    cancel: string;
+  };
+  overlayLabels: {
+    arrow: string;
+    rect: string;
+    copy: string;
+    save: string;
+    close: string;
+  };
 };
 
 type Tool = 'arrow' | 'rect';
@@ -21,6 +39,7 @@ type WiPrintApi = {
   saveImage(imageBase64: string): Promise<void>;
   copyImage(imageBase64: string): Promise<void>;
   cancel(): void;
+  ready(): void;
 };
 
 declare global {
@@ -56,7 +75,21 @@ const state = {
   draft: null as Annotation | null,
   resizeHandle: null as string | null,
   resizeBase: null as SelectionBounds | null,
+  hotkeys: {
+    arrow: 'A',
+    rect: 'R',
+    save: 'CommandOrControl+S',
+    copy: 'CommandOrControl+C',
+    cancel: 'Escape',
+  },
 };
+
+function setActiveTool(tool: Tool): void {
+  state.tool = tool;
+  toolbar.querySelectorAll('.tool-btn').forEach((btn) => {
+    btn.classList.toggle('active', (btn as HTMLButtonElement).dataset.tool === tool);
+  });
+}
 
 function normalizeSelection(x1: number, y1: number, x2: number, y2: number): SelectionBounds {
   return {
@@ -436,14 +469,59 @@ toolbar.addEventListener('click', (event) => {
 });
 
 window.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
+  if (eventMatchesAccelerator(event, state.hotkeys.cancel)) {
     window.wiPrint.cancel();
+    return;
+  }
+
+  if (state.mode === 'annotate') {
+    if (eventMatchesAccelerator(event, state.hotkeys.arrow)) {
+      event.preventDefault();
+      setActiveTool('arrow');
+      return;
+    }
+
+    if (eventMatchesAccelerator(event, state.hotkeys.rect)) {
+      event.preventDefault();
+      setActiveTool('rect');
+      return;
+    }
+
+    const imageBase64 = exportImage();
+    if (!imageBase64) {
+      return;
+    }
+
+    if (eventMatchesAccelerator(event, state.hotkeys.save)) {
+      event.preventDefault();
+      void window.wiPrint.saveImage(imageBase64);
+      return;
+    }
+
+    if (eventMatchesAccelerator(event, state.hotkeys.copy)) {
+      event.preventDefault();
+      void window.wiPrint.copyImage(imageBase64);
+    }
   }
 });
 
 window.addEventListener('resize', () => {
   positionToolbar();
 });
+
+function applyOverlayLabels(labels: ScreenshotPayload['overlayLabels']): void {
+  const arrowBtn = toolbar.querySelector('[data-tool="arrow"]') as HTMLButtonElement | null;
+  const rectBtn = toolbar.querySelector('[data-tool="rect"]') as HTMLButtonElement | null;
+  const copyBtn = toolbar.querySelector('[data-action="copy"]') as HTMLButtonElement | null;
+  const saveBtn = toolbar.querySelector('[data-action="save"]') as HTMLButtonElement | null;
+  const closeBtn = toolbar.querySelector('[data-action="close"]') as HTMLButtonElement | null;
+
+  if (arrowBtn) arrowBtn.title = labels.arrow;
+  if (rectBtn) rectBtn.title = labels.rect;
+  if (copyBtn) copyBtn.title = labels.copy;
+  if (saveBtn) saveBtn.title = labels.save;
+  if (closeBtn) closeBtn.title = labels.close;
+}
 
 window.wiPrint.onScreenshotReady((payload: ScreenshotPayload) => {
   state.mode = 'select';
@@ -455,6 +533,8 @@ window.wiPrint.onScreenshotReady((payload: ScreenshotPayload) => {
   state.draft = null;
   state.resizeHandle = null;
   state.resizeBase = null;
+  state.hotkeys = { ...payload.hotkeys };
+  applyOverlayLabels(payload.overlayLabels);
   hideToolbar();
 
   canvas.width = payload.width;
@@ -462,9 +542,20 @@ window.wiPrint.onScreenshotReady((payload: ScreenshotPayload) => {
 
   state.image.onload = () => {
     drawScene();
+    if (payload.captureFullScreen) {
+      state.selection = {
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height,
+      };
+      enterAnnotateMode();
+    }
   };
   state.image.onerror = () => {
     console.error('[WI-Print] failed to load capture image');
   };
   state.image.src = payload.imageUrl;
 });
+
+window.wiPrint.ready();

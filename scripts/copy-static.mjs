@@ -11,4 +11,6 @@ mkdirSync(out, { recursive: true });
 mkdirSync(assetsOut, { recursive: true });
 cpSync(join(root, 'src', 'renderer', 'overlay.html'), join(out, 'overlay.html'));
 cpSync(join(root, 'src', 'renderer', 'overlay.css'), join(out, 'overlay.css'));
+cpSync(join(root, 'src', 'renderer', 'settings.html'), join(out, 'settings.html'));
+cpSync(join(root, 'src', 'renderer', 'settings.css'), join(out, 'settings.css'));
 cpSync(join(root, 'assets', 'tray-icon.png'), join(assetsOut, 'tray-icon.png'));

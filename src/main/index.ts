@@ -5,6 +5,7 @@ import {
   dialog,
   globalShortcut,
   ipcMain,
+  type IpcMainEvent,
   Menu,
   nativeImage,
   net,
@@ -17,17 +18,32 @@ import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { applyLaunchAtStartup } from './autostart';
 import { captureScreen } from './capture';
 import { captureScreenElectron } from './captureElectron';
+import { assignHotkeyWithConflictCheck } from './hotkeyAssign';
+import {
+  findDuplicateHotkeys,
+  isHotkeyAvailable,
+  isSafeGlobalAccelerator,
+  isValidAccelerator,
+  normalizeAccelerator,
+} from './hotkeys';
 import { log } from './logger';
+import { closeSettingsWindow, openSettingsWindow } from './settingsWindow';
+import { loadSettings, saveSettings } from './settingsStore';
 import { getTrayIconPath } from './trayIcon';
+import { getDictionary, hotkeyLabel, t } from '../shared/i18n';
+import type { AppSettings, HotkeyAction } from '../shared/settings';
+import { DEFAULT_SETTINGS, GLOBAL_HOTKEY_ACTIONS, OVERLAY_HOTKEY_ACTIONS } from '../shared/settings';
 
-const HOTKEY = 'Alt+Shift+S';
 let overlayWindow: BrowserWindow | null = null;
 let keepAliveWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let captureInProgress = false;
 let currentCapturePath: string | null = null;
+let isQuitting = false;
+let currentSettings: AppSettings | null = null;
 
 if (process.platform === 'linux') {
   app.commandLine.appendSwitch('enable-features', 'WebRTCPipeWireCapturer');
@@ -46,12 +62,25 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
+function getSettings(): AppSettings {
+  if (!currentSettings) {
+    throw new Error('Settings not loaded');
+  }
+  return currentSettings;
+}
+
 function getPreloadPath(): string {
-  return join(__dirname, '..', 'preload', 'preload.js');
+  return join(app.getAppPath(), 'dist', 'preload', 'preload.js');
 }
 
 function getOverlayHtmlPath(): string {
-  return join(__dirname, '..', 'renderer', 'overlay.html');
+  return join('dist', 'renderer', 'overlay.html');
+}
+
+function formatHotkeyForUi(accelerator: string): string {
+  return accelerator
+    .replace(/CommandOrControl/g, 'Ctrl')
+    .replace(/PrintScreen/g, 'Print Screen');
 }
 
 async function clearCaptureFile(): Promise<void> {
@@ -154,7 +183,59 @@ async function captureImage(): Promise<Buffer> {
   throw new Error(errors.join('\n'));
 }
 
-async function openOverlay(imageBuffer: Buffer): Promise<void> {
+function buildOverlayPayload(
+  imageUrl: string,
+  imageSize: { width: number; height: number },
+  bounds: { width: number; height: number },
+  fullScreen: boolean,
+): Record<string, unknown> {
+  const settings = getSettings();
+  const dict = getDictionary(settings.language);
+
+  return {
+    imageUrl,
+    width: imageSize.width,
+    height: imageSize.height,
+    displayWidth: bounds.width,
+    displayHeight: bounds.height,
+    language: settings.language,
+    captureFullScreen: fullScreen,
+    hotkeys: {
+      arrow: settings.hotkeys.arrow,
+      rect: settings.hotkeys.rect,
+      save: settings.hotkeys.save,
+      copy: settings.hotkeys.copy,
+      cancel: settings.hotkeys.cancel,
+    },
+    overlayLabels: dict.overlay,
+  };
+}
+
+function waitForOverlayReady(win: BrowserWindow): Promise<void> {
+  return new Promise((resolve) => {
+    const webContentsId = win.webContents.id;
+
+    const timeout = setTimeout(() => {
+      ipcMain.removeListener('overlay:ready', onReady);
+      void log('overlay ready timeout, sending payload anyway');
+      resolve();
+    }, 5000);
+
+    function onReady(event: IpcMainEvent): void {
+      if (event.sender.id !== webContentsId) {
+        return;
+      }
+
+      clearTimeout(timeout);
+      ipcMain.removeListener('overlay:ready', onReady);
+      resolve();
+    }
+
+    ipcMain.on('overlay:ready', onReady);
+  });
+}
+
+async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<void> {
   closeOverlay();
 
   const image = nativeImage.createFromBuffer(imageBuffer);
@@ -202,63 +283,144 @@ async function openOverlay(imageBuffer: Buffer): Promise<void> {
     void clearCaptureFile();
   });
 
-  const payload = {
-    imageUrl: `wiprint://capture/${encodeURIComponent(capturePath)}`,
-    width: imageSize.width,
-    height: imageSize.height,
-    displayWidth: bounds.width,
-    displayHeight: bounds.height,
-  };
+  const payload = buildOverlayPayload(
+    `wiprint://capture/${encodeURIComponent(capturePath)}`,
+    imageSize,
+    bounds,
+    fullScreen,
+  );
 
+  const readyPromise = waitForOverlayReady(overlayWindow);
   await overlayWindow.loadFile(getOverlayHtmlPath());
-
-  overlayWindow.webContents.once('did-finish-load', () => {
-    overlayWindow?.webContents.send('screenshot-ready', payload);
-    overlayWindow?.show();
-    overlayWindow?.focus();
-  });
+  await readyPromise;
+  overlayWindow.webContents.send('screenshot-ready', payload);
+  overlayWindow.show();
+  overlayWindow.focus();
 }
 
-async function triggerCapture(source: string): Promise<void> {
+async function saveFullScreenCapture(imageBuffer: Buffer): Promise<void> {
+  const settings = getSettings();
+  const image = nativeImage.createFromBuffer(imageBuffer);
+  const filePath = await defaultSavePath();
+
+  await writeFile(filePath, image.toPNG());
+  clipboard.writeImage(image);
+  notify(
+    'WI-Print',
+    t(settings.language, 'notifications.fullScreenCaptured', { path: filePath }),
+  );
+}
+
+async function triggerCapture(source: string, fullScreen = false): Promise<void> {
   if (captureInProgress) {
     await log(`capture ignored (${source}): already in progress`);
     return;
   }
 
   captureInProgress = true;
-  await log(`capture started (${source})`);
+  await log(`capture started (${source}, fullScreen=${fullScreen})`);
 
   try {
     const imageBuffer = await captureImage();
-    await openOverlay(imageBuffer);
+
+    if (fullScreen) {
+      await saveFullScreenCapture(imageBuffer);
+      await log('full screen capture saved and copied');
+      return;
+    }
+
+    await openOverlay(imageBuffer, false);
     await log('overlay opened');
   } catch (error) {
+    const settings = getSettings();
     const message = error instanceof Error ? error.message : String(error);
     await log(`capture failed (${source}): ${message}`);
-    showError(`No se pudo capturar la pantalla:\n\n${message}`);
+    showError(t(settings.language, 'errors.captureFailed', { message }));
   } finally {
     captureInProgress = false;
   }
 }
 
 function registerHotkey(): void {
-  if (globalShortcut.isRegistered(HOTKEY)) {
-    globalShortcut.unregister(HOTKEY);
+  const settings = getSettings();
+  globalShortcut.unregisterAll();
+
+  for (const action of GLOBAL_HOTKEY_ACTIONS) {
+    const accelerator = normalizeAccelerator(settings.hotkeys[action]);
+    if (!accelerator || !isValidAccelerator(accelerator)) {
+      void log(`hotkey skipped (${action}): not assigned`);
+      continue;
+    }
+
+    if (!isSafeGlobalAccelerator(accelerator)) {
+      void log(`hotkey skipped (${action}): unsafe single key ${accelerator}`);
+      continue;
+    }
+
+    const fullScreen = action === 'captureFullScreen';
+    const registered = globalShortcut.register(accelerator, () => {
+      void triggerCapture(`hotkey:${action}`, fullScreen);
+    });
+
+    if (!registered) {
+      void log(`hotkey registration failed (${action}): ${accelerator}`);
+      const detail =
+        action === 'captureFullScreen' && accelerator.includes('PrintScreen')
+          ? ` ${t(settings.language, 'notifications.hotkeyUbuntuConflict')}`
+          : '';
+      notify(
+        'WI-Print',
+        `${t(settings.language, 'notifications.hotkeyUnavailable', {
+          hotkey: formatHotkeyForUi(accelerator),
+        })}${detail}`,
+      );
+    } else {
+      void log(`hotkey registered (${action}): ${accelerator}`);
+    }
+  }
+}
+
+async function applySettings(settings: AppSettings): Promise<void> {
+  currentSettings = settings;
+  await saveSettings(settings);
+  await applyLaunchAtStartup(settings.launchAtStartup);
+  registerHotkey();
+  rebuildTray();
+}
+
+function rebuildTray(): void {
+  const settings = getSettings();
+  const captureHotkey = formatHotkeyForUi(settings.hotkeys.capture);
+
+  if (!tray) {
+    return;
   }
 
-  const registered = globalShortcut.register(HOTKEY, () => {
-    void triggerCapture('hotkey');
-  });
+  tray.setToolTip(t(settings.language, 'tray.tooltip', { hotkey: captureHotkey }));
 
-  if (!registered) {
-    void log(`hotkey registration failed: ${HOTKEY}`);
-    notify(
-      'WI-Print',
-      `${HOTKEY} no disponible. Usa click en bandeja → Capturar pantalla.`,
-    );
-  } else {
-    void log(`hotkey registered: ${HOTKEY}`);
-  }
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: t(settings.language, 'tray.capture'),
+      click: () => {
+        void triggerCapture('tray-menu');
+      },
+    },
+    {
+      label: t(settings.language, 'tray.settings'),
+      click: () => {
+        openSettingsWindow();
+      },
+    },
+    { type: 'separator' },
+    {
+      label: t(settings.language, 'tray.quit'),
+      click: () => {
+        quitApp();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
 }
 
 function createKeepAliveWindow(): void {
@@ -275,11 +437,21 @@ function createKeepAliveWindow(): void {
   });
 
   keepAliveWindow.on('close', (event) => {
-    event.preventDefault();
+    if (!isQuitting) {
+      event.preventDefault();
+    }
   });
 }
 
+function quitApp(): void {
+  isQuitting = true;
+  closeOverlay();
+  closeSettingsWindow();
+  app.quit();
+}
+
 function createTray(): void {
+  const settings = getSettings();
   const iconPath = getTrayIconPath();
   let icon = nativeImage.createFromPath(iconPath);
 
@@ -291,25 +463,7 @@ function createTray(): void {
   }
 
   tray = new Tray(icon.resize({ width: 22, height: 22 }));
-  tray.setToolTip('WI-Print — Alt+Shift+S');
-
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Capturar pantalla',
-      click: () => {
-        void triggerCapture('tray-menu');
-      },
-    },
-    { type: 'separator' },
-    {
-      label: 'Salir',
-      click: () => {
-        app.quit();
-      },
-    },
-  ]);
-
-  tray.setContextMenu(contextMenu);
+  rebuildTray();
 
   tray.on('click', () => {
     void triggerCapture('tray-click');
@@ -318,28 +472,159 @@ function createTray(): void {
   tray.on('double-click', () => {
     void triggerCapture('tray-double-click');
   });
+
+  notify(
+    'WI-Print',
+    t(settings.language, 'notifications.active', {
+      hotkey: formatHotkeyForUi(settings.hotkeys.capture),
+    }),
+  );
 }
 
 function setupIpc(): void {
   ipcMain.handle('overlay:save', async (_event, imageBase64: string) => {
+    const settings = getSettings();
     closeOverlay();
 
     const png = Buffer.from(imageBase64, 'base64');
     const filePath = await defaultSavePath();
     await writeFile(filePath, png);
-    notify('WI-Print', `Guardado en ${filePath}`);
+    notify('WI-Print', t(settings.language, 'notifications.saved', { path: filePath }));
   });
 
   ipcMain.handle('overlay:copy', (_event, imageBase64: string) => {
+    const settings = getSettings();
     closeOverlay();
 
     const png = Buffer.from(imageBase64, 'base64');
     clipboard.writeImage(nativeImage.createFromBuffer(png));
-    notify('WI-Print', 'Copiado al portapapeles');
+    notify('WI-Print', t(settings.language, 'notifications.copied'));
   });
 
   ipcMain.on('overlay:cancel', () => {
     closeOverlay();
+  });
+
+  ipcMain.handle('settings:get', () => {
+    return getSettings();
+  });
+
+  ipcMain.handle('settings:getUi', (_event, language: AppSettings['language']) => {
+    return getDictionary(language).settings;
+  });
+
+  ipcMain.handle(
+    'settings:assignHotkey',
+    async (
+      _event,
+      payload: {
+        action: HotkeyAction;
+        accelerator: string;
+        hotkeys: AppSettings['hotkeys'];
+        language: AppSettings['language'];
+      },
+    ) => {
+      const result = await assignHotkeyWithConflictCheck(
+        payload.language,
+        payload.action,
+        payload.accelerator,
+        payload.hotkeys,
+      );
+      registerHotkey();
+      return result;
+    },
+  );
+
+  ipcMain.handle('settings:save', async (_event, settings: AppSettings) => {
+    const language = settings.language;
+    const normalizedHotkeys = Object.fromEntries(
+      Object.entries(settings.hotkeys).map(([action, value]) => [
+        action,
+        value ? normalizeAccelerator(value) : '',
+      ]),
+    ) as AppSettings['hotkeys'];
+
+    for (const action of OVERLAY_HOTKEY_ACTIONS) {
+      if (!normalizedHotkeys[action]) {
+        normalizedHotkeys[action] = DEFAULT_SETTINGS.hotkeys[action];
+      }
+    }
+
+    const nextSettings: AppSettings = {
+      language: settings.language,
+      launchAtStartup: settings.launchAtStartup,
+      hotkeys: normalizedHotkeys,
+    };
+
+    for (const action of GLOBAL_HOTKEY_ACTIONS) {
+      const accelerator = normalizedHotkeys[action];
+      if (!accelerator || !isValidAccelerator(accelerator)) {
+        return {
+          ok: false as const,
+          error: t(language, 'settings.hotkeyRequired', {
+            action: hotkeyLabel(language, action),
+          }),
+        };
+      }
+
+      if (!isSafeGlobalAccelerator(accelerator)) {
+        return {
+          ok: false as const,
+          error: t(language, 'settings.hotkeyNeedsModifierBody', {
+            hotkey: formatHotkeyForUi(accelerator),
+            target: hotkeyLabel(language, action),
+          }),
+        };
+      }
+    }
+
+    for (const [action, accelerator] of Object.entries(normalizedHotkeys) as [
+      HotkeyAction,
+      string,
+    ][]) {
+      if (!accelerator) {
+        continue;
+      }
+
+      if (!isValidAccelerator(accelerator)) {
+        return {
+          ok: false as const,
+          error: t(language, 'settings.hotkeyInvalid', {
+            hotkey: formatHotkeyForUi(accelerator),
+          }),
+        };
+      }
+    }
+
+    const duplicate = findDuplicateHotkeys(normalizedHotkeys);
+    if (duplicate) {
+      return {
+        ok: false as const,
+        error: t(language, 'settings.hotkeyConflict', {
+          hotkey: formatHotkeyForUi(duplicate),
+        }),
+      };
+    }
+
+    const current = getSettings();
+    for (const action of GLOBAL_HOTKEY_ACTIONS) {
+      const accelerator = normalizedHotkeys[action];
+      if (!isHotkeyAvailable(accelerator, current.hotkeys[action])) {
+        return {
+          ok: false as const,
+          error: t(language, 'settings.hotkeyConflict', {
+            hotkey: formatHotkeyForUi(accelerator),
+          }),
+        };
+      }
+    }
+
+    await applySettings(nextSettings);
+    return { ok: true as const };
+  });
+
+  ipcMain.on('settings:close', () => {
+    closeSettingsWindow();
   });
 }
 
@@ -347,6 +632,9 @@ app.whenReady().then(async () => {
   if (process.platform === 'linux') {
     app.setName('WI-Print');
   }
+
+  currentSettings = await loadSettings();
+  await applyLaunchAtStartup(currentSettings.launchAtStartup);
 
   protocol.handle('wiprint', (request) => {
     const filePath = resolveCaptureFilePath(request.url);
@@ -362,12 +650,15 @@ app.whenReady().then(async () => {
   createTray();
   registerHotkey();
 
-  notify('WI-Print', 'Activo. Alt+Shift+S o click en bandeja.');
   await log('app ready');
 
   app.on('activate', () => {
     registerHotkey();
   });
+});
+
+app.on('before-quit', () => {
+  isQuitting = true;
 });
 
 app.on('will-quit', () => {
