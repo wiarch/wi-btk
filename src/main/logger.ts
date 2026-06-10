@@ -1,17 +1,24 @@
 import { appendFile, mkdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { app } from 'electron';
 
-const LOG_DIR = join(homedir(), '.config', 'wi-print');
-const LOG_FILE = join(LOG_DIR, 'wi-print.log');
+function getLogFile(): string {
+  try {
+    return join(app.getPath('userData'), 'wi-print.log');
+  } catch {
+    return join(homedir(), '.config', 'wi-print', 'wi-print.log');
+  }
+}
 
 export async function log(message: string): Promise<void> {
   const line = `[${new Date().toISOString()}] ${message}\n`;
   console.log(`[WI-Print] ${message}`);
 
   try {
-    await mkdir(LOG_DIR, { recursive: true });
-    await appendFile(LOG_FILE, line, 'utf8');
+    const logFile = getLogFile();
+    await mkdir(join(logFile, '..'), { recursive: true });
+    await appendFile(logFile, line, 'utf8');
   } catch {
     // ignore log failures
   }

@@ -40,7 +40,7 @@ export function openSettingsWindow(): void {
     settingsWindow = null;
   });
 
-  void settingsWindow.loadFile(join('dist', 'renderer', 'settings.html'));
+  void settingsWindow.loadFile(join(app.getAppPath(), 'dist', 'renderer', 'settings.html'));
 }
 
 export function closeSettingsWindow(): void {

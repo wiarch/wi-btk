@@ -13,13 +13,15 @@ import {
   screen,
   Tray,
 } from 'electron';
-import { unlink, writeFile } from 'node:fs/promises';
+import { access, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { bootLog, getBootLogPath } from './bootLog';
 import { applyLaunchAtStartup } from './autostart';
+
+bootLog('main module loaded');
 import { buildCaptureSavePath, getBaseSaveDirectory } from './capturePaths';
 import { encodeCaptureForClipboard, encodeCaptureForSave } from './imageEncode';
-import { captureScreen } from './capture';
 import { captureScreenElectron } from './captureElectron';
 import { assignHotkeyWithConflictCheck } from './hotkeyAssign';
 import {
@@ -37,7 +39,7 @@ import { loadSettings, saveSettings } from './settingsStore';
 import { getTrayIconPath } from './trayIcon';
 import { previewCaptureFilename } from '../shared/filenameFormat';
 import { getDictionary, hotkeyLabel, t } from '../shared/i18n';
-import type { AppSettings, HotkeyAction } from '../shared/settings';
+import type { AppSettings, HotkeyAction, Language } from '../shared/settings';
 import { DEFAULT_SETTINGS, GLOBAL_HOTKEY_ACTIONS, OVERLAY_HOTKEY_ACTIONS } from '../shared/settings';
 
 let overlayWindow: BrowserWindow | null = null;
@@ -51,6 +53,41 @@ let currentSettings: AppSettings | null = null;
 if (process.platform === 'linux') {
   app.commandLine.appendSwitch('enable-features', 'WebRTCPipeWireCapturer');
 }
+
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.wiarch.wiprint');
+}
+
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+bootLog(`single instance lock: ${gotSingleInstanceLock ? 'acquired' : 'denied'}`);
+
+if (!gotSingleInstanceLock) {
+  app.whenReady().then(() => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'WI-Print',
+      message: 'WI-Print is already running',
+      detail: 'Check the system tray icon next to the clock.',
+      buttons: ['OK'],
+    });
+    app.quit();
+  });
+}
+
+function setupProcessErrorHandlers(): void {
+  process.on('uncaughtException', (error) => {
+    void log(`uncaughtException: ${error.message}`);
+    dialog.showErrorBox('WI-Print', error.message);
+  });
+
+  process.on('unhandledRejection', (reason) => {
+    const message = reason instanceof Error ? reason.message : String(reason);
+    void log(`unhandledRejection: ${message}`);
+    dialog.showErrorBox('WI-Print', message);
+  });
+}
+
+setupProcessErrorHandlers();
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -77,7 +114,7 @@ function getPreloadPath(): string {
 }
 
 function getOverlayHtmlPath(): string {
-  return join('dist', 'renderer', 'overlay.html');
+  return join(app.getAppPath(), 'dist', 'renderer', 'overlay.html');
 }
 
 function formatHotkeyForUi(accelerator: string): string {
@@ -161,7 +198,12 @@ async function captureImage(): Promise<Buffer> {
     errors.push(`desktopCapturer: ${message}`);
   }
 
+  if (process.platform !== 'linux') {
+    throw new Error(errors.join('\n'));
+  }
+
   try {
+    const { captureScreen } = await import('./capture');
     const buffer = await captureScreen();
     await log(`capture ok via fallback (${buffer.length} bytes)`);
     return buffer;
@@ -459,6 +501,36 @@ function quitApp(): void {
   app.quit();
 }
 
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function maybeShowWindowsTrayHint(language: Language): Promise<void> {
+  if (process.platform !== 'win32') {
+    return;
+  }
+
+  const marker = join(app.getPath('userData'), '.tray-hint-shown');
+  if (await fileExists(marker)) {
+    return;
+  }
+
+  await dialog.showMessageBox({
+    type: 'info',
+    title: t(language, 'notifications.trayHintTitle'),
+    message: t(language, 'notifications.trayHintTitle'),
+    detail: t(language, 'notifications.trayHintBody'),
+    buttons: ['OK'],
+  });
+
+  await writeFile(marker, '1', 'utf8').catch(() => undefined);
+}
+
 function createTray(): void {
   const settings = getSettings();
   const iconPath = getTrayIconPath();
@@ -695,34 +767,65 @@ function setupIpc(): void {
   });
 }
 
-app.whenReady().then(async () => {
-  if (process.platform === 'linux') {
-    app.setName('WI-Print');
-  }
+if (gotSingleInstanceLock) {
+  app.on('second-instance', () => {
+    const language = currentSettings?.language ?? DEFAULT_SETTINGS.language;
+    dialog.showMessageBox({
+      type: 'info',
+      title: t(language, 'notifications.alreadyRunningTitle'),
+      message: t(language, 'notifications.alreadyRunningTitle'),
+      detail: t(language, 'notifications.alreadyRunningBody'),
+      buttons: ['OK'],
+    });
+  });
 
-  currentSettings = await loadSettings();
-  await applyLaunchAtStartup(currentSettings.launchAtStartup);
+  app.whenReady().then(async () => {
+    try {
+      bootLog(`app ready, packaged=${app.isPackaged}, exe=${process.execPath}`);
+      bootLog(`app path=${app.getAppPath()}, log=${getBootLogPath()}`);
 
-  protocol.handle('wiprint', (request) => {
-    const filePath = resolveCaptureFilePath(request.url);
-    if (!filePath) {
-      return new Response('Not found', { status: 404 });
+      if (process.platform === 'linux') {
+        app.setName('WI-Print');
+      }
+
+      currentSettings = await loadSettings();
+      bootLog('settings loaded');
+      await applyLaunchAtStartup(currentSettings.launchAtStartup);
+
+      protocol.handle('wiprint', (request) => {
+        const filePath = resolveCaptureFilePath(request.url);
+        if (!filePath) {
+          return new Response('Not found', { status: 404 });
+        }
+
+        return net.fetch(pathToFileURL(filePath).toString());
+      });
+
+      setupIpc();
+      createKeepAliveWindow();
+      bootLog('keep-alive window created');
+      createTray();
+      bootLog('tray created');
+      registerHotkey();
+      bootLog('hotkeys registered');
+      await maybeShowWindowsTrayHint(currentSettings.language);
+
+      await log('app ready');
+      bootLog('startup complete');
+
+      app.on('activate', () => {
+        registerHotkey();
+      });
+    } catch (error) {
+      const language = currentSettings?.language ?? DEFAULT_SETTINGS.language;
+      const message = error instanceof Error ? error.message : String(error);
+      bootLog(`startup failed: ${message}`);
+      await log(`startup failed: ${message}`);
+      showError(`${t(language, 'errors.startupFailed', { message })}\n\nLog: ${getBootLogPath()}`);
+      app.quit();
     }
-
-    return net.fetch(pathToFileURL(filePath).toString());
   });
-
-  setupIpc();
-  createKeepAliveWindow();
-  createTray();
-  registerHotkey();
-
-  await log('app ready');
-
-  app.on('activate', () => {
-    registerHotkey();
-  });
-});
+}
 
 app.on('before-quit', () => {
   isQuitting = true;

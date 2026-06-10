@@ -19,10 +19,15 @@ type NotificationStrings = {
   copiedAndSavedHint: string;
   fullScreenCaptured: string;
   fullScreenCapturedHint: string;
+  trayHintTitle: string;
+  trayHintBody: string;
+  alreadyRunningTitle: string;
+  alreadyRunningBody: string;
 };
 
 type ErrorStrings = {
   captureFailed: string;
+  startupFailed: string;
 };
 
 type OverlayStrings = {
@@ -116,9 +121,16 @@ const en: Dictionary = {
     copiedAndSavedHint: 'Copied and saved — click to open folder',
     fullScreenCaptured: '{filename}',
     fullScreenCapturedHint: 'Full screen saved and copied — click to open folder',
+    trayHintTitle: 'WI-Print is running',
+    trayHintBody:
+      'Look for the WI-Print icon in the system tray (next to the clock). If you do not see it, open the "^" hidden icons menu.\n\nRight-click the icon for Settings and Quit. Left-click to capture.',
+    alreadyRunningTitle: 'WI-Print is already running',
+    alreadyRunningBody:
+      'WI-Print is already active. Look for the icon in the system tray (next to the clock).',
   },
   errors: {
     captureFailed: 'Could not capture the screen:\n\n{message}',
+    startupFailed: 'Could not start WI-Print:\n\n{message}',
   },
   overlay: {
     arrow: 'Arrow',
@@ -206,9 +218,16 @@ const es: Dictionary = {
     copiedAndSavedHint: 'Copiado y guardado — clic para abrir carpeta',
     fullScreenCaptured: '{filename}',
     fullScreenCapturedHint: 'Pantalla completa guardada y copiada — clic para abrir carpeta',
+    trayHintTitle: 'WI-Print está activo',
+    trayHintBody:
+      'Busca el icono de WI-Print en la bandeja del sistema (junto al reloj). Si no lo ves, abre el menú "^" de iconos ocultos.\n\nClic derecho: Configuración y Salir. Clic izquierdo: capturar.',
+    alreadyRunningTitle: 'WI-Print ya está en ejecución',
+    alreadyRunningBody:
+      'WI-Print ya está activo. Busca el icono en la bandeja del sistema (junto al reloj).',
   },
   errors: {
     captureFailed: 'No se pudo capturar la pantalla:\n\n{message}',
+    startupFailed: 'No se pudo iniciar WI-Print:\n\n{message}',
   },
   overlay: {
     arrow: 'Flecha',

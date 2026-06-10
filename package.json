@@ -15,6 +15,8 @@
     "dev": "npm run build && electron . --enable-logging",
     "start": "npm run build && electron .",
     "build:win": "npm run build && electron-builder --win",
+    "build:win:dir": "npm run build && electron-builder --win --dir",
+    "build:win:portable": "npm run build && electron-builder --win portable",
     "build:ubuntu": "npm run build && electron-builder --linux deb AppImage",
     "build:arch": "npm run build && electron-builder --linux pacman"
   },
@@ -31,6 +33,7 @@
   "build": {
     "appId": "com.wiarch.wiprint",
     "productName": "WI-Print",
+    "forceCodeSigning": false,
     "directories": {
       "output": "release"
     },
@@ -39,22 +42,36 @@
       "assets/**/*",
       "package.json"
     ],
+    "asarUnpack": [
+      "**/node_modules/screenshot-desktop/lib/win32/**"
+    ],
     "extraResources": [
       {
         "from": "assets/tray-icon.png",
         "to": "assets/tray-icon.png"
+      },
+      {
+        "from": "build/WINDOWS-README.txt",
+        "to": "WINDOWS-README.txt"
       }
     ],
     "win": {
+      "signAndEditExecutable": false,
       "target": [
         {
-          "target": "nsis",
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
           "arch": [
             "x64"
           ]
         }
       ],
-      "artifactName": "WI-Print-Setup-${version}.${ext}"
+      "artifactName": "WI-Print-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
