@@ -389,7 +389,7 @@ async function saveFullScreenCapture(imageBuffer: Buffer): Promise<void> {
   playCaptureSound(settings);
 }
 
-async function triggerColorPicker(source: string): Promise<void> {
+async function triggerColorPicker(source: string, panelMode = false): Promise<void> {
   if (captureInProgress) {
     await log(`color picker ignored (${source}): already in progress`);
     return;
@@ -404,7 +404,7 @@ async function triggerColorPicker(source: string): Promise<void> {
     const imageBuffer = await captureImage();
     const bounds = getVirtualBounds();
     const settings = getSettings();
-    await openColorPicker(imageBuffer, bounds, getPreloadPath(), settings.language);
+    await openColorPicker(imageBuffer, bounds, getPreloadPath(), settings.language, { panelMode });
     await log('color picker opened');
   } catch (error) {
     captureInProgress = false;
@@ -469,6 +469,11 @@ function registerHotkey(): void {
         return;
       }
 
+      if (action === 'colorPickerPanel') {
+        void triggerColorPicker(`hotkey:${action}`, true);
+        return;
+      }
+
       void triggerCapture(`hotkey:${action}`, action === 'captureFullScreen');
     });
 
@@ -525,6 +530,12 @@ function rebuildTray(): void {
       label: `${t(settings.language, 'tray.colorPicker')} (${formatHotkeyForUi(settings.hotkeys.colorPicker)})`,
       click: () => {
         void triggerColorPicker('tray-menu');
+      },
+    },
+    {
+      label: `${t(settings.language, 'tray.colorPickerPanel')} (${formatHotkeyForUi(settings.hotkeys.colorPickerPanel)})`,
+      click: () => {
+        void triggerColorPicker('tray-menu-panel', true);
       },
     },
     {

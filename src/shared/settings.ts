@@ -4,6 +4,7 @@ export type HotkeyAction =
   | 'capture'
   | 'captureFullScreen'
   | 'colorPicker'
+  | 'colorPickerPanel'
   | 'arrow'
   | 'rect'
   | 'save'
@@ -50,6 +51,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     capture: 'Alt+Shift+S',
     captureFullScreen: 'Ctrl+Shift+F11',
     colorPicker: 'Alt+Shift+C',
+    colorPickerPanel: 'Alt+Shift+V',
     arrow: 'A',
     rect: 'R',
     save: 'CommandOrControl+S',
@@ -62,5 +64,6 @@ export const GLOBAL_HOTKEY_ACTIONS: HotkeyAction[] = [
   'capture',
   'captureFullScreen',
   'colorPicker',
+  'colorPickerPanel',
 ];
 export const OVERLAY_HOTKEY_ACTIONS: HotkeyAction[] = ['arrow', 'rect', 'save', 'copy', 'cancel'];

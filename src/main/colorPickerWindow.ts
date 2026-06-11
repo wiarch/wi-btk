@@ -117,11 +117,16 @@ export async function prewarmColorPickerWindow(
   await log('color picker prewarmed');
 }
 
+export type ColorPickerOpenOptions = {
+  panelMode?: boolean;
+};
+
 export async function openColorPicker(
   imageBuffer: Buffer,
   bounds: { x: number; y: number; width: number; height: number },
   preloadPath: string,
   language: Language,
+  options: ColorPickerOpenOptions = {},
 ): Promise<void> {
   if (!colorPickerReady || !colorPickerWindow || colorPickerWindow.isDestroyed()) {
     await prewarmColorPickerWindow(bounds, preloadPath);
@@ -149,5 +154,6 @@ export async function openColorPicker(
     width: imageSize.width,
     height: imageSize.height,
     labels,
+    panelMode: options.panelMode === true,
   });
 }

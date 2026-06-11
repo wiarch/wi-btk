@@ -299,24 +299,48 @@ function hueShift(h: number, delta: number): number {
   return (((h + delta) % 360) + 360) % 360;
 }
 
-export type HarmonyGroup = { label: string; colors: Rgb[] };
+export type HarmonyType =
+  | 'analogous'
+  | 'complementary'
+  | 'doubleSplitComplementary'
+  | 'rectangle'
+  | 'splitComplementary'
+  | 'tetradic'
+  | 'triadic';
 
-export function buildHarmonies(base: Rgb): HarmonyGroup[] {
+export const HARMONY_TYPES: HarmonyType[] = [
+  'analogous',
+  'complementary',
+  'doubleSplitComplementary',
+  'rectangle',
+  'splitComplementary',
+  'tetradic',
+  'triadic',
+];
+
+export function buildHarmony(type: HarmonyType, base: Rgb): Rgb[] {
   const { h, s, l } = rgbToHsl(base);
   const mk = (hue: number, sat = s, light = l) =>
     hslToRgb({ h: hueShift(hue, 0), s: sat, l: light });
 
-  return [
-    { label: 'analogous', colors: [mk(h - 30), mk(h), mk(h + 30)] },
-    { label: 'complementary', colors: [mk(h), mk(h + 180)] },
-    { label: 'splitComplementary', colors: [mk(h), mk(h + 150), mk(h + 210)] },
-    { label: 'triadic', colors: [mk(h), mk(h + 120), mk(h + 240)] },
-    { label: 'tetradic', colors: [mk(h), mk(h + 90), mk(h + 180), mk(h + 270)] },
-    {
-      label: 'monochromatic',
-      colors: [mk(h, s, 25), mk(h, s, 40), mk(h, s, 55), mk(h, s, 70), mk(h, s, 85)],
-    },
-  ];
+  switch (type) {
+    case 'analogous':
+      return [mk(h - 30), mk(h), mk(h + 30)];
+    case 'complementary':
+      return [mk(h), mk(h + 180)];
+    case 'splitComplementary':
+      return [mk(h), mk(h + 150), mk(h + 210)];
+    case 'doubleSplitComplementary':
+      return [mk(h), mk(h + 150), mk(h + 180), mk(h + 210), mk(h + 330)];
+    case 'rectangle':
+      return [mk(h), mk(h + 60), mk(h + 180), mk(h + 240)];
+    case 'tetradic':
+      return [mk(h), mk(h + 90), mk(h + 180), mk(h + 270)];
+    case 'triadic':
+      return [mk(h), mk(h + 120), mk(h + 240)];
+    default:
+      return [mk(h)];
+  }
 }
 
 export type VariationRow = { label: string; colors: Rgb[] };

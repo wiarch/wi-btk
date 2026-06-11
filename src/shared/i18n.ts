@@ -4,6 +4,7 @@ type TrayStrings = {
   capture: string;
   captureFullScreen: string;
   colorPicker: string;
+  colorPickerPanel: string;
   settings: string;
   quit: string;
   tooltip: string;
@@ -51,6 +52,8 @@ type ColorPickerStrings = {
   harmonySplitComplementary: string;
   harmonyTriadic: string;
   harmonyTetradic: string;
+  harmonyDoubleSplitComplementary: string;
+  harmonyRectangle: string;
   harmonyMonochromatic: string;
   variationSaturation: string;
   variationBrightness: string;
@@ -102,6 +105,7 @@ type SettingsStrings = {
   hotkeyCapture: string;
   hotkeyCaptureFullScreen: string;
   hotkeyColorPicker: string;
+  hotkeyColorPickerPanel: string;
   hotkeyArrow: string;
   hotkeyRect: string;
   hotkeySave: string;
@@ -150,6 +154,7 @@ const en: Dictionary = {
     capture: 'Capture screen',
     captureFullScreen: 'Capture full screen',
     colorPicker: 'Color picker',
+    colorPickerPanel: 'Color picker panel',
     settings: 'Settings',
     quit: 'Quit',
     tooltip: 'WI-Rec — {hotkey}',
@@ -208,6 +213,8 @@ const en: Dictionary = {
     harmonySplitComplementary: 'Split complementary',
     harmonyTriadic: 'Triadic',
     harmonyTetradic: 'Tetradic',
+    harmonyDoubleSplitComplementary: 'Double split complementary',
+    harmonyRectangle: 'Rectangle',
     harmonyMonochromatic: 'Monochromatic',
     variationSaturation: 'Saturation',
     variationBrightness: 'Brightness',
@@ -245,6 +252,7 @@ const en: Dictionary = {
     hotkeyCapture: 'Capture with region selection',
     hotkeyCaptureFullScreen: 'Capture full screen (save + clipboard)',
     hotkeyColorPicker: 'Color picker (eyedropper)',
+    hotkeyColorPickerPanel: 'Color picker panel (direct)',
     hotkeyArrow: 'Arrow tool',
     hotkeyRect: 'Rectangle tool',
     hotkeySave: 'Save screenshot',
@@ -288,6 +296,7 @@ const es: Dictionary = {
     capture: 'Capturar pantalla',
     captureFullScreen: 'Capturar pantalla completa',
     colorPicker: 'Cuentagotas de color',
+    colorPickerPanel: 'Panel de color',
     settings: 'Configuración',
     quit: 'Salir',
     tooltip: 'WI-Rec — {hotkey}',
@@ -346,6 +355,8 @@ const es: Dictionary = {
     harmonySplitComplementary: 'Complementario dividido',
     harmonyTriadic: 'Triádico',
     harmonyTetradic: 'Tetrádico',
+    harmonyDoubleSplitComplementary: 'Doble complementario dividido',
+    harmonyRectangle: 'Rectángulo',
     harmonyMonochromatic: 'Monocromático',
     variationSaturation: 'Saturación',
     variationBrightness: 'Brillo',
@@ -383,6 +394,7 @@ const es: Dictionary = {
     hotkeyCapture: 'Capturar con selección de región',
     hotkeyCaptureFullScreen: 'Capturar pantalla completa (guardar + portapapeles)',
     hotkeyColorPicker: 'Cuentagotas de color',
+    hotkeyColorPickerPanel: 'Panel de color (directo)',
     hotkeyArrow: 'Herramienta flecha',
     hotkeyRect: 'Herramienta rectángulo',
     hotkeySave: 'Guardar captura',
@@ -451,6 +463,7 @@ export function hotkeyLabel(language: Language, action: HotkeyAction): string {
     capture: 'settings.hotkeyCapture',
     captureFullScreen: 'settings.hotkeyCaptureFullScreen',
     colorPicker: 'settings.hotkeyColorPicker',
+    colorPickerPanel: 'settings.hotkeyColorPickerPanel',
     arrow: 'settings.hotkeyArrow',
     rect: 'settings.hotkeyRect',
     save: 'settings.hotkeySave',

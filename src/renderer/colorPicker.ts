@@ -1,8 +1,9 @@
 import {
-  buildHarmonies,
+  buildHarmony,
   buildVariationStrip,
   closestColorIndex,
   findSimilarColors,
+  HARMONY_TYPES,
   formatCmyk,
   formatHsl,
   formatHsv,
@@ -19,6 +20,7 @@ import {
   rgbToLab,
   rgbToXyz,
   wcagContrast,
+  type HarmonyType,
   type Rgb,
 } from './colorPickerMath.js';
 
@@ -50,7 +52,8 @@ type ColorPickerLabels = {
   harmonySplitComplementary: string;
   harmonyTriadic: string;
   harmonyTetradic: string;
-  harmonyMonochromatic: string;
+  harmonyDoubleSplitComplementary: string;
+  harmonyRectangle: string;
 };
 
 type ColorPickerPayload = {
@@ -58,6 +61,7 @@ type ColorPickerPayload = {
   width: number;
   height: number;
   labels: ColorPickerLabels;
+  panelMode?: boolean;
 };
 
 type WiRecColorPickerApi = {
@@ -73,14 +77,17 @@ declare global {
   }
 }
 
-const HARMONY_LABELS: Record<string, keyof ColorPickerLabels> = {
+const HARMONY_LABELS: Record<HarmonyType, keyof ColorPickerLabels> = {
   analogous: 'harmonyAnalogous',
   complementary: 'harmonyComplementary',
+  doubleSplitComplementary: 'harmonyDoubleSplitComplementary',
+  rectangle: 'harmonyRectangle',
   splitComplementary: 'harmonySplitComplementary',
-  triadic: 'harmonyTriadic',
   tetradic: 'harmonyTetradic',
-  monochromatic: 'harmonyMonochromatic',
+  triadic: 'harmonyTriadic',
 };
+
+const DEFAULT_PANEL_COLOR: Rgb = { r: 79, g: 109, b: 245 };
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -100,7 +107,8 @@ const advancedSection = document.getElementById('advanced-section') as HTMLDivEl
 const svCanvas = document.getElementById('sv-canvas') as HTMLCanvasElement;
 const hueSlider = document.getElementById('hue-slider') as HTMLInputElement;
 const harmoniesTitle = document.getElementById('harmonies-title') as HTMLHeadingElement;
-const harmoniesEl = document.getElementById('harmonies') as HTMLDivElement;
+const harmonySelect = document.getElementById('harmony-select') as HTMLSelectElement;
+const harmonySwatchesEl = document.getElementById('harmony-swatches') as HTMLDivElement;
 const variationsTitle = document.getElementById('variations-title') as HTMLHeadingElement;
 const variationStripEl = document.getElementById('variation-strip') as HTMLDivElement;
 const conversionsTitle = document.getElementById('conversions-title') as HTMLHeadingElement;
@@ -144,6 +152,7 @@ const state = {
   panelAnchor: { x: 0, y: 0 },
   currentHue: 0,
   svDragging: false,
+  selectedHarmony: 'analogous' as HarmonyType,
 };
 
 function updateSwatch(color: Rgb): void {
@@ -215,30 +224,29 @@ function createSwatchButton(color: Rgb, onPick: (c: Rgb) => void): HTMLButtonEle
   return btn;
 }
 
-function renderSwatchGroups(
-  container: HTMLElement,
-  groups: { label: string; colors: Rgb[] }[],
-  labelMap: Record<string, keyof ColorPickerLabels>,
-): void {
-  container.innerHTML = '';
+function populateHarmonySelect(): void {
   const labels = state.labels;
   if (!labels) return;
 
-  for (const group of groups) {
-    const wrap = document.createElement('div');
-    const labelKey = labelMap[group.label];
-    const title = document.createElement('div');
-    title.className = 'adv-group-label';
-    title.textContent = labels[labelKey] ?? group.label;
+  const previous = state.selectedHarmony;
+  harmonySelect.innerHTML = '';
 
-    const row = document.createElement('div');
-    row.className = 'swatch-row';
-    for (const color of group.colors) {
-      row.append(createSwatchButton(color, (picked) => applyColor(picked)));
-    }
+  for (const type of HARMONY_TYPES) {
+    const option = document.createElement('option');
+    option.value = type;
+    option.textContent = labels[HARMONY_LABELS[type]];
+    harmonySelect.append(option);
+  }
 
-    wrap.append(title, row);
-    container.append(wrap);
+  harmonySelect.value = previous;
+}
+
+function renderHarmonySwatches(color: Rgb): void {
+  harmonySwatchesEl.innerHTML = '';
+  const colors = buildHarmony(state.selectedHarmony, color);
+
+  for (const harmonyColor of colors) {
+    harmonySwatchesEl.append(createSwatchButton(harmonyColor, (picked) => applyColor(picked)));
   }
 }
 
@@ -358,7 +366,7 @@ function updateAdvanced(color: Rgb): void {
   xyzValue.textContent = `${xyz.x.toFixed(2)}, ${xyz.y.toFixed(2)}, ${xyz.z.toFixed(2)}`;
   labValue.textContent = `${lab.l.toFixed(2)}, ${lab.a.toFixed(2)}, ${lab.b.toFixed(2)}`;
 
-  renderSwatchGroups(harmoniesEl, buildHarmonies(color), HARMONY_LABELS);
+  renderHarmonySwatches(color);
   renderContrast(color);
   renderSimilar(color);
 }
@@ -448,6 +456,40 @@ function applyPanelLayout(): void {
 
   panel.classList.remove('panel-fullscreen');
   positionPanelAt(state.panelAnchor.x, state.panelAnchor.y);
+}
+
+function positionPanelCentered(): void {
+  state.panelAnchor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  panel.classList.remove('hidden');
+  panel.setAttribute('aria-hidden', 'false');
+  panel.style.visibility = 'hidden';
+  panel.style.left = '0px';
+  panel.style.top = '0px';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+
+  const margin = 12;
+  const panelRect = panel.getBoundingClientRect();
+  const left = Math.max(margin, (window.innerWidth - panelRect.width) / 2);
+  const top = Math.max(margin, (window.innerHeight - panelRect.height) / 2);
+
+  panel.style.left = `${left}px`;
+  panel.style.top = `${top}px`;
+  panel.style.visibility = 'visible';
+}
+
+function showPanelCentered(): void {
+  pickHint.classList.add('hidden');
+  cursorPreview.classList.add('hidden');
+  document.body.classList.add('picked');
+  state.picked = true;
+  state.advancedOpen = false;
+  advancedSection.classList.add('hidden');
+  advancedSection.setAttribute('aria-hidden', 'true');
+  advancedToggle.setAttribute('aria-expanded', 'false');
+  panel.classList.remove('panel-fullscreen');
+  if (state.labels) advancedToggle.textContent = state.labels.advancedOptions;
+  positionPanelCentered();
 }
 
 function showPanelAt(event: MouseEvent): void {
@@ -593,6 +635,7 @@ function applyLabels(labels: ColorPickerLabels): void {
   closeBtn.title = labels.close;
   advancedToggle.textContent = labels.advancedOptions;
   harmoniesTitle.textContent = labels.harmonies;
+  populateHarmonySelect();
   variationsTitle.textContent = labels.variations;
   conversionsTitle.textContent = labels.conversions;
   contrastTitle.textContent = labels.contrast;
@@ -642,6 +685,13 @@ window.addEventListener('mouseup', () => {
 
 advancedToggle.addEventListener('click', () => toggleAdvanced());
 
+harmonySelect.addEventListener('change', () => {
+  state.selectedHarmony = harmonySelect.value as HarmonyType;
+  if (state.advancedOpen) {
+    renderHarmonySwatches(state.color);
+  }
+});
+
 bindFormatInput(hexInput, 'hex');
 bindFormatInput(rgbInput, 'rgb');
 bindFormatInput(cmykInput, 'cmyk');
@@ -660,6 +710,7 @@ window.addEventListener('keydown', (event) => {
 window.wiRecColorPicker.onStart((payload: ColorPickerPayload) => {
   state.picked = false;
   state.advancedOpen = false;
+  state.selectedHarmony = 'analogous';
   state.labels = payload.labels;
   document.body.classList.remove('picked');
   panel.classList.add('hidden');
@@ -670,9 +721,18 @@ window.wiRecColorPicker.onStart((payload: ColorPickerPayload) => {
   hintEl.textContent = '';
   applyLabels(payload.labels);
 
-  void loadFrozenFrame(payload.imageUrl, payload.width, payload.height).catch(() => {
-    console.error('[WI-Rec] failed to load color picker frame');
-  });
+  void loadFrozenFrame(payload.imageUrl, payload.width, payload.height)
+    .then(() => {
+      if (!payload.panelMode) {
+        return;
+      }
+
+      applyColor(DEFAULT_PANEL_COLOR);
+      showPanelCentered();
+    })
+    .catch(() => {
+      console.error('[WI-Rec] failed to load color picker frame');
+    });
 });
 
 window.wiRecColorPicker.signalReady();
