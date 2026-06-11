@@ -113,6 +113,9 @@ contextBridge.exposeInMainWorld('wiRecRecording', {
   cancel(): void {
     ipcRenderer.send('recording:cancel');
   },
+  switchToCapture(): void {
+    ipcRenderer.send('recording:switchToCapture');
+  },
   signalReady(): void {
     ipcRenderer.send('recording:shell-ready');
   },

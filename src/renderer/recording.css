@@ -27,3 +27,39 @@ body.recording #canvas {
   cursor: default;
   pointer-events: none;
 }
+
+body.countdown #canvas {
+  pointer-events: none;
+}
+
+.countdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.countdown-overlay.hidden {
+  display: none;
+}
+
+.countdown-value {
+  font: 700 120px/1 system-ui, -apple-system, sans-serif;
+  color: #fff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+}
+
+.snip-bar-btn.primary {
+  background: #4f6df5;
+  border-color: #4f6df5;
+  color: #fff;
+  font-weight: 600;
+}
+
+.snip-bar-btn.primary.hidden {
+  display: none;
+}

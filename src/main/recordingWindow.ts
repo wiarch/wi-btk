@@ -155,5 +155,16 @@ export async function openRecording(
       micEnabled: settings.recordMicEnabled,
       micDeviceId: settings.recordMicDeviceId,
     },
+    recordSettings: {
+      format: settings.recordFormat,
+      quality: settings.recordQuality,
+      frameRate: settings.recordFrameRate,
+    },
+    hotkeys: {
+      start: settings.hotkeys.recordStart,
+      pause: settings.hotkeys.recordPause,
+      resume: settings.hotkeys.recordResume,
+      stop: settings.hotkeys.recordStop,
+    },
   });
 }

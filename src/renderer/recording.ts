@@ -1,3 +1,5 @@
+import { eventMatchesAccelerator } from './hotkeyMatch.js';
+
 export {};
 
 type SelectionBounds = { x: number; y: number; width: number; height: number };
@@ -21,6 +23,20 @@ type RecordingLabels = {
   pause: string;
   resume: string;
   stop: string;
+  startRecord: string;
+};
+
+type RecordSettings = {
+  format: 'webm-vp9' | 'webm-vp8' | 'webm';
+  quality: 'low' | 'medium' | 'high';
+  frameRate: number;
+};
+
+type RecordingHotkeys = {
+  start: string;
+  pause: string;
+  resume: string;
+  stop: string;
 };
 
 type RecordingPayload = {
@@ -34,6 +50,8 @@ type RecordingPayload = {
     micEnabled: boolean;
     micDeviceId: string;
   };
+  recordSettings: RecordSettings;
+  hotkeys: RecordingHotkeys;
 };
 
 type WiRecRecordingApi = {
@@ -47,6 +65,7 @@ type WiRecRecordingApi = {
     micDeviceId: string;
   }): Promise<void>;
   cancel(): void;
+  switchToCapture(): void;
   signalReady(): void;
 };
 
@@ -56,8 +75,16 @@ declare global {
   }
 }
 
+const BITRATES = {
+  low: 2_500_000,
+  medium: 5_000_000,
+  high: 12_000_000,
+} as const;
+
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d');
+const countdownOverlay = document.getElementById('countdown-overlay') as HTMLDivElement;
+const countdownValue = document.getElementById('countdown-value') as HTMLSpanElement;
 const snipBar = document.getElementById('snip-bar') as HTMLDivElement;
 const regionMenuBtn = document.getElementById('region-menu-btn') as HTMLButtonElement;
 const regionMenu = document.getElementById('region-menu') as HTMLDivElement;
@@ -73,6 +100,7 @@ const micMuteInput = document.getElementById('mic-mute') as HTMLInputElement;
 const micMuteLabel = document.getElementById('mic-mute-label') as HTMLSpanElement;
 const modeScreenshot = document.getElementById('mode-screenshot') as HTMLButtonElement;
 const modeRecord = document.getElementById('mode-record') as HTMLButtonElement;
+const startRecordBtn = document.getElementById('start-record-btn') as HTMLButtonElement;
 const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
 const recordBar = document.getElementById('record-bar') as HTMLDivElement;
 const recordDot = document.getElementById('record-dot') as HTMLSpanElement;
@@ -91,7 +119,15 @@ const OVERLAY_ALPHA = 0.45;
 const state = {
   snipLabels: null as SnipLabels | null,
   labels: null as RecordingLabels | null,
-  mode: 'selecting' as 'selecting' | 'recording',
+  recordSettings: null as RecordSettings | null,
+  hotkeys: {
+    start: 'Enter',
+    pause: 'P',
+    resume: 'Shift+P',
+    stop: 'CommandOrControl+Enter',
+  } as RecordingHotkeys,
+  mode: 'selecting' as 'selecting' | 'countdown' | 'recording',
+  regionMode: 'rectangle' as 'rectangle' | 'fullscreen',
   dragging: false,
   startX: 0,
   startY: 0,
@@ -102,6 +138,9 @@ const state = {
   sourceStream: null as MediaStream | null,
   cropVideo: null as HTMLVideoElement | null,
   cropRaf: 0,
+  borderRaf: 0,
+  borderPulse: 0,
+  countdownAborted: false,
   timerStart: 0,
   timerElapsed: 0,
   timerInterval: 0 as ReturnType<typeof setInterval> | 0,
@@ -109,6 +148,14 @@ const state = {
   frame: null as ImageBitmap | null,
   openMenu: null as 'region' | 'audio' | null,
 };
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function canSwitchMode(): boolean {
+  return state.mode === 'selecting';
+}
 
 function closeMenus(): void {
   state.openMenu = null;
@@ -119,6 +166,10 @@ function closeMenus(): void {
 }
 
 function toggleMenu(menu: 'region' | 'audio'): void {
+  if (state.mode !== 'selecting') {
+    return;
+  }
+
   if (state.openMenu === menu) {
     closeMenus();
     return;
@@ -159,28 +210,121 @@ function validSelection(sel: SelectionBounds | null): sel is SelectionBounds {
   return Boolean(sel && sel.width >= 8 && sel.height >= 8);
 }
 
-function redrawFrame(): void {
+function getActiveRegion(): SelectionBounds | null {
+  if (state.regionMode === 'fullscreen') {
+    return { x: 0, y: 0, width: canvas.width, height: canvas.height };
+  }
+  return validSelection(state.selection) ? state.selection : null;
+}
+
+function canStartRecording(): boolean {
+  return state.mode === 'selecting' && getActiveRegion() !== null;
+}
+
+function updateStartButton(): void {
+  if (canStartRecording()) {
+    startRecordBtn.classList.remove('hidden');
+    return;
+  }
+  startRecordBtn.classList.add('hidden');
+}
+
+function drawSelectionBorder(sel: SelectionBounds, color: string, glow = false): void {
+  const { x, y, width, height } = sel;
+  if (glow) {
+    drawCtx.shadowColor = '#22c55e';
+    drawCtx.shadowBlur = 10 + state.borderPulse * 8;
+  }
+  drawCtx.strokeStyle = color;
+  drawCtx.lineWidth = glow ? 3 : 2;
+  drawCtx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+  drawCtx.shadowBlur = 0;
+}
+
+function redrawSelectingFrame(): void {
   if (!state.frame) {
     return;
   }
 
   drawCtx.drawImage(state.frame, 0, 0, canvas.width, canvas.height);
-  if (state.mode !== 'selecting') {
+  drawCtx.fillStyle = `rgba(0, 0, 0, ${OVERLAY_ALPHA})`;
+  drawCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const region = getActiveRegion();
+  if (!region) {
+    return;
+  }
+
+  drawCtx.drawImage(
+    state.frame,
+    region.x,
+    region.y,
+    region.width,
+    region.height,
+    region.x,
+    region.y,
+    region.width,
+    region.height,
+  );
+  drawSelectionBorder(region, '#4f6df5');
+}
+
+function redrawRecordingFrame(): void {
+  if (!state.frame) {
+    return;
+  }
+
+  drawCtx.drawImage(state.frame, 0, 0, canvas.width, canvas.height);
+  const region = getActiveRegion();
+  if (!region) {
     return;
   }
 
   drawCtx.fillStyle = `rgba(0, 0, 0, ${OVERLAY_ALPHA})`;
   drawCtx.fillRect(0, 0, canvas.width, canvas.height);
+  drawCtx.drawImage(
+    state.frame,
+    region.x,
+    region.y,
+    region.width,
+    region.height,
+    region.x,
+    region.y,
+    region.width,
+    region.height,
+  );
+  drawSelectionBorder(region, '#4ade80', true);
+}
 
-  if (!validSelection(state.selection)) {
+function redrawFrame(): void {
+  if (state.mode === 'recording') {
+    redrawRecordingFrame();
     return;
   }
+  redrawSelectingFrame();
+}
 
-  const { x, y, width, height } = state.selection;
-  drawCtx.drawImage(state.frame, x, y, width, height, x, y, width, height);
-  drawCtx.strokeStyle = '#4f6df5';
-  drawCtx.lineWidth = 2;
-  drawCtx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+function startBorderLoop(): void {
+  const tick = () => {
+    if (state.mode !== 'recording') {
+      state.borderRaf = 0;
+      return;
+    }
+    state.borderPulse = (Math.sin(Date.now() / 280) + 1) / 2;
+    redrawRecordingFrame();
+    state.borderRaf = requestAnimationFrame(tick);
+  };
+  if (state.borderRaf) {
+    cancelAnimationFrame(state.borderRaf);
+  }
+  state.borderRaf = requestAnimationFrame(tick);
+}
+
+function stopBorderLoop(): void {
+  if (state.borderRaf) {
+    cancelAnimationFrame(state.borderRaf);
+    state.borderRaf = 0;
+  }
 }
 
 async function loadFrozenFrame(imageUrl: string, width: number, height: number): Promise<void> {
@@ -227,6 +371,7 @@ function applyLabels(snipLabels: SnipLabels, labels: RecordingLabels): void {
   recordStatus.textContent = labels.recording;
   pauseBtn.textContent = labels.pause;
   stopBtn.textContent = labels.stop;
+  startRecordBtn.textContent = labels.startRecord;
 }
 
 function getPreferences() {
@@ -238,6 +383,17 @@ function getPreferences() {
 }
 
 function pickMimeType(): string {
+  const format = state.recordSettings?.format ?? 'webm-vp9';
+  const preferred = {
+    'webm-vp9': 'video/webm;codecs=vp9,opus',
+    'webm-vp8': 'video/webm;codecs=vp8,opus',
+    webm: 'video/webm',
+  }[format];
+
+  if (MediaRecorder.isTypeSupported(preferred)) {
+    return preferred;
+  }
+
   for (const type of ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']) {
     if (MediaRecorder.isTypeSupported(type)) {
       return type;
@@ -302,6 +458,7 @@ function stopTimer(): void {
 function showRecordingBar(): void {
   closeMenus();
   snipBar.classList.add('hidden');
+  startRecordBtn.classList.add('hidden');
   recordBar.classList.remove('hidden');
   recordBar.setAttribute('aria-hidden', 'false');
   document.body.classList.add('recording');
@@ -310,6 +467,7 @@ function showRecordingBar(): void {
 async function cropStreamToRegion(
   stream: MediaStream,
   region: SelectionBounds,
+  frameRate: number,
 ): Promise<MediaStream> {
   const video = document.createElement('video');
   video.srcObject = stream;
@@ -344,7 +502,7 @@ async function cropStreamToRegion(
   };
   draw();
 
-  const cropped = canvasEl.captureStream(30);
+  const cropped = canvasEl.captureStream(frameRate);
   const out = new MediaStream(cropped.getVideoTracks());
   for (const track of stream.getAudioTracks()) {
     out.addTrack(track);
@@ -353,17 +511,27 @@ async function cropStreamToRegion(
   return out;
 }
 
-async function buildRecordingStream(region: SelectionBounds | null): Promise<MediaStream> {
+async function buildRecordingStream(region: SelectionBounds): Promise<MediaStream> {
+  const settings = state.recordSettings;
+  const frameRate = settings?.frameRate ?? 30;
   const { desktopAudio, micEnabled, micDeviceId } = getPreferences();
   await window.wiRecRecording.prepareCapture({ desktopAudio });
 
   const displayStream = await navigator.mediaDevices.getDisplayMedia({
-    video: { frameRate: 30 },
+    video: { frameRate },
     audio: desktopAudio,
   });
 
   state.sourceStream = displayStream;
-  let output = region ? await cropStreamToRegion(displayStream, region) : displayStream;
+  const isFullScreen =
+    region.x === 0 &&
+    region.y === 0 &&
+    region.width === canvas.width &&
+    region.height === canvas.height;
+
+  let output = isFullScreen
+    ? displayStream
+    : await cropStreamToRegion(displayStream, region, frameRate);
 
   if (micEnabled) {
     const micStream = await navigator.mediaDevices.getUserMedia({
@@ -379,19 +547,61 @@ async function buildRecordingStream(region: SelectionBounds | null): Promise<Med
   return output;
 }
 
-async function startRecording(region: SelectionBounds | null): Promise<void> {
+async function runCountdown(): Promise<boolean> {
+  state.mode = 'countdown';
+  state.countdownAborted = false;
+  document.body.classList.add('countdown');
+  countdownOverlay.classList.remove('hidden');
+  countdownOverlay.setAttribute('aria-hidden', 'false');
+  startRecordBtn.classList.add('hidden');
+
+  for (let value = 3; value >= 1; value -= 1) {
+    if (state.countdownAborted) {
+      break;
+    }
+    countdownValue.textContent = String(value);
+    await sleep(1000);
+  }
+
+  countdownOverlay.classList.add('hidden');
+  countdownOverlay.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('countdown');
+
+  if (state.countdownAborted) {
+    state.mode = 'selecting';
+    updateStartButton();
+    return false;
+  }
+
+  return true;
+}
+
+async function startRecording(): Promise<void> {
   const labels = state.labels;
-  if (!labels) return;
+  const region = getActiveRegion();
+  if (!labels || !region || state.mode !== 'selecting') {
+    return;
+  }
 
   closeMenus();
 
   try {
+    const proceed = await runCountdown();
+    if (!proceed) {
+      return;
+    }
     const stream = await buildRecordingStream(region);
     state.recordedChunks = [];
     const mimeType = pickMimeType();
-    const recorder = mimeType
-      ? new MediaRecorder(stream, { mimeType })
-      : new MediaRecorder(stream);
+    const quality = state.recordSettings?.quality ?? 'medium';
+    const options: MediaRecorderOptions = {
+      videoBitsPerSecond: BITRATES[quality],
+    };
+    if (mimeType) {
+      options.mimeType = mimeType;
+    }
+
+    const recorder = new MediaRecorder(stream, options);
 
     recorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
@@ -408,10 +618,12 @@ async function startRecording(region: SelectionBounds | null): Promise<void> {
     state.paused = false;
     state.timerElapsed = 0;
     showRecordingBar();
+    startBorderLoop();
     recorder.start(1000);
     startTimer();
     void window.wiRecRecording.persistPreferences(getPreferences());
   } catch (error) {
+    state.mode = 'selecting';
     await stopStream();
     const message = error instanceof Error ? error.message : String(error);
     alert(message);
@@ -421,27 +633,29 @@ async function startRecording(region: SelectionBounds | null): Promise<void> {
 
 async function finalizeRecording(): Promise<void> {
   stopTimer();
+  stopBorderLoop();
   await stopStream();
 
-  const blob = new Blob(state.recordedChunks, { type: 'video/webm' });
+  const mimeType = pickMimeType() || 'video/webm';
+  const blob = new Blob(state.recordedChunks, { type: mimeType });
   state.recordedChunks = [];
   state.mediaRecorder = null;
 
   if (blob.size < 1) {
-    window.wiRecRecording.cancel();
+    resetToSelecting();
     return;
   }
 
   const buffer = await blob.arrayBuffer();
   await window.wiRecRecording.saveRecording(buffer);
+  resetToSelecting();
 }
 
 function resetToSelecting(): void {
   state.mode = 'selecting';
-  state.selection = null;
   state.dragging = false;
   state.paused = false;
-  document.body.classList.remove('recording');
+  document.body.classList.remove('recording', 'countdown');
   snipBar.classList.remove('hidden');
   recordBar.classList.add('hidden');
   recordBar.setAttribute('aria-hidden', 'true');
@@ -449,8 +663,69 @@ function resetToSelecting(): void {
   recordDot.classList.remove('paused');
   if (state.labels) {
     recordStatus.textContent = state.labels.recording;
+    pauseBtn.textContent = state.labels.pause;
   }
+  updateStartButton();
   redrawFrame();
+}
+
+function pauseRecording(): void {
+  const recorder = state.mediaRecorder;
+  const labels = state.labels;
+  if (!recorder || recorder.state !== 'recording') return;
+
+  recorder.pause();
+  state.paused = true;
+  state.timerElapsed = Date.now() - state.timerStart;
+  recordStatus.textContent = labels?.paused ?? 'Paused';
+  recordDot.classList.add('paused');
+  pauseBtn.textContent = labels?.resume ?? 'Resume';
+}
+
+function resumeRecording(): void {
+  const recorder = state.mediaRecorder;
+  const labels = state.labels;
+  if (!recorder || recorder.state !== 'paused') return;
+
+  recorder.resume();
+  state.paused = false;
+  state.timerStart = Date.now() - state.timerElapsed;
+  recordStatus.textContent = labels?.recording ?? 'Recording';
+  recordDot.classList.remove('paused');
+  pauseBtn.textContent = labels?.pause ?? 'Pause';
+}
+
+function togglePause(): void {
+  const recorder = state.mediaRecorder;
+  if (!recorder || recorder.state === 'inactive') return;
+
+  if (recorder.state === 'recording') {
+    pauseRecording();
+    return;
+  }
+
+  if (recorder.state === 'paused') {
+    resumeRecording();
+  }
+}
+
+function stopRecording(): void {
+  const recorder = state.mediaRecorder;
+  if (!recorder || recorder.state === 'inactive') return;
+  recorder.stop();
+}
+
+async function discardRecordingAndClose(): Promise<void> {
+  stopTimer();
+  stopBorderLoop();
+  state.recordedChunks = [];
+  if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
+    state.mediaRecorder.onstop = null;
+    state.mediaRecorder.stop();
+  }
+  state.mediaRecorder = null;
+  await stopStream();
+  window.wiRecRecording.cancel();
 }
 
 regionMenuBtn.addEventListener('click', (event) => {
@@ -466,26 +741,42 @@ audioMenuBtn.addEventListener('click', (event) => {
 regionMenu.querySelectorAll('[data-region]').forEach((button) => {
   button.addEventListener('click', (event) => {
     event.stopPropagation();
-    const region = (button as HTMLButtonElement).dataset.region;
+    const region = (button as HTMLButtonElement).dataset.region as 'rectangle' | 'fullscreen';
     regionMenu.querySelectorAll('.snip-menu-item').forEach((item) => {
       item.classList.toggle('active', item === button);
     });
     closeMenus();
+    state.regionMode = region;
 
     if (region === 'fullscreen') {
-      void startRecording(null);
-      return;
+      state.selection = { x: 0, y: 0, width: canvas.width, height: canvas.height };
+    } else {
+      state.selection = null;
     }
 
-    state.mode = 'selecting';
-    state.selection = null;
+    updateStartButton();
     redrawFrame();
   });
 });
 
+modeScreenshot.addEventListener('click', () => {
+  if (!canSwitchMode()) {
+    return;
+  }
+  window.wiRecRecording.switchToCapture();
+});
+
+startRecordBtn.addEventListener('click', () => {
+  void startRecording();
+});
+
 cancelBtn.addEventListener('click', () => {
+  if (state.mode === 'countdown') {
+    state.countdownAborted = true;
+    return;
+  }
   if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
-    state.mediaRecorder.stop();
+    void discardRecordingAndClose();
     return;
   }
   void stopStream();
@@ -493,60 +784,37 @@ cancelBtn.addEventListener('click', () => {
 });
 
 pauseBtn.addEventListener('click', () => {
-  const recorder = state.mediaRecorder;
-  const labels = state.labels;
-  if (!recorder || recorder.state === 'inactive') return;
-
-  if (recorder.state === 'recording') {
-    recorder.pause();
-    state.paused = true;
-    state.timerElapsed = Date.now() - state.timerStart;
-    recordStatus.textContent = labels?.paused ?? 'Paused';
-    recordDot.classList.add('paused');
-    pauseBtn.textContent = labels?.resume ?? 'Resume';
-    return;
-  }
-
-  if (recorder.state === 'paused') {
-    recorder.resume();
-    state.paused = false;
-    state.timerStart = Date.now() - state.timerElapsed;
-    recordStatus.textContent = labels?.recording ?? 'Recording';
-    recordDot.classList.remove('paused');
-    pauseBtn.textContent = labels?.pause ?? 'Pause';
-  }
+  togglePause();
 });
 
 stopBtn.addEventListener('click', () => {
-  const recorder = state.mediaRecorder;
-  if (!recorder || recorder.state === 'inactive') return;
-  recorder.stop();
+  stopRecording();
 });
 
 canvas.addEventListener('mousedown', (event) => {
-  if (state.mode !== 'selecting') return;
+  if (state.mode !== 'selecting' || state.regionMode === 'fullscreen') return;
   closeMenus();
   const point = toImageCoords(event);
   state.dragging = true;
   state.startX = point.x;
   state.startY = point.y;
   state.selection = { x: point.x, y: point.y, width: 0, height: 0 };
+  updateStartButton();
 });
 
 canvas.addEventListener('mousemove', (event) => {
-  if (!state.dragging || state.mode !== 'selecting') return;
+  if (!state.dragging || state.mode !== 'selecting' || state.regionMode === 'fullscreen') return;
   const point = toImageCoords(event);
   state.selection = normalizeSelection(state.startX, state.startY, point.x, point.y);
+  updateStartButton();
   redrawFrame();
 });
 
 canvas.addEventListener('mouseup', () => {
   if (!state.dragging || state.mode !== 'selecting') return;
   state.dragging = false;
-
-  if (validSelection(state.selection)) {
-    void startRecording(state.selection);
-  }
+  updateStartButton();
+  redrawFrame();
 });
 
 window.addEventListener('mousedown', (event) => {
@@ -557,18 +825,53 @@ window.addEventListener('mousedown', (event) => {
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
+    if (state.mode === 'countdown') {
+      state.countdownAborted = true;
+      return;
+    }
     if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
-      state.mediaRecorder.stop();
+      void discardRecordingAndClose();
       return;
     }
     void stopStream();
     window.wiRecRecording.cancel();
+    return;
+  }
+
+  if (state.mode === 'selecting' && eventMatchesAccelerator(event, state.hotkeys.start)) {
+    if (canStartRecording()) {
+      event.preventDefault();
+      void startRecording();
+    }
+    return;
+  }
+
+  if (state.mode === 'recording') {
+    if (eventMatchesAccelerator(event, state.hotkeys.pause)) {
+      event.preventDefault();
+      pauseRecording();
+      return;
+    }
+
+    if (eventMatchesAccelerator(event, state.hotkeys.resume)) {
+      event.preventDefault();
+      resumeRecording();
+      return;
+    }
+
+    if (eventMatchesAccelerator(event, state.hotkeys.stop)) {
+      event.preventDefault();
+      stopRecording();
+    }
   }
 });
 
 window.wiRecRecording.onStart((payload: RecordingPayload) => {
   state.snipLabels = payload.snipLabels;
   state.labels = payload.labels;
+  state.recordSettings = payload.recordSettings;
+  state.hotkeys = { ...payload.hotkeys };
+  state.regionMode = 'rectangle';
   state.selection = null;
   closeMenus();
   resetToSelecting();

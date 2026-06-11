@@ -7,7 +7,7 @@ import {
 } from '../shared/captureCategory';
 import { buildCaptureBasename } from '../shared/filenameFormat';
 import { getCaptureFileExtension } from './imageEncode';
-import type { AppSettings } from '../shared/settings';
+import { getRecordingFileExtension, type AppSettings } from '../shared/settings';
 
 export function getBaseSaveDirectory(settings: AppSettings): string {
   const custom = settings.saveDirectory.trim();
@@ -62,5 +62,6 @@ export async function buildRecordingSavePath(settings: AppSettings): Promise<str
     settings.filenameMode === 'sequential' ? await nextSequentialIndex(targetDir) : 1;
   const basename = buildCaptureBasename(settings, sequentialIndex);
 
-  return join(targetDir, `${basename}.webm`);
+  const ext = getRecordingFileExtension(settings.recordFormat);
+  return join(targetDir, `${basename}.${ext}`);
 }

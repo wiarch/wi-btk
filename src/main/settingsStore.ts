@@ -6,6 +6,9 @@ import {
   CAPTURE_SOUND_PRESETS,
   DEFAULT_SETTINGS,
   GLOBAL_HOTKEY_ACTIONS,
+  RECORD_FORMATS,
+  RECORD_FRAME_RATES,
+  RECORD_QUALITIES,
 } from '../shared/settings';
 import { isSafeGlobalAccelerator } from './hotkeys';
 
@@ -56,6 +59,15 @@ function mergeSettings(partial: Partial<AppSettings> & { captureFullScreen?: boo
     recordDesktopAudio: partial.recordDesktopAudio ?? DEFAULT_SETTINGS.recordDesktopAudio,
     recordMicEnabled: partial.recordMicEnabled ?? DEFAULT_SETTINGS.recordMicEnabled,
     recordMicDeviceId: partial.recordMicDeviceId ?? DEFAULT_SETTINGS.recordMicDeviceId,
+    recordFormat: RECORD_FORMATS.includes(partial.recordFormat as never)
+      ? (partial.recordFormat as AppSettings['recordFormat'])
+      : DEFAULT_SETTINGS.recordFormat,
+    recordQuality: RECORD_QUALITIES.includes(partial.recordQuality as never)
+      ? (partial.recordQuality as AppSettings['recordQuality'])
+      : DEFAULT_SETTINGS.recordQuality,
+    recordFrameRate: RECORD_FRAME_RATES.includes(partial.recordFrameRate as never)
+      ? (partial.recordFrameRate as AppSettings['recordFrameRate'])
+      : DEFAULT_SETTINGS.recordFrameRate,
     hotkeys,
   };
 }

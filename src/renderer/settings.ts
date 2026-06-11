@@ -18,7 +18,15 @@ type HotkeyAction =
   | 'rect'
   | 'save'
   | 'copy'
-  | 'cancel';
+  | 'cancel'
+  | 'recordStart'
+  | 'recordPause'
+  | 'recordResume'
+  | 'recordStop';
+
+type RecordFormat = 'webm-vp9' | 'webm-vp8' | 'webm';
+type RecordQuality = 'low' | 'medium' | 'high';
+type RecordFrameRate = 15 | 30 | 60;
 
 type FilenameMode = 'datetime' | 'sequential';
 type FilenameDateStyle = 'iso' | 'latin';
@@ -38,6 +46,9 @@ type AppSettings = {
   filenameTimeStyle: FilenameTimeStyle;
   captureSoundEnabled: boolean;
   captureSoundPreset: CaptureSoundPreset;
+  recordFormat: RecordFormat;
+  recordQuality: RecordQuality;
+  recordFrameRate: RecordFrameRate;
   hotkeys: Record<HotkeyAction, string>;
 };
 
@@ -81,6 +92,21 @@ type SettingsUi = {
   hotkeySave: string;
   hotkeyCopy: string;
   hotkeyCancel: string;
+  hotkeyRecordStart: string;
+  hotkeyRecordPause: string;
+  hotkeyRecordResume: string;
+  hotkeyRecordStop: string;
+  recordingSection: string;
+  recordFormat: string;
+  recordFormatVp9: string;
+  recordFormatVp8: string;
+  recordFormatWebm: string;
+  recordQuality: string;
+  recordQualityLow: string;
+  recordQualityMedium: string;
+  recordQualityHigh: string;
+  recordFrameRate: string;
+  recordingHotkeys: string;
   pressKeys: string;
   notAssigned: string;
   save: string;
@@ -131,6 +157,7 @@ const GLOBAL_ACTIONS: HotkeyAction[] = [
   'screenRecord',
 ];
 const OVERLAY_ACTIONS: HotkeyAction[] = ['arrow', 'rect', 'save', 'copy', 'cancel'];
+const RECORDING_ACTIONS: HotkeyAction[] = ['recordStart', 'recordPause', 'recordResume', 'recordStop'];
 
 const HOTKEY_LABEL_KEYS: Record<HotkeyAction, keyof SettingsUi> = {
   capture: 'hotkeyCapture',
@@ -143,6 +170,10 @@ const HOTKEY_LABEL_KEYS: Record<HotkeyAction, keyof SettingsUi> = {
   save: 'hotkeySave',
   copy: 'hotkeyCopy',
   cancel: 'hotkeyCancel',
+  recordStart: 'hotkeyRecordStart',
+  recordPause: 'hotkeyRecordPause',
+  recordResume: 'hotkeyRecordResume',
+  recordStop: 'hotkeyRecordStop',
 };
 
 const titleEl = document.getElementById('title') as HTMLHeadingElement;
@@ -182,6 +213,15 @@ const globalHotkeysTitleEl = document.getElementById('global-hotkeys-title') as 
 const captureHotkeysTitleEl = document.getElementById('capture-hotkeys-title') as HTMLHeadingElement;
 const globalHotkeyGrid = document.getElementById('global-hotkey-grid') as HTMLDivElement;
 const overlayHotkeyGrid = document.getElementById('overlay-hotkey-grid') as HTMLDivElement;
+const recordingHotkeyGrid = document.getElementById('recording-hotkey-grid') as HTMLDivElement;
+const recordingSectionTitleEl = document.getElementById('recording-section-title') as HTMLHeadingElement;
+const recordFormatLabelEl = document.getElementById('record-format-label') as HTMLLabelElement;
+const recordFormatSelect = document.getElementById('record-format') as HTMLSelectElement;
+const recordQualityLabelEl = document.getElementById('record-quality-label') as HTMLLabelElement;
+const recordQualitySelect = document.getElementById('record-quality') as HTMLSelectElement;
+const recordFrameRateLabelEl = document.getElementById('record-frame-rate-label') as HTMLLabelElement;
+const recordFrameRateSelect = document.getElementById('record-frame-rate') as HTMLSelectElement;
+const recordingHotkeysTitleEl = document.getElementById('recording-hotkeys-title') as HTMLHeadingElement;
 const captureSoundTitleEl = document.getElementById('capture-sound-title') as HTMLHeadingElement;
 const captureSoundEnabledCheckbox = document.getElementById('capture-sound-enabled') as HTMLInputElement;
 const captureSoundEnabledLabelEl = document.getElementById('capture-sound-enabled-label') as HTMLSpanElement;
@@ -266,6 +306,17 @@ function applyLanguage(): void {
   hotkeysHintEl.textContent = ui.hotkeysHint;
   globalHotkeysTitleEl.textContent = ui.globalHotkeys;
   captureHotkeysTitleEl.textContent = ui.captureHotkeys;
+  recordingHotkeysTitleEl.textContent = ui.recordingHotkeys;
+  recordingSectionTitleEl.textContent = ui.recordingSection;
+  recordFormatLabelEl.textContent = ui.recordFormat;
+  recordQualityLabelEl.textContent = ui.recordQuality;
+  recordFrameRateLabelEl.textContent = ui.recordFrameRate;
+  recordFormatSelect.options[0].textContent = ui.recordFormatVp9;
+  recordFormatSelect.options[1].textContent = ui.recordFormatVp8;
+  recordFormatSelect.options[2].textContent = ui.recordFormatWebm;
+  recordQualitySelect.options[0].textContent = ui.recordQualityLow;
+  recordQualitySelect.options[1].textContent = ui.recordQualityMedium;
+  recordQualitySelect.options[2].textContent = ui.recordQualityHigh;
   closeBtn.textContent = ui.close;
   captureSoundTitleEl.textContent = ui.captureSound;
   captureSoundEnabledLabelEl.textContent = ui.captureSoundEnabled;
@@ -279,8 +330,12 @@ function applyLanguage(): void {
   langOptions[0].textContent = ui.languageEn;
   langOptions[1].textContent = ui.languageEs;
 
-  for (const action of [...GLOBAL_ACTIONS, ...OVERLAY_ACTIONS]) {
-    const container = GLOBAL_ACTIONS.includes(action) ? globalHotkeyGrid : overlayHotkeyGrid;
+  for (const action of [...GLOBAL_ACTIONS, ...OVERLAY_ACTIONS, ...RECORDING_ACTIONS]) {
+    const container = GLOBAL_ACTIONS.includes(action)
+      ? globalHotkeyGrid
+      : OVERLAY_ACTIONS.includes(action)
+        ? overlayHotkeyGrid
+        : recordingHotkeyGrid;
     const rowLabel = container.querySelector(`[data-label="${action}"]`) as HTMLLabelElement | null;
     if (rowLabel) {
       rowLabel.textContent = ui[HOTKEY_LABEL_KEYS[action]];
@@ -308,6 +363,9 @@ function syncDraftFromControls(): void {
   draft.useCaptureSubfolders = useSubfoldersCheckbox.checked;
   draft.captureSoundEnabled = captureSoundEnabledCheckbox.checked;
   draft.captureSoundPreset = captureSoundPresetSelect.value as CaptureSoundPreset;
+  draft.recordFormat = recordFormatSelect.value as RecordFormat;
+  draft.recordQuality = recordQualitySelect.value as RecordQuality;
+  draft.recordFrameRate = Number.parseInt(recordFrameRateSelect.value, 10) as RecordFrameRate;
   syncDraftFromFilenameControls();
 }
 
@@ -379,6 +437,10 @@ function buildHotkeyRows(settings: AppSettings): void {
 
   for (const action of OVERLAY_ACTIONS) {
     buildHotkeyRow(action, settings, overlayHotkeyGrid);
+  }
+
+  for (const action of RECORDING_ACTIONS) {
+    buildHotkeyRow(action, settings, recordingHotkeyGrid);
   }
 }
 
@@ -523,6 +585,9 @@ async function init(): Promise<void> {
     jpegQualityValueEl.textContent = String(draft.jpegQuality);
     captureSoundEnabledCheckbox.checked = draft.captureSoundEnabled;
     captureSoundPresetSelect.value = draft.captureSoundPreset;
+    recordFormatSelect.value = draft.recordFormat;
+    recordQualitySelect.value = draft.recordQuality;
+    recordFrameRateSelect.value = String(draft.recordFrameRate);
     saveDirectoryInput.placeholder = await window.wiRecSettings.getResolvedSaveDirectory();
     await refreshUi(draft.language);
     buildHotkeyRows(draft);
@@ -568,6 +633,18 @@ async function init(): Promise<void> {
 
   captureSoundEnabledCheckbox.addEventListener('change', () => {
     syncCaptureSoundPresetVisibility();
+    schedulePersist();
+  });
+
+  recordFormatSelect.addEventListener('change', () => {
+    schedulePersist();
+  });
+
+  recordQualitySelect.addEventListener('change', () => {
+    schedulePersist();
+  });
+
+  recordFrameRateSelect.addEventListener('change', () => {
     schedulePersist();
   });
 

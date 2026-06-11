@@ -57,7 +57,12 @@ import { loadTrayIcon } from './trayIcon';
 import { previewCaptureFilename } from '../shared/filenameFormat';
 import { getDictionary, hotkeyLabel, t } from '../shared/i18n';
 import type { AppSettings, HotkeyAction, Language } from '../shared/settings';
-import { DEFAULT_SETTINGS, GLOBAL_HOTKEY_ACTIONS, OVERLAY_HOTKEY_ACTIONS } from '../shared/settings';
+import {
+  DEFAULT_SETTINGS,
+  GLOBAL_HOTKEY_ACTIONS,
+  OVERLAY_HOTKEY_ACTIONS,
+  RECORDING_HOTKEY_ACTIONS,
+} from '../shared/settings';
 
 let overlayWindow: BrowserWindow | null = null;
 let overlayReady = false;
@@ -776,13 +781,26 @@ function setupIpc(): void {
     clearRecordingMediaHandler();
   });
 
+  ipcMain.on('recording:switchToCapture', async () => {
+    clearRecordingMediaHandler();
+    closeRecording();
+    captureInProgress = true;
+    try {
+      const imageBuffer = await captureImage();
+      await openOverlay(imageBuffer, false);
+    } catch (error) {
+      captureInProgress = false;
+      const settings = getSettings();
+      const message = error instanceof Error ? error.message : String(error);
+      showError(t(settings.language, 'errors.captureFailed', { message }));
+    }
+  });
+
   ipcMain.handle('recording:save', async (_event, buffer: ArrayBuffer) => {
     clearRecordingMediaHandler();
     const settings = getSettings();
     const filePath = await buildRecordingSavePath(settings);
     await writeFile(filePath, Buffer.from(buffer));
-    closeRecording();
-    captureInProgress = false;
     notifyCaptureSaved(
       settings.language,
       'notifications.recordingSaved',
@@ -866,7 +884,7 @@ function setupIpc(): void {
       ]),
     ) as AppSettings['hotkeys'];
 
-    for (const action of OVERLAY_HOTKEY_ACTIONS) {
+    for (const action of [...OVERLAY_HOTKEY_ACTIONS, ...RECORDING_HOTKEY_ACTIONS]) {
       if (!normalizedHotkeys[action]) {
         normalizedHotkeys[action] = DEFAULT_SETTINGS.hotkeys[action];
       }
@@ -888,6 +906,9 @@ function setupIpc(): void {
       recordDesktopAudio: settings.recordDesktopAudio,
       recordMicEnabled: settings.recordMicEnabled,
       recordMicDeviceId: settings.recordMicDeviceId,
+      recordFormat: settings.recordFormat,
+      recordQuality: settings.recordQuality,
+      recordFrameRate: settings.recordFrameRate,
       hotkeys: normalizedHotkeys,
     };
 

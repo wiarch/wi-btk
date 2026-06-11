@@ -94,12 +94,42 @@
       </section>
 
       <section class="card">
+        <h2 id="recording-section-title">Screen recording</h2>
+        <div class="field">
+          <label id="record-format-label" for="record-format">File format</label>
+          <select id="record-format">
+            <option value="webm-vp9">WebM (VP9 + Opus)</option>
+            <option value="webm-vp8">WebM (VP8 + Opus)</option>
+            <option value="webm">WebM (default codecs)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="record-quality-label" for="record-quality">Video quality</label>
+          <select id="record-quality">
+            <option value="low">Low (smaller file)</option>
+            <option value="medium">Medium (balanced)</option>
+            <option value="high">High (best quality)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="record-frame-rate-label" for="record-frame-rate">Frame rate</label>
+          <select id="record-frame-rate">
+            <option value="15">15 fps</option>
+            <option value="30">30 fps</option>
+            <option value="60">60 fps</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="card">
         <h2 id="hotkeys-title">Hotkeys</h2>
         <p id="hotkeys-hint" class="hint">Click a field and press the desired key combination.</p>
         <h3 id="global-hotkeys-title" class="section-label">Global</h3>
         <div class="hotkey-grid" id="global-hotkey-grid"></div>
         <h3 id="capture-hotkeys-title" class="section-label">In capture overlay</h3>
         <div class="hotkey-grid" id="overlay-hotkey-grid"></div>
+        <h3 id="recording-hotkeys-title" class="section-label">In recording overlay</h3>
+        <div class="hotkey-grid" id="recording-hotkey-grid"></div>
       </section>
 
       <footer class="footer">

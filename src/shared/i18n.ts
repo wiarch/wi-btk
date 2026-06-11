@@ -92,6 +92,7 @@ type RecordingStrings = {
   fullScreen: string;
   selectRegion: string;
   startRecord: string;
+  countdown: string;
   cancel: string;
   recording: string;
   paused: string;
@@ -157,8 +158,23 @@ type SettingsStrings = {
   hotkeySave: string;
   hotkeyCopy: string;
   hotkeyCancel: string;
+  hotkeyRecordStart: string;
+  hotkeyRecordPause: string;
+  hotkeyRecordResume: string;
+  hotkeyRecordStop: string;
+  recordingSection: string;
+  recordFormat: string;
+  recordFormatVp9: string;
+  recordFormatVp8: string;
+  recordFormatWebm: string;
+  recordQuality: string;
+  recordQualityLow: string;
+  recordQualityMedium: string;
+  recordQualityHigh: string;
+  recordFrameRate: string;
   globalHotkeys: string;
   captureHotkeys: string;
+  recordingHotkeys: string;
   pressKeys: string;
   notAssigned: string;
   save: string;
@@ -303,6 +319,7 @@ const en: Dictionary = {
     fullScreen: 'Full screen',
     selectRegion: 'Select region',
     startRecord: 'Start recording',
+    countdown: 'Starting in…',
     cancel: 'Cancel',
     recording: 'Recording',
     paused: 'Paused',
@@ -350,8 +367,23 @@ const en: Dictionary = {
     hotkeySave: 'Save screenshot',
     hotkeyCopy: 'Copy to clipboard',
     hotkeyCancel: 'Cancel / close overlay',
+    hotkeyRecordStart: 'Start recording',
+    hotkeyRecordPause: 'Pause recording',
+    hotkeyRecordResume: 'Resume recording',
+    hotkeyRecordStop: 'Stop and save recording',
+    recordingSection: 'Screen recording',
+    recordFormat: 'File format',
+    recordFormatVp9: 'WebM (VP9 + Opus)',
+    recordFormatVp8: 'WebM (VP8 + Opus)',
+    recordFormatWebm: 'WebM (default codecs)',
+    recordQuality: 'Video quality',
+    recordQualityLow: 'Low (smaller file)',
+    recordQualityMedium: 'Medium (balanced)',
+    recordQualityHigh: 'High (best quality)',
+    recordFrameRate: 'Frame rate',
     globalHotkeys: 'Global',
     captureHotkeys: 'In capture overlay',
+    recordingHotkeys: 'In recording overlay',
     pressKeys: 'Press keys…',
     notAssigned: 'Not assigned',
     save: 'Save',
@@ -489,6 +521,7 @@ const es: Dictionary = {
     fullScreen: 'Pantalla completa',
     selectRegion: 'Seleccionar región',
     startRecord: 'Iniciar grabación',
+    countdown: 'Comienza en…',
     cancel: 'Cancelar',
     recording: 'Grabando',
     paused: 'En pausa',
@@ -536,8 +569,23 @@ const es: Dictionary = {
     hotkeySave: 'Guardar captura',
     hotkeyCopy: 'Copiar al portapapeles',
     hotkeyCancel: 'Cancelar / cerrar overlay',
+    hotkeyRecordStart: 'Iniciar grabación',
+    hotkeyRecordPause: 'Pausar grabación',
+    hotkeyRecordResume: 'Reanudar grabación',
+    hotkeyRecordStop: 'Detener y guardar grabación',
+    recordingSection: 'Grabación de pantalla',
+    recordFormat: 'Formato de archivo',
+    recordFormatVp9: 'WebM (VP9 + Opus)',
+    recordFormatVp8: 'WebM (VP8 + Opus)',
+    recordFormatWebm: 'WebM (códecs predeterminados)',
+    recordQuality: 'Calidad de video',
+    recordQualityLow: 'Baja (archivo pequeño)',
+    recordQualityMedium: 'Media (equilibrada)',
+    recordQualityHigh: 'Alta (mejor calidad)',
+    recordFrameRate: 'Cuadros por segundo',
     globalHotkeys: 'Global',
     captureHotkeys: 'Dentro del overlay de captura',
+    recordingHotkeys: 'Dentro del overlay de grabación',
     pressKeys: 'Pulsa teclas…',
     notAssigned: 'Sin asignar',
     save: 'Guardar',
@@ -606,6 +654,10 @@ export function hotkeyLabel(language: Language, action: HotkeyAction): string {
     save: 'settings.hotkeySave',
     copy: 'settings.hotkeyCopy',
     cancel: 'settings.hotkeyCancel',
+    recordStart: 'settings.hotkeyRecordStart',
+    recordPause: 'settings.hotkeyRecordPause',
+    recordResume: 'settings.hotkeyRecordResume',
+    recordStop: 'settings.hotkeyRecordStop',
   };
   return t(language, map[action]);
 }

@@ -10,9 +10,13 @@
   <body>
     <canvas id="canvas"></canvas>
 
+    <div id="countdown-overlay" class="countdown-overlay hidden" aria-hidden="true">
+      <span id="countdown-value" class="countdown-value">3</span>
+    </div>
+
     <div id="snip-bar" class="snip-bar">
       <div class="snip-modes">
-        <button type="button" id="mode-screenshot" class="snip-mode" disabled title="Captura">📷</button>
+        <button type="button" id="mode-screenshot" class="snip-mode" title="Captura">📷</button>
         <button type="button" id="mode-record" class="snip-mode active" title="Grabar">🎥</button>
       </div>
       <div class="snip-divider"></div>
@@ -47,6 +51,7 @@
           <select id="mic-select" class="snip-select"></select>
         </div>
       </div>
+      <button type="button" id="start-record-btn" class="snip-bar-btn primary hidden">Start</button>
       <span class="snip-spacer"></span>
       <button type="button" id="cancel-btn" class="snip-close" title="Close">✕</button>
     </div>
