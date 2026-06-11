@@ -53,6 +53,9 @@ function mergeSettings(partial: Partial<AppSettings> & { captureFullScreen?: boo
     captureSoundPreset: CAPTURE_SOUND_PRESETS.includes(partial.captureSoundPreset as never)
       ? (partial.captureSoundPreset as AppSettings['captureSoundPreset'])
       : DEFAULT_SETTINGS.captureSoundPreset,
+    recordDesktopAudio: partial.recordDesktopAudio ?? DEFAULT_SETTINGS.recordDesktopAudio,
+    recordMicEnabled: partial.recordMicEnabled ?? DEFAULT_SETTINGS.recordMicEnabled,
+    recordMicDeviceId: partial.recordMicDeviceId ?? DEFAULT_SETTINGS.recordMicDeviceId,
     hotkeys,
   };
 }

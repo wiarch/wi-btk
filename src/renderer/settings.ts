@@ -13,6 +13,7 @@ type HotkeyAction =
   | 'captureFullScreen'
   | 'colorPicker'
   | 'colorPickerPanel'
+  | 'screenRecord'
   | 'arrow'
   | 'rect'
   | 'save'
@@ -74,6 +75,7 @@ type SettingsUi = {
   hotkeyCaptureFullScreen: string;
   hotkeyColorPicker: string;
   hotkeyColorPickerPanel: string;
+  hotkeyScreenRecord: string;
   hotkeyArrow: string;
   hotkeyRect: string;
   hotkeySave: string;
@@ -126,6 +128,7 @@ const GLOBAL_ACTIONS: HotkeyAction[] = [
   'captureFullScreen',
   'colorPicker',
   'colorPickerPanel',
+  'screenRecord',
 ];
 const OVERLAY_ACTIONS: HotkeyAction[] = ['arrow', 'rect', 'save', 'copy', 'cancel'];
 
@@ -134,6 +137,7 @@ const HOTKEY_LABEL_KEYS: Record<HotkeyAction, keyof SettingsUi> = {
   captureFullScreen: 'hotkeyCaptureFullScreen',
   colorPicker: 'hotkeyColorPicker',
   colorPickerPanel: 'hotkeyColorPickerPanel',
+  screenRecord: 'hotkeyScreenRecord',
   arrow: 'hotkeyArrow',
   rect: 'hotkeyRect',
   save: 'hotkeySave',

@@ -94,6 +94,8 @@ body.picked #canvas {
   z-index: 30;
   display: flex;
   flex-direction: column;
+  transition: none;
+  animation: none;
   width: min(420px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
   overflow: hidden;

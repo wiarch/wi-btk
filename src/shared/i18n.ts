@@ -5,6 +5,7 @@ type TrayStrings = {
   captureFullScreen: string;
   colorPicker: string;
   colorPickerPanel: string;
+  screenRecord: string;
   settings: string;
   quit: string;
   tooltip: string;
@@ -22,6 +23,8 @@ type NotificationStrings = {
   fullScreenCaptured: string;
   fullScreenCapturedHint: string;
   colorCopied: string;
+  recordingSaved: string;
+  recordingSavedHint: string;
   trayHintTitle: string;
   trayHintBody: string;
   alreadyRunningTitle: string;
@@ -80,6 +83,25 @@ type ErrorStrings = {
   startupFailed: string;
 };
 
+type RecordingStrings = {
+  title: string;
+  desktopAudio: string;
+  microphone: string;
+  micMute: string;
+  micDefault: string;
+  fullScreen: string;
+  selectRegion: string;
+  startRecord: string;
+  cancel: string;
+  recording: string;
+  paused: string;
+  pause: string;
+  resume: string;
+  stop: string;
+  regionHint: string;
+  selectRegionFirst: string;
+};
+
 type OverlayStrings = {
   arrow: string;
   rect: string;
@@ -120,6 +142,7 @@ type SettingsStrings = {
   hotkeyCaptureFullScreen: string;
   hotkeyColorPicker: string;
   hotkeyColorPickerPanel: string;
+  hotkeyScreenRecord: string;
   hotkeyArrow: string;
   hotkeyRect: string;
   hotkeySave: string;
@@ -160,6 +183,7 @@ type Dictionary = {
   errors: ErrorStrings;
   overlay: OverlayStrings;
   colorPicker: ColorPickerStrings;
+  recording: RecordingStrings;
   settings: SettingsStrings;
 };
 
@@ -169,6 +193,7 @@ const en: Dictionary = {
     captureFullScreen: 'Capture full screen',
     colorPicker: 'Color picker',
     colorPickerPanel: 'Color picker panel',
+    screenRecord: 'Record screen',
     settings: 'Settings',
     quit: 'Quit',
     tooltip: 'WI-Rec — {hotkey}',
@@ -185,6 +210,8 @@ const en: Dictionary = {
     fullScreenCaptured: '{filename}',
     fullScreenCapturedHint: 'Full screen saved and copied — click to open folder',
     colorCopied: 'Color copied: {hex}',
+    recordingSaved: '{filename}',
+    recordingSavedHint: 'Recording saved — click to open folder',
     trayHintTitle: 'WI-Rec is running',
     trayHintBody:
       'Look for the WI-Rec icon in the system tray (next to the clock). If you do not see it, open the "^" hidden icons menu.\n\nRight-click the icon for Settings and Quit. Left-click to capture.',
@@ -249,6 +276,24 @@ const en: Dictionary = {
     variationTints: 'Tints',
     variationShades: 'Shades',
   },
+  recording: {
+    title: 'Screen recording',
+    desktopAudio: 'Desktop audio',
+    microphone: 'Microphone',
+    micMute: 'Mute microphone',
+    micDefault: 'Default microphone',
+    fullScreen: 'Full screen',
+    selectRegion: 'Select region',
+    startRecord: 'Start recording',
+    cancel: 'Cancel',
+    recording: 'Recording',
+    paused: 'Paused',
+    pause: 'Pause',
+    resume: 'Resume',
+    stop: 'Stop',
+    regionHint: 'Drag to select an area, then start recording',
+    selectRegionFirst: 'Select a region first',
+  },
   settings: {
     title: 'Settings',
     subtitle: 'Hotkeys, startup and language',
@@ -281,6 +326,7 @@ const en: Dictionary = {
     hotkeyCaptureFullScreen: 'Capture full screen (save + clipboard)',
     hotkeyColorPicker: 'Color picker (eyedropper)',
     hotkeyColorPickerPanel: 'Color picker panel (direct)',
+    hotkeyScreenRecord: 'Record screen',
     hotkeyArrow: 'Arrow tool',
     hotkeyRect: 'Rectangle tool',
     hotkeySave: 'Save screenshot',
@@ -325,6 +371,7 @@ const es: Dictionary = {
     captureFullScreen: 'Capturar pantalla completa',
     colorPicker: 'Cuentagotas de color',
     colorPickerPanel: 'Panel de color',
+    screenRecord: 'Grabar pantalla',
     settings: 'Configuración',
     quit: 'Salir',
     tooltip: 'WI-Rec — {hotkey}',
@@ -341,6 +388,8 @@ const es: Dictionary = {
     fullScreenCaptured: '{filename}',
     fullScreenCapturedHint: 'Pantalla completa guardada y copiada — clic para abrir carpeta',
     colorCopied: 'Color copiado: {hex}',
+    recordingSaved: '{filename}',
+    recordingSavedHint: 'Grabación guardada — clic para abrir carpeta',
     trayHintTitle: 'WI-Rec está activo',
     trayHintBody:
       'Busca el icono de WI-Rec en la bandeja del sistema (junto al reloj). Si no lo ves, abre el menú "^" de iconos ocultos.\n\nClic derecho: Configuración y Salir. Clic izquierdo: capturar.',
@@ -405,6 +454,24 @@ const es: Dictionary = {
     variationTints: 'Tintes',
     variationShades: 'Sombras',
   },
+  recording: {
+    title: 'Grabación de pantalla',
+    desktopAudio: 'Audio del escritorio',
+    microphone: 'Micrófono',
+    micMute: 'Silenciar micrófono',
+    micDefault: 'Micrófono predeterminado',
+    fullScreen: 'Pantalla completa',
+    selectRegion: 'Seleccionar región',
+    startRecord: 'Iniciar grabación',
+    cancel: 'Cancelar',
+    recording: 'Grabando',
+    paused: 'En pausa',
+    pause: 'Pausar',
+    resume: 'Reanudar',
+    stop: 'Detener',
+    regionHint: 'Arrastra para elegir un área y luego inicia la grabación',
+    selectRegionFirst: 'Selecciona una región primero',
+  },
   settings: {
     title: 'Configuración',
     subtitle: 'Atajos, inicio con el sistema e idioma',
@@ -437,6 +504,7 @@ const es: Dictionary = {
     hotkeyCaptureFullScreen: 'Capturar pantalla completa (guardar + portapapeles)',
     hotkeyColorPicker: 'Cuentagotas de color',
     hotkeyColorPickerPanel: 'Panel de color (directo)',
+    hotkeyScreenRecord: 'Grabar pantalla',
     hotkeyArrow: 'Herramienta flecha',
     hotkeyRect: 'Herramienta rectángulo',
     hotkeySave: 'Guardar captura',
@@ -506,6 +574,7 @@ export function hotkeyLabel(language: Language, action: HotkeyAction): string {
     captureFullScreen: 'settings.hotkeyCaptureFullScreen',
     colorPicker: 'settings.hotkeyColorPicker',
     colorPickerPanel: 'settings.hotkeyColorPickerPanel',
+    screenRecord: 'settings.hotkeyScreenRecord',
     arrow: 'settings.hotkeyArrow',
     rect: 'settings.hotkeyRect',
     save: 'settings.hotkeySave',

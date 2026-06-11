@@ -15,5 +15,7 @@ cpSync(join(root, 'src', 'renderer', 'settings.html'), join(out, 'settings.html'
 cpSync(join(root, 'src', 'renderer', 'settings.css'), join(out, 'settings.css'));
 cpSync(join(root, 'src', 'renderer', 'colorPicker.html'), join(out, 'colorPicker.html'));
 cpSync(join(root, 'src', 'renderer', 'colorPicker.css'), join(out, 'colorPicker.css'));
+cpSync(join(root, 'src', 'renderer', 'recording.html'), join(out, 'recording.html'));
+cpSync(join(root, 'src', 'renderer', 'recording.css'), join(out, 'recording.css'));
 cpSync(join(root, 'assets', 'tray-icon.png'), join(assetsOut, 'tray-icon.png'));
 cpSync(join(root, 'assets', 'sounds'), join(assetsOut, 'sounds'), { recursive: true });

@@ -69,6 +69,39 @@ contextBridge.exposeInMainWorld('wiRecColorPicker', {
   signalReady(): void {
     ipcRenderer.send('colorpicker:shell-ready');
   },
+  signalContentReady(): void {
+    ipcRenderer.send('colorpicker:content-ready');
+  },
+});
+
+contextBridge.exposeInMainWorld('wiRecRecording', {
+  onStart(callback: (payload: Record<string, unknown>) => void): () => void {
+    const listener = (_event: Electron.IpcRendererEvent, payload: Record<string, unknown>) => {
+      callback(payload);
+    };
+
+    ipcRenderer.on('recording:start', listener);
+    return () => ipcRenderer.removeListener('recording:start', listener);
+  },
+  prepareCapture(options: { desktopAudio: boolean }): Promise<void> {
+    return ipcRenderer.invoke('recording:prepareCapture', options);
+  },
+  saveRecording(buffer: ArrayBuffer): Promise<string> {
+    return ipcRenderer.invoke('recording:save', buffer);
+  },
+  persistPreferences(options: {
+    desktopAudio: boolean;
+    micEnabled: boolean;
+    micDeviceId: string;
+  }): Promise<void> {
+    return ipcRenderer.invoke('recording:persistPreferences', options);
+  },
+  cancel(): void {
+    ipcRenderer.send('recording:cancel');
+  },
+  signalReady(): void {
+    ipcRenderer.send('recording:shell-ready');
+  },
 });
 
 contextBridge.exposeInMainWorld('wiRecSettings', {

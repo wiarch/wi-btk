@@ -36,6 +36,30 @@ export function destroyColorPicker(): void {
   colorPickerReady = false;
 }
 
+function waitForColorPickerContentReady(win: BrowserWindow): Promise<void> {
+  return new Promise((resolve) => {
+    const webContentsId = win.webContents.id;
+
+    const timeout = setTimeout(() => {
+      ipcMain.removeListener('colorpicker:content-ready', onReady);
+      void log('color picker content ready timeout, continuing anyway');
+      resolve();
+    }, 8000);
+
+    function onReady(event: IpcMainEvent): void {
+      if (event.sender.id !== webContentsId) {
+        return;
+      }
+
+      clearTimeout(timeout);
+      ipcMain.removeListener('colorpicker:content-ready', onReady);
+      resolve();
+    }
+
+    ipcMain.on('colorpicker:content-ready', onReady);
+  });
+}
+
 function waitForColorPickerShellReady(win: BrowserWindow): Promise<void> {
   return new Promise((resolve) => {
     const webContentsId = win.webContents.id;
@@ -145,10 +169,11 @@ export async function openColorPicker(
   const imageUrl = `data:image/png;base64,${image.toPNG().toString('base64')}`;
   const labels = getDictionary(language).colorPicker;
 
+  colorPickerWindow.hide();
   colorPickerWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
   colorPickerWindow.setAlwaysOnTop(true, 'screen-saver');
-  colorPickerWindow.show();
-  colorPickerWindow.focus();
+
+  const contentReady = waitForColorPickerContentReady(colorPickerWindow);
   colorPickerWindow.webContents.send('colorpicker:start', {
     imageUrl,
     width: imageSize.width,
@@ -156,4 +181,8 @@ export async function openColorPicker(
     labels,
     panelMode: options.panelMode === true,
   });
+  await contentReady;
+
+  colorPickerWindow.show();
+  colorPickerWindow.focus();
 }

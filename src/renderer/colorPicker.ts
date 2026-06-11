@@ -89,6 +89,7 @@ type WiRecColorPickerApi = {
   copyColor(hex: string): Promise<void>;
   cancel(): void;
   signalReady(): void;
+  signalContentReady(): void;
 };
 
 declare global {
@@ -557,6 +558,48 @@ function tryParseField(field: FormatField, value: string): Rgb | null {
   }
 }
 
+function resetPanelLayoutStyles(): void {
+  panel.style.visibility = '';
+  panel.style.left = '';
+  panel.style.top = '';
+  panel.style.right = '';
+  panel.style.bottom = '';
+  panel.style.opacity = '';
+  panel.style.pointerEvents = '';
+}
+
+function measurePanelRect(): DOMRect {
+  const wasHidden = panel.classList.contains('hidden');
+  panel.classList.remove('hidden');
+  panel.style.visibility = 'hidden';
+  panel.style.pointerEvents = 'none';
+  panel.style.left = '-20000px';
+  panel.style.top = '0';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+
+  const rect = panel.getBoundingClientRect();
+  resetPanelLayoutStyles();
+
+  if (wasHidden) {
+    panel.classList.add('hidden');
+  }
+
+  return rect;
+}
+
+function placePanel(left: number, top: number): void {
+  panel.classList.remove('hidden');
+  panel.setAttribute('aria-hidden', 'false');
+  panel.style.left = `${left}px`;
+  panel.style.top = `${top}px`;
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+  panel.style.visibility = 'visible';
+  panel.style.opacity = '1';
+  panel.style.pointerEvents = '';
+}
+
 function positionPanelAt(clientX: number, clientY: number): void {
   state.panelAnchor = { x: clientX, y: clientY };
 
@@ -566,17 +609,9 @@ function positionPanelAt(clientX: number, clientY: number): void {
     return;
   }
 
-  panel.classList.remove('hidden');
-  panel.setAttribute('aria-hidden', 'false');
-  panel.style.visibility = 'hidden';
-  panel.style.left = '0px';
-  panel.style.top = '0px';
-  panel.style.right = 'auto';
-  panel.style.bottom = 'auto';
-
   const margin = 12;
   const offset = 18;
-  const panelRect = panel.getBoundingClientRect();
+  const panelRect = measurePanelRect();
   let left = clientX + offset;
   let top = clientY + offset;
 
@@ -590,9 +625,7 @@ function positionPanelAt(clientX: number, clientY: number): void {
   left = Math.max(margin, Math.min(left, window.innerWidth - panelRect.width - margin));
   top = Math.max(margin, Math.min(top, window.innerHeight - panelRect.height - margin));
 
-  panel.style.left = `${left}px`;
-  panel.style.top = `${top}px`;
-  panel.style.visibility = 'visible';
+  placePanel(left, top);
 }
 
 function applyPanelLayout(): void {
@@ -611,22 +644,13 @@ function applyPanelLayout(): void {
 
 function positionPanelCentered(): void {
   state.panelAnchor = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-  panel.classList.remove('hidden');
-  panel.setAttribute('aria-hidden', 'false');
-  panel.style.visibility = 'hidden';
-  panel.style.left = '0px';
-  panel.style.top = '0px';
-  panel.style.right = 'auto';
-  panel.style.bottom = 'auto';
 
   const margin = 12;
-  const panelRect = panel.getBoundingClientRect();
+  const panelRect = measurePanelRect();
   const left = Math.max(margin, (window.innerWidth - panelRect.width) / 2);
   const top = Math.max(margin, (window.innerHeight - panelRect.height) / 2);
 
-  panel.style.left = `${left}px`;
-  panel.style.top = `${top}px`;
-  panel.style.visibility = 'visible';
+  placePanel(left, top);
 }
 
 function showPanelCentered(): void {
@@ -749,6 +773,7 @@ function minimizePanel(): void {
   panel.classList.add('hidden');
   panel.setAttribute('aria-hidden', 'true');
   panel.classList.remove('panel-fullscreen');
+  resetPanelLayoutStyles();
   state.picked = false;
   state.advancedOpen = false;
   advancedSection.classList.add('hidden');
@@ -884,6 +909,8 @@ window.wiRecColorPicker.onStart((payload: ColorPickerPayload) => {
   document.body.classList.remove('picked');
   panel.classList.add('hidden');
   panel.setAttribute('aria-hidden', 'true');
+  panel.classList.remove('panel-fullscreen');
+  resetPanelLayoutStyles();
   advancedSection.classList.add('hidden');
   pickHint.classList.remove('hidden');
   cursorPreview.classList.add('hidden');
@@ -892,15 +919,16 @@ window.wiRecColorPicker.onStart((payload: ColorPickerPayload) => {
 
   void loadFrozenFrame(payload.imageUrl, payload.width, payload.height)
     .then(() => {
-      if (!payload.panelMode) {
-        return;
+      if (payload.panelMode) {
+        applyColor(DEFAULT_PANEL_COLOR);
+        showPanelCentered();
       }
 
-      applyColor(DEFAULT_PANEL_COLOR);
-      showPanelCentered();
+      window.wiRecColorPicker.signalContentReady();
     })
     .catch(() => {
       console.error('[WI-Rec] failed to load color picker frame');
+      window.wiRecColorPicker.signalContentReady();
     });
 });
 

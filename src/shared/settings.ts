@@ -5,6 +5,7 @@ export type HotkeyAction =
   | 'captureFullScreen'
   | 'colorPicker'
   | 'colorPickerPanel'
+  | 'screenRecord'
   | 'arrow'
   | 'rect'
   | 'save'
@@ -31,6 +32,9 @@ export type AppSettings = {
   filenameTimeStyle: FilenameTimeStyle;
   captureSoundEnabled: boolean;
   captureSoundPreset: CaptureSoundPreset;
+  recordDesktopAudio: boolean;
+  recordMicEnabled: boolean;
+  recordMicDeviceId: string;
   hotkeys: Record<HotkeyAction, string>;
 };
 
@@ -47,11 +51,15 @@ export const DEFAULT_SETTINGS: AppSettings = {
   filenameTimeStyle: 'h24',
   captureSoundEnabled: true,
   captureSoundPreset: 'chime',
+  recordDesktopAudio: false,
+  recordMicEnabled: true,
+  recordMicDeviceId: '',
   hotkeys: {
     capture: 'Alt+Shift+S',
     captureFullScreen: 'Ctrl+Shift+F11',
     colorPicker: 'Alt+Shift+C',
     colorPickerPanel: 'Alt+Shift+V',
+    screenRecord: 'Alt+Shift+R',
     arrow: 'A',
     rect: 'R',
     save: 'CommandOrControl+S',
@@ -65,5 +73,6 @@ export const GLOBAL_HOTKEY_ACTIONS: HotkeyAction[] = [
   'captureFullScreen',
   'colorPicker',
   'colorPickerPanel',
+  'screenRecord',
 ];
 export const OVERLAY_HOTKEY_ACTIONS: HotkeyAction[] = ['arrow', 'rect', 'save', 'copy', 'cancel'];

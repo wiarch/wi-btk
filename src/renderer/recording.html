@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Rec Recording</title>
+    <link rel="stylesheet" href="recording.css" />
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div id="setup-panel" class="setup-panel">
+      <h2 id="panel-title" class="panel-title">Screen recording</h2>
+      <div class="setup-options">
+        <label class="setup-check">
+          <input id="desktop-audio" type="checkbox" />
+          <span id="desktop-audio-label">Desktop audio</span>
+        </label>
+        <div class="setup-row">
+          <label id="mic-label" class="setup-label" for="mic-select">Microphone</label>
+          <select id="mic-select" class="setup-select"></select>
+        </div>
+        <label class="setup-check">
+          <input id="mic-mute" type="checkbox" />
+          <span id="mic-mute-label">Mute microphone</span>
+        </label>
+      </div>
+      <div class="setup-actions">
+        <button type="button" id="full-screen-btn" class="btn primary">Full screen</button>
+        <button type="button" id="region-btn" class="btn secondary">Select region</button>
+      </div>
+      <p id="region-hint" class="region-hint hidden"></p>
+      <div id="region-actions" class="setup-actions hidden">
+        <button type="button" id="start-region-btn" class="btn primary">Start recording</button>
+      </div>
+      <button type="button" id="cancel-btn" class="btn ghost">Cancel</button>
+    </div>
+
+    <div id="record-bar" class="record-bar hidden" aria-hidden="true">
+      <span id="record-status" class="record-status">Recording</span>
+      <span id="record-timer" class="record-timer">00:00</span>
+      <button type="button" id="pause-btn" class="btn bar-btn">Pause</button>
+      <button type="button" id="stop-btn" class="btn bar-btn danger">Stop</button>
+    </div>
+
+    <script type="module" src="recording.js"></script>
+  </body>
+</html>

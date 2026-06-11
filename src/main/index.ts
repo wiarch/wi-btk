@@ -17,10 +17,11 @@ import { access, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { bootLog, getBootLogPath } from './bootLog';
+import { compositorSettle } from './compositorSettle';
 import { applyLaunchAtStartup } from './autostart';
 
 bootLog('main module loaded');
-import { buildCaptureSavePath, getBaseSaveDirectory } from './capturePaths';
+import { buildCaptureSavePath, buildRecordingSavePath, getBaseSaveDirectory } from './capturePaths';
 import { encodeCaptureForClipboard, encodeCaptureForSave } from './imageEncode';
 import { captureScreenElectron } from './captureElectron';
 import { assignHotkeyWithConflictCheck } from './hotkeyAssign';
@@ -40,6 +41,14 @@ import {
   prewarmColorPickerWindow,
   setColorPickerSessionEndCallback,
 } from './colorPickerWindow';
+import { clearRecordingMediaHandler, setRecordingMediaHandler } from './recordingCapture';
+import {
+  closeRecording,
+  destroyRecording,
+  openRecording,
+  prewarmRecordingWindow,
+  setRecordingSessionEndCallback,
+} from './recordingWindow';
 import { playCaptureSound } from './captureSound';
 import { notifyCaptureSaved, notifySimple } from './notifications';
 import { closeSettingsWindow, openSettingsWindow } from './settingsWindow';
@@ -389,6 +398,13 @@ async function saveFullScreenCapture(imageBuffer: Buffer): Promise<void> {
   playCaptureSound(settings);
 }
 
+async function prepareForScreenCapture(): Promise<void> {
+  closeOverlay();
+  closeColorPicker();
+  closeRecording();
+  await compositorSettle();
+}
+
 async function triggerColorPicker(source: string, panelMode = false): Promise<void> {
   if (captureInProgress) {
     await log(`color picker ignored (${source}): already in progress`);
@@ -399,8 +415,7 @@ async function triggerColorPicker(source: string, panelMode = false): Promise<vo
   await log(`color picker started (${source})`);
 
   try {
-    closeOverlay();
-    closeColorPicker();
+    await prepareForScreenCapture();
     const imageBuffer = await captureImage();
     const bounds = getVirtualBounds();
     const settings = getSettings();
@@ -415,6 +430,32 @@ async function triggerColorPicker(source: string, panelMode = false): Promise<vo
   }
 }
 
+async function triggerScreenRecord(source: string): Promise<void> {
+  if (captureInProgress) {
+    await log(`screen record ignored (${source}): already in progress`);
+    return;
+  }
+
+  captureInProgress = true;
+  await log(`screen record started (${source})`);
+
+  try {
+    await prepareForScreenCapture();
+    const imageBuffer = await captureImage();
+    const bounds = getVirtualBounds();
+    const settings = getSettings();
+    await openRecording(imageBuffer, bounds, getPreloadPath(), settings);
+    await log('recording opened');
+  } catch (error) {
+    captureInProgress = false;
+    clearRecordingMediaHandler();
+    const settings = getSettings();
+    const message = error instanceof Error ? error.message : String(error);
+    await log(`screen record failed (${source}): ${message}`);
+    showError(t(settings.language, 'errors.captureFailed', { message }));
+  }
+}
+
 async function triggerCapture(source: string, fullScreen = false): Promise<void> {
   if (captureInProgress) {
     await log(`capture ignored (${source}): already in progress`);
@@ -425,8 +466,7 @@ async function triggerCapture(source: string, fullScreen = false): Promise<void>
   await log(`capture started (${source}, fullScreen=${fullScreen})`);
 
   try {
-    closeOverlay();
-    closeColorPicker();
+    await prepareForScreenCapture();
     const imageBuffer = await captureImage();
 
     if (fullScreen) {
@@ -471,6 +511,11 @@ function registerHotkey(): void {
 
       if (action === 'colorPickerPanel') {
         void triggerColorPicker(`hotkey:${action}`, true);
+        return;
+      }
+
+      if (action === 'screenRecord') {
+        void triggerScreenRecord(`hotkey:${action}`);
         return;
       }
 
@@ -536,6 +581,12 @@ function rebuildTray(): void {
       label: `${t(settings.language, 'tray.colorPickerPanel')} (${formatHotkeyForUi(settings.hotkeys.colorPickerPanel)})`,
       click: () => {
         void triggerColorPicker('tray-menu-panel', true);
+      },
+    },
+    {
+      label: `${t(settings.language, 'tray.screenRecord')} (${formatHotkeyForUi(settings.hotkeys.screenRecord)})`,
+      click: () => {
+        void triggerScreenRecord('tray-menu');
       },
     },
     {
@@ -698,6 +749,53 @@ function setupIpc(): void {
     closeColorPicker();
   });
 
+  ipcMain.handle('recording:prepareCapture', (_event, options: { desktopAudio: boolean }) => {
+    setRecordingMediaHandler(options.desktopAudio);
+  });
+
+  ipcMain.handle('recording:save', async (_event, buffer: ArrayBuffer) => {
+    clearRecordingMediaHandler();
+    const settings = getSettings();
+    const filePath = await buildRecordingSavePath(settings);
+    await writeFile(filePath, Buffer.from(buffer));
+    closeRecording();
+    captureInProgress = false;
+    notifyCaptureSaved(
+      settings.language,
+      'notifications.recordingSaved',
+      'notifications.recordingSavedHint',
+      filePath,
+    );
+    playCaptureSound(settings);
+    return filePath;
+  });
+
+  ipcMain.handle(
+    'recording:persistPreferences',
+    async (
+      _event,
+      prefs: { desktopAudio: boolean; micEnabled: boolean; micDeviceId: string },
+    ) => {
+      if (!currentSettings) {
+        return;
+      }
+
+      currentSettings = {
+        ...currentSettings,
+        recordDesktopAudio: prefs.desktopAudio,
+        recordMicEnabled: prefs.micEnabled,
+        recordMicDeviceId: prefs.micDeviceId,
+      };
+      await saveSettings(currentSettings);
+    },
+  );
+
+  ipcMain.on('recording:cancel', () => {
+    clearRecordingMediaHandler();
+    closeRecording();
+    captureInProgress = false;
+  });
+
   ipcMain.handle('colorpicker:copy', (_event, hex: string) => {
     const settings = getSettings();
     clipboard.writeText(hex);
@@ -764,6 +862,9 @@ function setupIpc(): void {
       filenameTimeStyle: settings.filenameTimeStyle,
       captureSoundEnabled: settings.captureSoundEnabled,
       captureSoundPreset: settings.captureSoundPreset,
+      recordDesktopAudio: settings.recordDesktopAudio,
+      recordMicEnabled: settings.recordMicEnabled,
+      recordMicDeviceId: settings.recordMicDeviceId,
       hotkeys: normalizedHotkeys,
     };
 
@@ -903,6 +1004,10 @@ if (gotSingleInstanceLock) {
       setColorPickerSessionEndCallback(() => {
         captureInProgress = false;
       });
+      setRecordingSessionEndCallback(() => {
+        captureInProgress = false;
+        clearRecordingMediaHandler();
+      });
       createKeepAliveWindow();
       bootLog('keep-alive window created');
       createTray();
@@ -913,6 +1018,8 @@ if (gotSingleInstanceLock) {
       bootLog('overlay prewarmed');
       await prewarmColorPickerWindow(getVirtualBounds(), getPreloadPath());
       bootLog('color picker prewarmed');
+      await prewarmRecordingWindow(getVirtualBounds(), getPreloadPath());
+      bootLog('recording prewarmed');
       await maybeShowWindowsTrayHint(currentSettings.language);
 
       await log('app ready');
@@ -938,6 +1045,10 @@ app.on('before-quit', () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
+  clearRecordingMediaHandler();
+  destroyRecording();
+  destroyColorPicker();
+  destroyOverlay();
   if (keepAliveWindow && !keepAliveWindow.isDestroyed()) {
     keepAliveWindow.destroy();
   }
