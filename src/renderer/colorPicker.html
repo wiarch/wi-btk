@@ -13,17 +13,22 @@
       <span id="cursor-hex" class="cursor-hex">#000000</span>
     </div>
     <div id="panel" class="panel hidden" role="dialog" aria-hidden="true">
-      <button type="button" id="close-btn" class="panel-close-btn" title="Close">✕</button>
+      <header class="panel-titlebar">
+        <h2 id="panel-title" class="panel-title">WI-Rec (Color Picker)</h2>
+        <div class="window-controls">
+          <button type="button" id="minimize-btn" class="win-btn win-minimize" title="Minimize">─</button>
+          <button type="button" id="maximize-btn" class="win-btn win-maximize" title="Maximize">□</button>
+          <button type="button" id="close-btn" class="win-btn win-close" title="Close">✕</button>
+        </div>
+      </header>
 
+      <div class="panel-body">
       <div class="picker-area">
         <div class="sv-wrap">
           <canvas id="sv-canvas" width="280" height="140"></canvas>
           <div id="sv-handle" class="picker-handle" aria-hidden="true"></div>
         </div>
-        <div class="hue-wrap">
-          <input id="hue-slider" class="hue-slider" type="range" min="0" max="360" value="0" />
-          <div id="hue-handle" class="picker-handle hue-handle" aria-hidden="true"></div>
-        </div>
+        <input id="hue-slider" class="hue-slider" type="range" min="0" max="360" value="0" />
       </div>
 
       <div class="format-field format-hex">
@@ -94,6 +99,7 @@
       </div>
 
       <p id="hint" class="hint"></p>
+      </div>
     </div>
     <p id="pick-hint" class="pick-hint"></p>
     <script type="module" src="colorPicker.js"></script>

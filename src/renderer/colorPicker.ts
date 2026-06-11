@@ -26,9 +26,12 @@ export {};
 type FormatField = 'hex' | 'rgb' | 'cmyk' | 'hsv' | 'hsl';
 
 type ColorPickerLabels = {
+  windowTitle: string;
   pickHint: string;
   copiedHint: string;
   close: string;
+  minimize: string;
+  maximize: string;
   advancedOptions: string;
   advancedHide: string;
   harmonies: string;
@@ -117,7 +120,9 @@ const contrastChecker = document.getElementById('contrast-checker') as HTMLDivEl
 const similarTitle = document.getElementById('similar-title') as HTMLHeadingElement;
 const similarColorsEl = document.getElementById('similar-colors') as HTMLDivElement;
 const svHandle = document.getElementById('sv-handle') as HTMLDivElement;
-const hueHandle = document.getElementById('hue-handle') as HTMLDivElement;
+const panelTitle = document.getElementById('panel-title') as HTMLHeadingElement;
+const minimizeBtn = document.getElementById('minimize-btn') as HTMLButtonElement;
+const maximizeBtn = document.getElementById('maximize-btn') as HTMLButtonElement;
 const closeBtn = document.getElementById('close-btn') as HTMLButtonElement;
 const pickHint = document.getElementById('pick-hint') as HTMLParagraphElement;
 const hintEl = document.getElementById('hint') as HTMLParagraphElement;
@@ -196,9 +201,6 @@ function updatePickerHandles(color: Rgb): void {
   svHandle.style.left = `${hsv.s}%`;
   svHandle.style.top = `${100 - hsv.v}%`;
   svHandle.style.backgroundColor = rgbToHex(color);
-
-  hueHandle.style.left = `${(state.currentHue / 360) * 100}%`;
-  hueHandle.style.backgroundColor = rgbToHex(hsvToRgb({ h: state.currentHue, s: 100, v: 100 }));
 }
 
 function syncPickerControls(color: Rgb): void {
@@ -511,8 +513,45 @@ function bindFormatInput(input: HTMLInputElement, field: FormatField): void {
   });
 }
 
+function minimizePanel(): void {
+  panel.classList.add('hidden');
+  panel.setAttribute('aria-hidden', 'true');
+  panel.classList.remove('panel-fullscreen');
+  state.picked = false;
+  state.advancedOpen = false;
+  advancedSection.classList.add('hidden');
+  advancedSection.setAttribute('aria-hidden', 'true');
+  advancedToggle.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('picked');
+  pickHint.classList.remove('hidden');
+  if (state.labels) advancedToggle.textContent = state.labels.advancedOptions;
+}
+
+function maximizePanel(): void {
+  if (panel.classList.contains('panel-fullscreen')) {
+    state.advancedOpen = false;
+    advancedSection.classList.add('hidden');
+    advancedSection.setAttribute('aria-hidden', 'true');
+    advancedToggle.setAttribute('aria-expanded', 'false');
+    if (state.labels) advancedToggle.textContent = state.labels.advancedOptions;
+    applyPanelLayout();
+    return;
+  }
+
+  state.advancedOpen = true;
+  advancedSection.classList.remove('hidden');
+  advancedSection.setAttribute('aria-hidden', 'false');
+  advancedToggle.setAttribute('aria-expanded', 'true');
+  if (state.labels) advancedToggle.textContent = state.labels.advancedHide;
+  updateAdvanced(state.color);
+  applyPanelLayout();
+}
+
 function applyLabels(labels: ColorPickerLabels): void {
+  panelTitle.textContent = labels.windowTitle;
   pickHint.textContent = labels.pickHint;
+  minimizeBtn.title = labels.minimize;
+  maximizeBtn.title = labels.maximize;
   closeBtn.title = labels.close;
   advancedToggle.textContent = labels.advancedOptions;
   harmoniesTitle.textContent = labels.harmonies;
@@ -572,6 +611,8 @@ bindFormatInput(hsvInput, 'hsv');
 bindFormatInput(hslInput, 'hsl');
 
 copyHexBtn.addEventListener('click', () => applyColor(state.color, null, true));
+minimizeBtn.addEventListener('click', () => minimizePanel());
+maximizeBtn.addEventListener('click', () => maximizePanel());
 closeBtn.addEventListener('click', () => window.wiRecColorPicker.cancel());
 
 window.addEventListener('keydown', (event) => {

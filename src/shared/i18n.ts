@@ -28,9 +28,12 @@ type NotificationStrings = {
 };
 
 type ColorPickerStrings = {
+  windowTitle: string;
   pickHint: string;
   copiedHint: string;
   close: string;
+  minimize: string;
+  maximize: string;
   advancedOptions: string;
   advancedHide: string;
   harmonies: string;
@@ -181,9 +184,12 @@ const en: Dictionary = {
     close: 'Close',
   },
   colorPicker: {
+    windowTitle: 'WI-Rec (Color Picker)',
     pickHint: 'Click anywhere to pick a color',
     copiedHint: 'Copied to clipboard',
     close: 'Close',
+    minimize: 'Minimize',
+    maximize: 'Maximize',
     advancedOptions: 'Advanced options',
     advancedHide: 'Hide advanced options',
     harmonies: 'Color harmonies',
@@ -315,9 +321,12 @@ const es: Dictionary = {
     close: 'Cerrar',
   },
   colorPicker: {
+    windowTitle: 'WI-Rec (Cuentagotas)',
     pickHint: 'Haz clic en cualquier punto para capturar el color',
     copiedHint: 'Copiado al portapapeles',
     close: 'Cerrar',
+    minimize: 'Minimizar',
+    maximize: 'Maximizar',
     advancedOptions: 'Opciones avanzadas',
     advancedHide: 'Ocultar opciones avanzadas',
     harmonies: 'Armonías de color',

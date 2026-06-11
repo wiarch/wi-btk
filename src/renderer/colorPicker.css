@@ -81,10 +81,12 @@ body.picked #canvas {
 .panel {
   position: fixed;
   z-index: 30;
+  display: flex;
+  flex-direction: column;
   width: min(420px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
-  overflow-y: auto;
-  padding: 40px 12px 12px;
+  overflow: hidden;
+  padding: 0;
   border-radius: 14px;
   background: rgba(18, 20, 28, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -93,24 +95,85 @@ body.picked #canvas {
   pointer-events: auto;
 }
 
-.panel-close-btn {
+.panel-titlebar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 96px;
+  background: #12141c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px 14px 0 0;
+}
+
+.panel-title {
+  font: 600 13px/1 system-ui, -apple-system, sans-serif;
+  color: #f0f2f8;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.window-controls {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 2;
-  width: 30px;
-  height: 30px;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.win-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   border: 0;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #f4f4f5;
+  border-radius: 6px;
+  background: transparent;
+  color: #c5cad8;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
 }
 
-.panel-close-btn:hover {
-  background: rgba(185, 28, 28, 0.85);
+.win-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f0f2f8;
+}
+
+.win-minimize {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.win-maximize {
+  font-size: 15px;
+}
+
+.win-close {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #4f6df5;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.win-close:hover {
+  background: #6346f2;
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
 }
 
 .panel.hidden {
@@ -125,7 +188,14 @@ body.picked #canvas {
   border-radius: 0;
   border-left: 0;
   border-right: 0;
-  padding: 20px 24px 16px;
+}
+
+.panel.panel-fullscreen .panel-titlebar {
+  border-radius: 0;
+}
+
+.panel.panel-fullscreen .panel-body {
+  padding: 16px 24px;
 }
 
 .panel.panel-fullscreen #sv-canvas {
@@ -279,13 +349,8 @@ body.picked #canvas {
   margin-bottom: 14px;
 }
 
-.sv-wrap,
-.hue-wrap {
+.sv-wrap {
   position: relative;
-}
-
-.hue-wrap {
-  margin-top: 8px;
 }
 
 #sv-canvas {
@@ -308,12 +373,9 @@ body.picked #canvas {
   transform: translate(-50%, -50%);
 }
 
-.hue-handle {
-  top: 50%;
-}
-
 .hue-slider {
   width: 100%;
+  margin-top: 8px;
   height: 14px;
   border-radius: 7px;
   appearance: none;
