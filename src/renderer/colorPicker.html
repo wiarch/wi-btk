@@ -10,7 +10,10 @@
     <canvas id="canvas"></canvas>
     <div id="cursor-preview" class="cursor-preview hidden" aria-hidden="true">
       <span id="cursor-swatch" class="cursor-swatch"></span>
-      <span id="cursor-hex" class="cursor-hex">#000000</span>
+      <span class="cursor-meta">
+        <span id="cursor-name" class="cursor-name"></span>
+        <span id="cursor-hex" class="cursor-hex">#000000</span>
+      </span>
     </div>
     <div id="panel" class="panel hidden" role="dialog" aria-hidden="true">
       <header class="panel-titlebar">
@@ -35,9 +38,10 @@
         <span class="format-label">HEX</span>
         <div class="format-box hex-box">
           <span id="hex-swatch" class="hex-swatch"></span>
-          <input id="hex-input" type="text" spellcheck="false" maxlength="7" />
+          <input id="hex-input" type="text" spellcheck="false" maxlength="24" />
           <button type="button" id="copy-hex-btn" class="copy-icon-btn" title="Copy">⧉</button>
         </div>
+        <p id="color-name" class="color-name"></p>
       </div>
       <div class="format-grid">
         <div class="format-field">
@@ -95,9 +99,14 @@
           <div id="contrast-checker" class="contrast-grid"></div>
         </section>
 
-        <section class="adv-block">
-          <h3 id="similar-title" class="adv-title"></h3>
-          <div id="similar-colors" class="similar-grid"></div>
+        <section class="adv-block adv-block-library">
+          <h3 id="library-title" class="adv-title"></h3>
+          <div id="library-match" class="library-match"></div>
+          <div class="library-tools">
+            <input id="library-search" class="library-search" type="search" spellcheck="false" />
+            <select id="library-category" class="harmony-select library-category"></select>
+          </div>
+          <div id="color-library" class="color-library"></div>
         </section>
       </div>
 

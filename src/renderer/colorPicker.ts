@@ -1,8 +1,14 @@
 import {
+  COLOR_CATEGORIES,
+  findNamedColorByName,
+  resolveColorName,
+  searchNamedColors,
+  type ColorCategory,
+} from './colorNames.js';
+import {
   buildHarmony,
   buildVariationStrip,
   closestColorIndex,
-  findSimilarColors,
   HARMONY_TYPES,
   formatCmyk,
   formatHsl,
@@ -43,6 +49,20 @@ type ColorPickerLabels = {
   conversions: string;
   contrast: string;
   similarColors: string;
+  colorLibrary: string;
+  librarySearch: string;
+  closestMatch: string;
+  categoryAll: string;
+  categoryRed: string;
+  categoryPink: string;
+  categoryOrange: string;
+  categoryYellow: string;
+  categoryGreen: string;
+  categoryBlue: string;
+  categoryPurple: string;
+  categoryBrown: string;
+  categoryWhite: string;
+  categoryGray: string;
   onWhite: string;
   onBlack: string;
   pass: string;
@@ -89,13 +109,29 @@ const HARMONY_LABELS: Record<HarmonyType, keyof ColorPickerLabels> = {
 
 const DEFAULT_PANEL_COLOR: Rgb = { r: 79, g: 109, b: 245 };
 
+const CATEGORY_LABELS: Record<ColorCategory, keyof ColorPickerLabels> = {
+  all: 'categoryAll',
+  red: 'categoryRed',
+  pink: 'categoryPink',
+  orange: 'categoryOrange',
+  yellow: 'categoryYellow',
+  green: 'categoryGreen',
+  blue: 'categoryBlue',
+  purple: 'categoryPurple',
+  brown: 'categoryBrown',
+  white: 'categoryWhite',
+  gray: 'categoryGray',
+};
+
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const cursorPreview = document.getElementById('cursor-preview') as HTMLDivElement;
 const cursorSwatch = document.getElementById('cursor-swatch') as HTMLSpanElement;
+const cursorName = document.getElementById('cursor-name') as HTMLSpanElement;
 const cursorHex = document.getElementById('cursor-hex') as HTMLSpanElement;
 const panel = document.getElementById('panel') as HTMLDivElement;
 const hexSwatch = document.getElementById('hex-swatch') as HTMLSpanElement;
+const colorNameEl = document.getElementById('color-name') as HTMLParagraphElement;
 const hexInput = document.getElementById('hex-input') as HTMLInputElement;
 const rgbInput = document.getElementById('rgb-input') as HTMLInputElement;
 const cmykInput = document.getElementById('cmyk-input') as HTMLInputElement;
@@ -116,8 +152,11 @@ const xyzValue = document.getElementById('xyz-value') as HTMLElement;
 const labValue = document.getElementById('lab-value') as HTMLElement;
 const contrastTitle = document.getElementById('contrast-title') as HTMLHeadingElement;
 const contrastChecker = document.getElementById('contrast-checker') as HTMLDivElement;
-const similarTitle = document.getElementById('similar-title') as HTMLHeadingElement;
-const similarColorsEl = document.getElementById('similar-colors') as HTMLDivElement;
+const libraryTitle = document.getElementById('library-title') as HTMLHeadingElement;
+const libraryMatchEl = document.getElementById('library-match') as HTMLDivElement;
+const librarySearch = document.getElementById('library-search') as HTMLInputElement;
+const libraryCategory = document.getElementById('library-category') as HTMLSelectElement;
+const colorLibraryEl = document.getElementById('color-library') as HTMLDivElement;
 const svHandle = document.getElementById('sv-handle') as HTMLDivElement;
 const panelTitle = document.getElementById('panel-title') as HTMLHeadingElement;
 const minimizeBtn = document.getElementById('minimize-btn') as HTMLButtonElement;
@@ -153,6 +192,7 @@ const state = {
   currentHue: 0,
   svDragging: false,
   selectedHarmony: 'analogous' as HarmonyType,
+  libraryCategory: 'all' as ColorCategory,
 };
 
 function updateSwatch(color: Rgb): void {
@@ -171,7 +211,26 @@ function syncFields(color: Rgb, skip: FormatField | null): void {
   if (skip !== 'hsl') hslInput.value = formatHsl(color);
 
   updateSwatch(color);
+  updateColorName(color);
   state.syncing = false;
+}
+
+function formatColorNameLabel(color: Rgb): string {
+  const labels = state.labels;
+  if (!labels) return '';
+
+  const hex = rgbToHex(color);
+  const match = resolveColorName(color, hex);
+  if (match.exact) {
+    return match.name;
+  }
+
+  return `${labels.closestMatch}: ${match.name}`;
+}
+
+function updateColorName(color: Rgb): void {
+  const label = formatColorNameLabel(color);
+  colorNameEl.textContent = label;
 }
 
 function drawSvCanvas(hue: number): void {
@@ -334,28 +393,116 @@ function renderVariationStrip(color: Rgb): void {
   }
 }
 
-function renderSimilar(color: Rgb): void {
-  similarColorsEl.innerHTML = '';
-  for (const entry of findSimilarColors(color)) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'similar-btn';
+function populateLibraryCategorySelect(): void {
+  const labels = state.labels;
+  if (!labels) return;
+
+  const previous = state.libraryCategory;
+  libraryCategory.innerHTML = '';
+
+  for (const category of COLOR_CATEGORIES) {
+    const option = document.createElement('option');
+    option.value = category;
+    option.textContent = labels[CATEGORY_LABELS[category]];
+    libraryCategory.append(option);
+  }
+
+  libraryCategory.value = previous;
+}
+
+function renderLibraryMatch(color: Rgb): void {
+  const labels = state.labels;
+  if (!labels) return;
+
+  const hex = rgbToHex(color);
+  const match = resolveColorName(color, hex);
+  libraryMatchEl.innerHTML = '';
+
+  const card = document.createElement('button');
+  card.type = 'button';
+  card.className = 'library-match-card';
+
+  const swatch = document.createElement('span');
+  swatch.className = 'library-match-swatch';
+  swatch.style.backgroundColor = hex;
+
+  const meta = document.createElement('span');
+  meta.className = 'library-match-meta';
+  meta.innerHTML = `<strong>${match.exact ? match.name : `${labels.closestMatch}: ${match.name}`}</strong><span>${hex}</span>`;
+
+  card.append(swatch, meta);
+  card.addEventListener('click', (event) => {
+    event.stopPropagation();
+    applyColor(color);
+  });
+  libraryMatchEl.append(card);
+}
+
+function renderColorLibrary(color: Rgb): void {
+  const labels = state.labels;
+  if (!labels) return;
+
+  const currentHex = rgbToHex(color);
+  const results = searchNamedColors(librarySearch.value, state.libraryCategory);
+  colorLibraryEl.innerHTML = '';
+
+  if (results.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'library-empty';
+    empty.textContent = '—';
+    colorLibraryEl.append(empty);
+    return;
+  }
+
+  const table = document.createElement('div');
+  table.className = 'library-table';
+  table.setAttribute('role', 'table');
+
+  const head = document.createElement('div');
+  head.className = 'library-row library-head';
+  head.setAttribute('role', 'row');
+  head.innerHTML = '<span></span><span>Name</span><span>HEX</span><span>RGB</span><span>HSL</span>';
+  table.append(head);
+
+  for (const entry of results) {
+    const hsl = rgbToHsl(entry.rgb);
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'library-row';
+    if (entry.hex === currentHex) {
+      row.classList.add('is-current');
+    }
+    row.setAttribute('role', 'row');
 
     const swatch = document.createElement('span');
-    swatch.className = 'similar-swatch';
-    swatch.style.backgroundColor = rgbToHex(entry.rgb);
+    swatch.className = 'library-swatch';
+    swatch.style.backgroundColor = entry.hex;
 
     const name = document.createElement('span');
-    name.className = 'similar-name';
+    name.className = 'library-name';
     name.textContent = entry.name;
 
-    btn.append(swatch, name);
-    btn.addEventListener('click', (event) => {
+    const hexCell = document.createElement('span');
+    hexCell.className = 'library-code';
+    hexCell.textContent = entry.hex;
+
+    const rgbCell = document.createElement('span');
+    rgbCell.className = 'library-code';
+    rgbCell.textContent = formatRgb(entry.rgb);
+
+    const hslCell = document.createElement('span');
+    hslCell.className = 'library-code';
+    hslCell.textContent = `${Math.round(hsl.h)}, ${Math.round(hsl.s)}, ${Math.round(hsl.l)}`;
+
+    row.append(swatch, name, hexCell, rgbCell, hslCell);
+    row.addEventListener('click', (event) => {
       event.stopPropagation();
       applyColor(entry.rgb);
     });
-    similarColorsEl.append(btn);
+    table.append(row);
   }
+
+  colorLibraryEl.append(table);
 }
 
 function updateAdvanced(color: Rgb): void {
@@ -368,7 +515,8 @@ function updateAdvanced(color: Rgb): void {
 
   renderHarmonySwatches(color);
   renderContrast(color);
-  renderSimilar(color);
+  renderLibraryMatch(color);
+  renderColorLibrary(color);
 }
 
 function applyColor(color: Rgb, source: FormatField | null = null, copy = false): void {
@@ -391,8 +539,11 @@ function applyColor(color: Rgb, source: FormatField | null = null, copy = false)
 
 function tryParseField(field: FormatField, value: string): Rgb | null {
   switch (field) {
-    case 'hex':
+    case 'hex': {
+      const named = findNamedColorByName(value);
+      if (named) return named.rgb;
       return hexToRgb(value);
+    }
     case 'rgb':
       return parseRgb(value);
     case 'cmyk':
@@ -558,6 +709,7 @@ function updateCursorPreview(event: MouseEvent, color: Rgb): void {
   const hex = rgbToHex(color);
   cursorSwatch.style.backgroundColor = hex;
   cursorHex.textContent = hex;
+  cursorName.textContent = formatColorNameLabel(color);
 }
 
 async function loadFrozenFrame(imageUrl: string, width: number, height: number): Promise<void> {
@@ -639,7 +791,9 @@ function applyLabels(labels: ColorPickerLabels): void {
   variationsTitle.textContent = labels.variations;
   conversionsTitle.textContent = labels.conversions;
   contrastTitle.textContent = labels.contrast;
-  similarTitle.textContent = labels.similarColors;
+  libraryTitle.textContent = labels.colorLibrary;
+  librarySearch.placeholder = labels.librarySearch;
+  populateLibraryCategorySelect();
 }
 
 canvas.addEventListener('mousemove', (event) => {
@@ -692,6 +846,19 @@ harmonySelect.addEventListener('change', () => {
   }
 });
 
+librarySearch.addEventListener('input', () => {
+  if (state.advancedOpen) {
+    renderColorLibrary(state.color);
+  }
+});
+
+libraryCategory.addEventListener('change', () => {
+  state.libraryCategory = libraryCategory.value as ColorCategory;
+  if (state.advancedOpen) {
+    renderColorLibrary(state.color);
+  }
+});
+
 bindFormatInput(hexInput, 'hex');
 bindFormatInput(rgbInput, 'rgb');
 bindFormatInput(cmykInput, 'cmyk');
@@ -711,6 +878,8 @@ window.wiRecColorPicker.onStart((payload: ColorPickerPayload) => {
   state.picked = false;
   state.advancedOpen = false;
   state.selectedHarmony = 'analogous';
+  state.libraryCategory = 'all';
+  librarySearch.value = '';
   state.labels = payload.labels;
   document.body.classList.remove('picked');
   panel.classList.add('hidden');

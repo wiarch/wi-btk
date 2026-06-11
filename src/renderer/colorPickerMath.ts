@@ -1,3 +1,5 @@
+import { findSimilarNamedColors } from './colorNames.js';
+
 export type Rgb = { r: number; g: number; b: number };
 export type Hsl = { h: number; s: number; l: number };
 export type Hsv = { h: number; s: number; v: number };
@@ -358,6 +360,10 @@ export function buildVariationStrip(base: Rgb, steps = 11): Rgb[] {
   });
 }
 
+function colorDistance(a: Rgb, b: Rgb): number {
+  return Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
+}
+
 export function closestColorIndex(colors: Rgb[], target: Rgb): number {
   let bestIndex = 0;
   let bestDistance = Infinity;
@@ -397,66 +403,8 @@ export function buildVariations(base: Rgb): VariationRow[] {
   ];
 }
 
-const NAMED_COLORS: { name: string; rgb: Rgb }[] = [
-  { name: 'Black', rgb: { r: 0, g: 0, b: 0 } },
-  { name: 'White', rgb: { r: 255, g: 255, b: 255 } },
-  { name: 'Red', rgb: { r: 255, g: 0, b: 0 } },
-  { name: 'Lime', rgb: { r: 0, g: 255, b: 0 } },
-  { name: 'Blue', rgb: { r: 0, g: 0, b: 255 } },
-  { name: 'Yellow', rgb: { r: 255, g: 255, b: 0 } },
-  { name: 'Cyan', rgb: { r: 0, g: 255, b: 255 } },
-  { name: 'Magenta', rgb: { r: 255, g: 0, b: 255 } },
-  { name: 'Orange', rgb: { r: 255, g: 165, b: 0 } },
-  { name: 'Purple', rgb: { r: 128, g: 0, b: 128 } },
-  { name: 'Pink', rgb: { r: 255, g: 192, b: 203 } },
-  { name: 'Brown', rgb: { r: 165, g: 42, b: 42 } },
-  { name: 'Gray', rgb: { r: 128, g: 128, b: 128 } },
-  { name: 'Navy', rgb: { r: 0, g: 0, b: 128 } },
-  { name: 'Teal', rgb: { r: 0, g: 128, b: 128 } },
-  { name: 'Olive', rgb: { r: 128, g: 128, b: 0 } },
-  { name: 'Maroon', rgb: { r: 128, g: 0, b: 0 } },
-  { name: 'Silver', rgb: { r: 192, g: 192, b: 192 } },
-  { name: 'Gold', rgb: { r: 255, g: 215, b: 0 } },
-  { name: 'Coral', rgb: { r: 255, g: 127, b: 80 } },
-  { name: 'Salmon', rgb: { r: 250, g: 128, b: 114 } },
-  { name: 'Khaki', rgb: { r: 240, g: 230, b: 140 } },
-  { name: 'Violet', rgb: { r: 238, g: 130, b: 238 } },
-  { name: 'Indigo', rgb: { r: 75, g: 0, b: 130 } },
-  { name: 'Crimson', rgb: { r: 220, g: 20, b: 60 } },
-  { name: 'Turquoise', rgb: { r: 64, g: 224, b: 208 } },
-  { name: 'Sky Blue', rgb: { r: 135, g: 206, b: 235 } },
-  { name: 'Royal Blue', rgb: { r: 65, g: 105, b: 225 } },
-  { name: 'Midnight Blue', rgb: { r: 25, g: 25, b: 112 } },
-  { name: 'Forest Green', rgb: { r: 34, g: 139, b: 34 } },
-  { name: 'Sea Green', rgb: { r: 46, g: 139, b: 87 } },
-  { name: 'Lime Green', rgb: { r: 50, g: 205, b: 50 } },
-  { name: 'Chartreuse', rgb: { r: 127, g: 255, b: 0 } },
-  { name: 'Tomato', rgb: { r: 255, g: 99, b: 71 } },
-  { name: 'Chocolate', rgb: { r: 210, g: 105, b: 30 } },
-  { name: 'Sienna', rgb: { r: 160, g: 82, b: 45 } },
-  { name: 'Slate Gray', rgb: { r: 112, g: 128, b: 144 } },
-  { name: 'Steel Blue', rgb: { r: 70, g: 130, b: 180 } },
-  { name: 'Dark Slate Blue', rgb: { r: 72, g: 61, b: 139 } },
-  { name: 'Hot Pink', rgb: { r: 255, g: 105, b: 180 } },
-  { name: 'Plum', rgb: { r: 221, g: 160, b: 221 } },
-  { name: 'Orchid', rgb: { r: 218, g: 112, b: 214 } },
-  { name: 'Beige', rgb: { r: 245, g: 245, b: 220 } },
-  { name: 'Wheat', rgb: { r: 245, g: 222, b: 179 } },
-  { name: 'Tan', rgb: { r: 210, g: 180, b: 140 } },
-  { name: 'Peru', rgb: { r: 205, g: 133, b: 63 } },
-  { name: 'Sandy Brown', rgb: { r: 244, g: 164, b: 96 } },
-];
-
-function colorDistance(a: Rgb, b: Rgb): number {
-  return Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
-}
-
 export function findSimilarColors(base: Rgb, count = 4): { name: string; rgb: Rgb }[] {
-  return [...NAMED_COLORS]
-    .map((entry) => ({ ...entry, distance: colorDistance(base, entry.rgb) }))
-    .sort((a, b) => a.distance - b.distance)
-    .slice(0, count)
-    .map(({ name, rgb }) => ({ name, rgb }));
+  return findSimilarNamedColors(base, count).map(({ name, rgb }) => ({ name, rgb }));
 }
 
 export function parseNumbers(value: string): number[] {

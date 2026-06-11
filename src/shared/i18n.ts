@@ -43,6 +43,20 @@ type ColorPickerStrings = {
   conversions: string;
   contrast: string;
   similarColors: string;
+  colorLibrary: string;
+  librarySearch: string;
+  closestMatch: string;
+  categoryAll: string;
+  categoryRed: string;
+  categoryPink: string;
+  categoryOrange: string;
+  categoryYellow: string;
+  categoryGreen: string;
+  categoryBlue: string;
+  categoryPurple: string;
+  categoryBrown: string;
+  categoryWhite: string;
+  categoryGray: string;
   onWhite: string;
   onBlack: string;
   pass: string;
@@ -204,6 +218,20 @@ const en: Dictionary = {
     conversions: 'More formats',
     contrast: 'Contrast checker',
     similarColors: 'Similar colors',
+    colorLibrary: 'Color library',
+    librarySearch: 'Search by name or code…',
+    closestMatch: 'Closest',
+    categoryAll: 'All colors',
+    categoryRed: 'Red',
+    categoryPink: 'Pink',
+    categoryOrange: 'Orange',
+    categoryYellow: 'Yellow',
+    categoryGreen: 'Green',
+    categoryBlue: 'Blue',
+    categoryPurple: 'Purple',
+    categoryBrown: 'Brown',
+    categoryWhite: 'White',
+    categoryGray: 'Gray',
     onWhite: 'On white',
     onBlack: 'On black',
     pass: 'Pass',
@@ -346,6 +374,20 @@ const es: Dictionary = {
     conversions: 'Más formatos',
     contrast: 'Comprobador de contraste',
     similarColors: 'Colores similares',
+    colorLibrary: 'Librería de colores',
+    librarySearch: 'Buscar por nombre o código…',
+    closestMatch: 'Más cercano',
+    categoryAll: 'Todos',
+    categoryRed: 'Rojos',
+    categoryPink: 'Rosas',
+    categoryOrange: 'Naranjas',
+    categoryYellow: 'Amarillos',
+    categoryGreen: 'Verdes',
+    categoryBlue: 'Azules',
+    categoryPurple: 'Morados',
+    categoryBrown: 'Marrones',
+    categoryWhite: 'Blancos',
+    categoryGray: 'Grises',
     onWhite: 'Sobre blanco',
     onBlack: 'Sobre negro',
     pass: 'Cumple',
