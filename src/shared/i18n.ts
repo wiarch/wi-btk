@@ -31,6 +31,7 @@ type ColorPickerStrings = {
   windowTitle: string;
   pickHint: string;
   copiedHint: string;
+  copy: string;
   close: string;
   minimize: string;
   maximize: string;
@@ -187,6 +188,7 @@ const en: Dictionary = {
     windowTitle: 'WI-Rec (Color Picker)',
     pickHint: 'Click anywhere to pick a color',
     copiedHint: 'Copied to clipboard',
+    copy: 'Copy',
     close: 'Close',
     minimize: 'Minimize',
     maximize: 'Maximize',
@@ -324,6 +326,7 @@ const es: Dictionary = {
     windowTitle: 'WI-Rec (Cuentagotas)',
     pickHint: 'Haz clic en cualquier punto para capturar el color',
     copiedHint: 'Copiado al portapapeles',
+    copy: 'Copiar',
     close: 'Cerrar',
     minimize: 'Minimizar',
     maximize: 'Maximizar',

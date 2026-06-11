@@ -1,6 +1,7 @@
 import {
   buildHarmonies,
-  buildVariations,
+  buildVariationStrip,
+  closestColorIndex,
   findSimilarColors,
   formatCmyk,
   formatHsl,
@@ -29,6 +30,7 @@ type ColorPickerLabels = {
   windowTitle: string;
   pickHint: string;
   copiedHint: string;
+  copy: string;
   close: string;
   minimize: string;
   maximize: string;
@@ -49,10 +51,6 @@ type ColorPickerLabels = {
   harmonyTriadic: string;
   harmonyTetradic: string;
   harmonyMonochromatic: string;
-  variationSaturation: string;
-  variationBrightness: string;
-  variationTints: string;
-  variationShades: string;
 };
 
 type ColorPickerPayload = {
@@ -84,13 +82,6 @@ const HARMONY_LABELS: Record<string, keyof ColorPickerLabels> = {
   monochromatic: 'harmonyMonochromatic',
 };
 
-const VARIATION_LABELS: Record<string, keyof ColorPickerLabels> = {
-  saturation: 'variationSaturation',
-  brightness: 'variationBrightness',
-  tints: 'variationTints',
-  shades: 'variationShades',
-};
-
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const cursorPreview = document.getElementById('cursor-preview') as HTMLDivElement;
@@ -111,7 +102,7 @@ const hueSlider = document.getElementById('hue-slider') as HTMLInputElement;
 const harmoniesTitle = document.getElementById('harmonies-title') as HTMLHeadingElement;
 const harmoniesEl = document.getElementById('harmonies') as HTMLDivElement;
 const variationsTitle = document.getElementById('variations-title') as HTMLHeadingElement;
-const variationsEl = document.getElementById('variations') as HTMLDivElement;
+const variationStripEl = document.getElementById('variation-strip') as HTMLDivElement;
 const conversionsTitle = document.getElementById('conversions-title') as HTMLHeadingElement;
 const xyzValue = document.getElementById('xyz-value') as HTMLElement;
 const labValue = document.getElementById('lab-value') as HTMLElement;
@@ -293,6 +284,48 @@ function renderContrast(color: Rgb): void {
   }
 }
 
+function relativeLuminance(color: Rgb): number {
+  const channel = (v: number) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(color.r) + 0.7152 * channel(color.g) + 0.0722 * channel(color.b);
+}
+
+function renderVariationStrip(color: Rgb): void {
+  const labels = state.labels;
+  if (!labels) return;
+
+  const colors = buildVariationStrip(color);
+  const activeIndex = closestColorIndex(colors, color);
+  variationStripEl.innerHTML = '';
+
+  for (const [index, segmentColor] of colors.entries()) {
+    const hex = rgbToHex(segmentColor);
+    const segment = document.createElement('button');
+    segment.type = 'button';
+    segment.className = 'variation-segment';
+    if (index === activeIndex) segment.classList.add('is-active');
+    segment.style.backgroundColor = hex;
+
+    const hover = document.createElement('span');
+    hover.className = 'variation-hover';
+    hover.innerHTML = `<span class="variation-hex">${hex.slice(1)}</span><span class="variation-copy">${labels.copy}</span>`;
+
+    if (relativeLuminance(segmentColor) > 0.55) {
+      hover.classList.add('variation-hover-dark');
+    }
+
+    segment.append(hover);
+    segment.addEventListener('click', (event) => {
+      event.stopPropagation();
+      void window.wiRecColorPicker.copyColor(hex);
+      hintEl.textContent = labels.copiedHint;
+    });
+    variationStripEl.append(segment);
+  }
+}
+
 function renderSimilar(color: Rgb): void {
   similarColorsEl.innerHTML = '';
   for (const entry of findSimilarColors(color)) {
@@ -326,7 +359,6 @@ function updateAdvanced(color: Rgb): void {
   labValue.textContent = `${lab.l.toFixed(2)}, ${lab.a.toFixed(2)}, ${lab.b.toFixed(2)}`;
 
   renderSwatchGroups(harmoniesEl, buildHarmonies(color), HARMONY_LABELS);
-  renderSwatchGroups(variationsEl, buildVariations(color), VARIATION_LABELS);
   renderContrast(color);
   renderSimilar(color);
 }
@@ -340,6 +372,7 @@ function applyColor(color: Rgb, source: FormatField | null = null, copy = false)
 
   syncFields(state.color, source);
   syncPickerControls(state.color);
+  renderVariationStrip(state.color);
   updateAdvanced(state.color);
 
   if (copy) {
@@ -367,12 +400,20 @@ function tryParseField(field: FormatField, value: string): Rgb | null {
 
 function positionPanelAt(clientX: number, clientY: number): void {
   state.panelAnchor = { x: clientX, y: clientY };
-  panel.classList.remove('hidden');
-  panel.setAttribute('aria-hidden', 'false');
 
   if (state.advancedOpen) {
+    panel.classList.remove('hidden');
+    panel.setAttribute('aria-hidden', 'false');
     return;
   }
+
+  panel.classList.remove('hidden');
+  panel.setAttribute('aria-hidden', 'false');
+  panel.style.visibility = 'hidden';
+  panel.style.left = '0px';
+  panel.style.top = '0px';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
 
   const margin = 12;
   const offset = 18;
@@ -392,8 +433,7 @@ function positionPanelAt(clientX: number, clientY: number): void {
 
   panel.style.left = `${left}px`;
   panel.style.top = `${top}px`;
-  panel.style.right = '';
-  panel.style.bottom = '';
+  panel.style.visibility = 'visible';
 }
 
 function applyPanelLayout(): void {
@@ -440,9 +480,7 @@ function toggleAdvanced(): void {
     updateAdvanced(state.color);
   }
 
-  requestAnimationFrame(() => {
-    applyPanelLayout();
-  });
+  applyPanelLayout();
 }
 
 function pickFromSvCanvas(clientX: number, clientY: number): void {

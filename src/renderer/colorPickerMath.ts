@@ -321,6 +321,34 @@ export function buildHarmonies(base: Rgb): HarmonyGroup[] {
 
 export type VariationRow = { label: string; colors: Rgb[] };
 
+export function buildVariationStrip(base: Rgb, steps = 11): Rgb[] {
+  const white: Rgb = { r: 255, g: 255, b: 255 };
+  const black: Rgb = { r: 0, g: 0, b: 0 };
+
+  return Array.from({ length: steps }, (_, index) => {
+    const t = index / (steps - 1);
+    if (t <= 0.5) {
+      return mixRgb(white, base, t * 2);
+    }
+    return mixRgb(base, black, (t - 0.5) * 2);
+  });
+}
+
+export function closestColorIndex(colors: Rgb[], target: Rgb): number {
+  let bestIndex = 0;
+  let bestDistance = Infinity;
+
+  for (const [index, color] of colors.entries()) {
+    const distance = colorDistance(color, target);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = index;
+    }
+  }
+
+  return bestIndex;
+}
+
 export function buildVariations(base: Rgb): VariationRow[] {
   const { h, s, v } = rgbToHsv(base);
   const white: Rgb = { r: 255, g: 255, b: 255 };
