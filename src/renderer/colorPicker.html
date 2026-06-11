@@ -47,6 +47,44 @@
           </div>
         </div>
       </div>
+
+      <button type="button" id="advanced-toggle" class="advanced-toggle" aria-expanded="false"></button>
+
+      <div id="advanced-section" class="advanced-section hidden" aria-hidden="true">
+        <div class="picker-area">
+          <canvas id="sv-canvas" width="280" height="140"></canvas>
+          <input id="hue-slider" class="hue-slider" type="range" min="0" max="360" value="0" />
+        </div>
+
+        <section class="adv-block">
+          <h3 id="harmonies-title" class="adv-title"></h3>
+          <div id="harmonies" class="adv-groups"></div>
+        </section>
+
+        <section class="adv-block">
+          <h3 id="variations-title" class="adv-title"></h3>
+          <div id="variations" class="adv-groups"></div>
+        </section>
+
+        <section class="adv-block">
+          <h3 id="conversions-title" class="adv-title"></h3>
+          <div class="conversion-grid">
+            <div class="conversion-row"><span>XYZ</span><code id="xyz-value">—</code></div>
+            <div class="conversion-row"><span>Lab</span><code id="lab-value">—</code></div>
+          </div>
+        </section>
+
+        <section class="adv-block">
+          <h3 id="contrast-title" class="adv-title"></h3>
+          <div id="contrast-checker" class="contrast-grid"></div>
+        </section>
+
+        <section class="adv-block">
+          <h3 id="similar-title" class="adv-title"></h3>
+          <div id="similar-colors" class="similar-grid"></div>
+        </section>
+      </div>
+
       <div class="panel-footer">
         <button type="button" id="close-btn" class="close-btn">✕</button>
         <p id="hint" class="hint"></p>

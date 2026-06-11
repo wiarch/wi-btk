@@ -31,6 +31,27 @@ type ColorPickerStrings = {
   pickHint: string;
   copiedHint: string;
   close: string;
+  advancedOptions: string;
+  advancedHide: string;
+  harmonies: string;
+  variations: string;
+  conversions: string;
+  contrast: string;
+  similarColors: string;
+  onWhite: string;
+  onBlack: string;
+  pass: string;
+  fail: string;
+  harmonyAnalogous: string;
+  harmonyComplementary: string;
+  harmonySplitComplementary: string;
+  harmonyTriadic: string;
+  harmonyTetradic: string;
+  harmonyMonochromatic: string;
+  variationSaturation: string;
+  variationBrightness: string;
+  variationTints: string;
+  variationShades: string;
 };
 
 type ErrorStrings = {
@@ -163,6 +184,27 @@ const en: Dictionary = {
     pickHint: 'Click anywhere to pick a color',
     copiedHint: 'Copied to clipboard',
     close: 'Close',
+    advancedOptions: 'Advanced options',
+    advancedHide: 'Hide advanced options',
+    harmonies: 'Color harmonies',
+    variations: 'Variations',
+    conversions: 'More formats',
+    contrast: 'Contrast checker',
+    similarColors: 'Similar colors',
+    onWhite: 'On white',
+    onBlack: 'On black',
+    pass: 'Pass',
+    fail: 'Fail',
+    harmonyAnalogous: 'Analogous',
+    harmonyComplementary: 'Complementary',
+    harmonySplitComplementary: 'Split complementary',
+    harmonyTriadic: 'Triadic',
+    harmonyTetradic: 'Tetradic',
+    harmonyMonochromatic: 'Monochromatic',
+    variationSaturation: 'Saturation',
+    variationBrightness: 'Brightness',
+    variationTints: 'Tints',
+    variationShades: 'Shades',
   },
   settings: {
     title: 'Settings',
@@ -276,6 +318,27 @@ const es: Dictionary = {
     pickHint: 'Haz clic en cualquier punto para capturar el color',
     copiedHint: 'Copiado al portapapeles',
     close: 'Cerrar',
+    advancedOptions: 'Opciones avanzadas',
+    advancedHide: 'Ocultar opciones avanzadas',
+    harmonies: 'Armonías de color',
+    variations: 'Variaciones',
+    conversions: 'Más formatos',
+    contrast: 'Comprobador de contraste',
+    similarColors: 'Colores similares',
+    onWhite: 'Sobre blanco',
+    onBlack: 'Sobre negro',
+    pass: 'Cumple',
+    fail: 'No cumple',
+    harmonyAnalogous: 'Análogos',
+    harmonyComplementary: 'Complementario',
+    harmonySplitComplementary: 'Complementario dividido',
+    harmonyTriadic: 'Triádico',
+    harmonyTetradic: 'Tetrádico',
+    harmonyMonochromatic: 'Monocromático',
+    variationSaturation: 'Saturación',
+    variationBrightness: 'Brillo',
+    variationTints: 'Tintes',
+    variationShades: 'Sombras',
   },
   settings: {
     title: 'Configuración',
