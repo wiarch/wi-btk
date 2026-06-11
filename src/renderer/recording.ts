@@ -24,6 +24,8 @@ type RecordingLabels = {
   resume: string;
   stop: string;
   startRecord: string;
+  showControls: string;
+  hideControls: string;
 };
 
 type RecordSettings = {
@@ -58,6 +60,10 @@ type WiRecRecordingApi = {
   onStart(callback: (payload: RecordingPayload) => void): () => void;
   prepareCapture(options: { desktopAudio: boolean }): Promise<void>;
   releaseCapture(): Promise<void>;
+  enterLiveMode(): Promise<void>;
+  exitLiveMode(): Promise<void>;
+  setMousePassthrough(enabled: boolean): void;
+  playSound(cue: 'start' | 'pause' | 'stop'): void;
   saveRecording(buffer: ArrayBuffer): Promise<string>;
   persistPreferences(options: {
     desktopAudio: boolean;
@@ -103,11 +109,16 @@ const modeRecord = document.getElementById('mode-record') as HTMLButtonElement;
 const startRecordBtn = document.getElementById('start-record-btn') as HTMLButtonElement;
 const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
 const recordBar = document.getElementById('record-bar') as HTMLDivElement;
+const recordChip = document.getElementById('record-chip') as HTMLButtonElement;
+const recordChipDot = document.getElementById('record-chip-dot') as HTMLSpanElement;
+const recordChipTimer = document.getElementById('record-chip-timer') as HTMLSpanElement;
+const recordMinimizeBtn = document.getElementById('record-minimize-btn') as HTMLButtonElement;
 const recordDot = document.getElementById('record-dot') as HTMLSpanElement;
 const recordStatus = document.getElementById('record-status') as HTMLSpanElement;
 const recordTimer = document.getElementById('record-timer') as HTMLSpanElement;
 const pauseBtn = document.getElementById('pause-btn') as HTMLButtonElement;
 const stopBtn = document.getElementById('stop-btn') as HTMLButtonElement;
+const regionIndicator = document.getElementById('region-indicator') as HTMLDivElement;
 
 if (!ctx) {
   throw new Error('Canvas 2D context unavailable');
@@ -122,9 +133,9 @@ const state = {
   recordSettings: null as RecordSettings | null,
   hotkeys: {
     start: 'Enter',
-    pause: 'P',
-    resume: 'Shift+P',
-    stop: 'CommandOrControl+Enter',
+    pause: 'F2',
+    resume: 'F2',
+    stop: 'F3',
   } as RecordingHotkeys,
   mode: 'selecting' as 'selecting' | 'countdown' | 'recording',
   regionMode: 'rectangle' as 'rectangle' | 'fullscreen',
@@ -138,8 +149,6 @@ const state = {
   sourceStream: null as MediaStream | null,
   cropVideo: null as HTMLVideoElement | null,
   cropRaf: 0,
-  borderRaf: 0,
-  borderPulse: 0,
   countdownAborted: false,
   timerStart: 0,
   timerElapsed: 0,
@@ -147,6 +156,7 @@ const state = {
   paused: false,
   frame: null as ImageBitmap | null,
   openMenu: null as 'region' | 'audio' | null,
+  recordControlsExpanded: false,
 };
 
 function sleep(ms: number): Promise<void> {
@@ -155,6 +165,11 @@ function sleep(ms: number): Promise<void> {
 
 function canSwitchMode(): boolean {
   return state.mode === 'selecting';
+}
+
+function setModeSwitchEnabled(enabled: boolean): void {
+  modeScreenshot.disabled = !enabled;
+  modeRecord.disabled = !enabled;
 }
 
 function closeMenus(): void {
@@ -229,16 +244,42 @@ function updateStartButton(): void {
   startRecordBtn.classList.add('hidden');
 }
 
-function drawSelectionBorder(sel: SelectionBounds, color: string, glow = false): void {
-  const { x, y, width, height } = sel;
-  if (glow) {
-    drawCtx.shadowColor = '#22c55e';
-    drawCtx.shadowBlur = 10 + state.borderPulse * 8;
+function isFullScreenRegion(region: SelectionBounds): boolean {
+  return (
+    region.x === 0 &&
+    region.y === 0 &&
+    region.width === canvas.width &&
+    region.height === canvas.height
+  );
+}
+
+function syncRegionIndicator(region: SelectionBounds | null): void {
+  if (!region || isFullScreenRegion(region)) {
+    regionIndicator.classList.add('hidden');
+    regionIndicator.setAttribute('aria-hidden', 'true');
+    return;
   }
+
+  const scaleX = window.innerWidth / canvas.width;
+  const scaleY = window.innerHeight / canvas.height;
+  regionIndicator.style.left = `${region.x * scaleX}px`;
+  regionIndicator.style.top = `${region.y * scaleY}px`;
+  regionIndicator.style.width = `${region.width * scaleX}px`;
+  regionIndicator.style.height = `${region.height * scaleY}px`;
+  regionIndicator.classList.remove('hidden');
+  regionIndicator.setAttribute('aria-hidden', 'false');
+}
+
+function hideRegionIndicator(): void {
+  regionIndicator.classList.add('hidden');
+  regionIndicator.setAttribute('aria-hidden', 'true');
+}
+
+function drawSelectionBorder(sel: SelectionBounds, color: string): void {
+  const { x, y, width, height } = sel;
   drawCtx.strokeStyle = color;
-  drawCtx.lineWidth = glow ? 3 : 2;
+  drawCtx.lineWidth = 2;
   drawCtx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
-  drawCtx.shadowBlur = 0;
 }
 
 function redrawSelectingFrame(): void {
@@ -269,62 +310,8 @@ function redrawSelectingFrame(): void {
   drawSelectionBorder(region, '#4f6df5');
 }
 
-function redrawRecordingFrame(): void {
-  if (!state.frame) {
-    return;
-  }
-
-  drawCtx.drawImage(state.frame, 0, 0, canvas.width, canvas.height);
-  const region = getActiveRegion();
-  if (!region) {
-    return;
-  }
-
-  drawCtx.fillStyle = `rgba(0, 0, 0, ${OVERLAY_ALPHA})`;
-  drawCtx.fillRect(0, 0, canvas.width, canvas.height);
-  drawCtx.drawImage(
-    state.frame,
-    region.x,
-    region.y,
-    region.width,
-    region.height,
-    region.x,
-    region.y,
-    region.width,
-    region.height,
-  );
-  drawSelectionBorder(region, '#4ade80', true);
-}
-
 function redrawFrame(): void {
-  if (state.mode === 'recording') {
-    redrawRecordingFrame();
-    return;
-  }
   redrawSelectingFrame();
-}
-
-function startBorderLoop(): void {
-  const tick = () => {
-    if (state.mode !== 'recording') {
-      state.borderRaf = 0;
-      return;
-    }
-    state.borderPulse = (Math.sin(Date.now() / 280) + 1) / 2;
-    redrawRecordingFrame();
-    state.borderRaf = requestAnimationFrame(tick);
-  };
-  if (state.borderRaf) {
-    cancelAnimationFrame(state.borderRaf);
-  }
-  state.borderRaf = requestAnimationFrame(tick);
-}
-
-function stopBorderLoop(): void {
-  if (state.borderRaf) {
-    cancelAnimationFrame(state.borderRaf);
-    state.borderRaf = 0;
-  }
 }
 
 async function loadFrozenFrame(imageUrl: string, width: number, height: number): Promise<void> {
@@ -372,6 +359,51 @@ function applyLabels(snipLabels: SnipLabels, labels: RecordingLabels): void {
   pauseBtn.textContent = labels.pause;
   stopBtn.textContent = labels.stop;
   startRecordBtn.textContent = labels.startRecord;
+  recordChip.title = labels.showControls;
+  recordMinimizeBtn.title = labels.hideControls;
+}
+
+function syncRecordTimerDisplay(text: string): void {
+  recordTimer.textContent = text;
+  recordChipTimer.textContent = text;
+}
+
+function syncRecordDotState(): void {
+  recordChipDot.classList.toggle('paused', recordDot.classList.contains('paused'));
+}
+
+function collapseRecordControls(): void {
+  state.recordControlsExpanded = false;
+  recordBar.classList.add('hidden');
+  recordBar.setAttribute('aria-hidden', 'true');
+  recordChip.classList.remove('hidden');
+  recordChip.setAttribute('aria-hidden', 'false');
+  window.wiRecRecording.setMousePassthrough(true);
+}
+
+function expandRecordControls(): void {
+  state.recordControlsExpanded = true;
+  recordChip.classList.add('hidden');
+  recordChip.setAttribute('aria-hidden', 'true');
+  recordBar.classList.remove('hidden');
+  recordBar.setAttribute('aria-hidden', 'false');
+  window.wiRecRecording.setMousePassthrough(true);
+}
+
+function bindRecordControlHover(element: HTMLElement): void {
+  element.addEventListener('mouseenter', () => {
+    if (state.mode !== 'recording') {
+      return;
+    }
+    window.wiRecRecording.setMousePassthrough(false);
+  });
+
+  element.addEventListener('mouseleave', () => {
+    if (state.mode !== 'recording') {
+      return;
+    }
+    window.wiRecRecording.setMousePassthrough(true);
+  });
 }
 
 function getPreferences() {
@@ -443,7 +475,7 @@ function startTimer(): void {
   }
   state.timerInterval = setInterval(() => {
     if (!state.paused) {
-      recordTimer.textContent = formatTimer(Date.now() - state.timerStart);
+      syncRecordTimerDisplay(formatTimer(Date.now() - state.timerStart));
     }
   }, 250);
 }
@@ -455,13 +487,23 @@ function stopTimer(): void {
   }
 }
 
-function showRecordingBar(): void {
+function showRecordingBar(region: SelectionBounds): void {
   closeMenus();
+  state.mode = 'recording';
+  setModeSwitchEnabled(false);
   snipBar.classList.add('hidden');
   startRecordBtn.classList.add('hidden');
-  recordBar.classList.remove('hidden');
-  recordBar.setAttribute('aria-hidden', 'false');
+  document.body.classList.remove('selecting', 'countdown');
   document.body.classList.add('recording');
+  document.body.classList.remove('paused');
+  syncRegionIndicator(region);
+  collapseRecordControls();
+}
+
+async function enterLiveRecordingUi(region: SelectionBounds): Promise<void> {
+  showRecordingBar(region);
+  await window.wiRecRecording.enterLiveMode();
+  window.wiRecRecording.setMousePassthrough(true);
 }
 
 async function cropStreamToRegion(
@@ -550,6 +592,7 @@ async function buildRecordingStream(region: SelectionBounds): Promise<MediaStrea
 async function runCountdown(): Promise<boolean> {
   state.mode = 'countdown';
   state.countdownAborted = false;
+  setModeSwitchEnabled(false);
   document.body.classList.add('countdown');
   countdownOverlay.classList.remove('hidden');
   countdownOverlay.setAttribute('aria-hidden', 'false');
@@ -569,6 +612,7 @@ async function runCountdown(): Promise<boolean> {
 
   if (state.countdownAborted) {
     state.mode = 'selecting';
+    setModeSwitchEnabled(true);
     updateStartButton();
     return false;
   }
@@ -590,6 +634,8 @@ async function startRecording(): Promise<void> {
     if (!proceed) {
       return;
     }
+
+    await enterLiveRecordingUi(region);
     const stream = await buildRecordingStream(region);
     state.recordedChunks = [];
     const mimeType = pickMimeType();
@@ -614,17 +660,17 @@ async function startRecording(): Promise<void> {
     };
 
     state.mediaRecorder = recorder;
-    state.mode = 'recording';
     state.paused = false;
     state.timerElapsed = 0;
-    showRecordingBar();
-    startBorderLoop();
     recorder.start(1000);
     startTimer();
+    window.wiRecRecording.playSound('start');
     void window.wiRecRecording.persistPreferences(getPreferences());
   } catch (error) {
     state.mode = 'selecting';
     await stopStream();
+    await window.wiRecRecording.exitLiveMode();
+    window.wiRecRecording.setMousePassthrough(false);
     const message = error instanceof Error ? error.message : String(error);
     alert(message);
     resetToSelecting();
@@ -633,8 +679,9 @@ async function startRecording(): Promise<void> {
 
 async function finalizeRecording(): Promise<void> {
   stopTimer();
-  stopBorderLoop();
   await stopStream();
+  await window.wiRecRecording.exitLiveMode();
+  window.wiRecRecording.setMousePassthrough(false);
 
   const mimeType = pickMimeType() || 'video/webm';
   const blob = new Blob(state.recordedChunks, { type: mimeType });
@@ -655,18 +702,30 @@ function resetToSelecting(): void {
   state.mode = 'selecting';
   state.dragging = false;
   state.paused = false;
-  document.body.classList.remove('recording', 'countdown');
+  setModeSwitchEnabled(true);
+  hideRegionIndicator();
+  document.body.classList.remove('recording', 'countdown', 'paused');
+  document.body.classList.add('selecting');
   snipBar.classList.remove('hidden');
   recordBar.classList.add('hidden');
   recordBar.setAttribute('aria-hidden', 'true');
-  recordTimer.textContent = '00:00';
+  recordChip.classList.add('hidden');
+  recordChip.setAttribute('aria-hidden', 'true');
+  state.recordControlsExpanded = false;
+  syncRecordTimerDisplay('00:00');
   recordDot.classList.remove('paused');
+  syncRecordDotState();
   if (state.labels) {
     recordStatus.textContent = state.labels.recording;
     pauseBtn.textContent = state.labels.pause;
   }
   updateStartButton();
   redrawFrame();
+}
+
+async function exitLiveRecordingUi(): Promise<void> {
+  window.wiRecRecording.setMousePassthrough(false);
+  await window.wiRecRecording.exitLiveMode();
 }
 
 function pauseRecording(): void {
@@ -677,9 +736,12 @@ function pauseRecording(): void {
   recorder.pause();
   state.paused = true;
   state.timerElapsed = Date.now() - state.timerStart;
+  document.body.classList.add('paused');
   recordStatus.textContent = labels?.paused ?? 'Paused';
   recordDot.classList.add('paused');
+  syncRecordDotState();
   pauseBtn.textContent = labels?.resume ?? 'Resume';
+  window.wiRecRecording.playSound('pause');
 }
 
 function resumeRecording(): void {
@@ -690,8 +752,10 @@ function resumeRecording(): void {
   recorder.resume();
   state.paused = false;
   state.timerStart = Date.now() - state.timerElapsed;
+  document.body.classList.remove('paused');
   recordStatus.textContent = labels?.recording ?? 'Recording';
   recordDot.classList.remove('paused');
+  syncRecordDotState();
   pauseBtn.textContent = labels?.pause ?? 'Pause';
 }
 
@@ -712,12 +776,12 @@ function togglePause(): void {
 function stopRecording(): void {
   const recorder = state.mediaRecorder;
   if (!recorder || recorder.state === 'inactive') return;
+  window.wiRecRecording.playSound('stop');
   recorder.stop();
 }
 
 async function discardRecordingAndClose(): Promise<void> {
   stopTimer();
-  stopBorderLoop();
   state.recordedChunks = [];
   if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
     state.mediaRecorder.onstop = null;
@@ -725,6 +789,7 @@ async function discardRecordingAndClose(): Promise<void> {
   }
   state.mediaRecorder = null;
   await stopStream();
+  await exitLiveRecordingUi();
   window.wiRecRecording.cancel();
 }
 
@@ -791,6 +856,24 @@ stopBtn.addEventListener('click', () => {
   stopRecording();
 });
 
+recordChip.addEventListener('click', () => {
+  if (state.mode !== 'recording') {
+    return;
+  }
+  expandRecordControls();
+});
+
+recordMinimizeBtn.addEventListener('click', (event) => {
+  event.stopPropagation();
+  if (state.mode !== 'recording') {
+    return;
+  }
+  collapseRecordControls();
+});
+
+bindRecordControlHover(recordChip);
+bindRecordControlHover(recordBar);
+
 canvas.addEventListener('mousedown', (event) => {
   if (state.mode !== 'selecting' || state.regionMode === 'fullscreen') return;
   closeMenus();
@@ -847,15 +930,12 @@ window.addEventListener('keydown', (event) => {
   }
 
   if (state.mode === 'recording') {
-    if (eventMatchesAccelerator(event, state.hotkeys.pause)) {
+    if (
+      eventMatchesAccelerator(event, state.hotkeys.pause) ||
+      eventMatchesAccelerator(event, state.hotkeys.resume)
+    ) {
       event.preventDefault();
-      pauseRecording();
-      return;
-    }
-
-    if (eventMatchesAccelerator(event, state.hotkeys.resume)) {
-      event.preventDefault();
-      resumeRecording();
+      togglePause();
       return;
     }
 
@@ -876,6 +956,7 @@ window.wiRecRecording.onStart((payload: RecordingPayload) => {
   closeMenus();
   resetToSelecting();
   applyLabels(payload.snipLabels, payload.labels);
+  document.body.classList.add('selecting');
   desktopAudioInput.checked = payload.defaults.desktopAudio;
   micMuteInput.checked = !payload.defaults.micEnabled;
 

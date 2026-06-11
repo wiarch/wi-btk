@@ -3,6 +3,7 @@ import {
   keyboardEventToAccelerator,
   previewAccelerator,
 } from './hotkeyInput.js';
+import { buildAcceleratorFromEvent, keyFromKeyboardEvent } from '../shared/accelerator.js';
 
 export {};
 
@@ -120,6 +121,7 @@ type SettingsUi = {
   captureSoundPop: string;
   captureSoundShutter: string;
   captureSoundDing: string;
+  hotkeyTooManyKeys: string;
 };
 
 type AssignHotkeyResult =
@@ -247,6 +249,7 @@ let ui: SettingsUi | null = null;
 let recordingAction: HotkeyAction | null = null;
 let recordingInput: HTMLInputElement | null = null;
 let recordingListener: ((event: KeyboardEvent) => void) | null = null;
+let recordingKeyupListener: ((event: KeyboardEvent) => void) | null = null;
 const hotkeyInputs = new Map<HotkeyAction, HTMLInputElement>();
 
 function setStatus(message: string, kind: 'ok' | 'error' | '' = ''): void {
@@ -449,6 +452,27 @@ function stopRecordingListener(): void {
     window.removeEventListener('keydown', recordingListener, true);
     recordingListener = null;
   }
+  if (recordingKeyupListener) {
+    window.removeEventListener('keyup', recordingKeyupListener, true);
+    recordingKeyupListener = null;
+  }
+}
+
+function stopHotkeyCapture(): void {
+  if (!recordingInput || !recordingAction) {
+    stopRecordingListener();
+    recordingAction = null;
+    recordingInput = null;
+    return;
+  }
+
+  const action = recordingAction;
+  const input = recordingInput;
+  stopRecordingListener();
+  recordingAction = null;
+  recordingInput = null;
+  input.classList.remove('recording');
+  input.value = displayHotkeyValue(action);
 }
 
 async function finishHotkeyRecord(
@@ -460,10 +484,7 @@ async function finishHotkeyRecord(
     return;
   }
 
-  stopRecordingListener();
-  recordingAction = null;
-  recordingInput = null;
-  input.classList.remove('recording');
+  stopHotkeyCapture();
 
   const result = await window.wiRecSettings.assignHotkey(
     action,
@@ -483,8 +504,60 @@ async function finishHotkeyRecord(
   await persistDraft();
 }
 
+function tryCommitHotkey(
+  action: HotkeyAction,
+  input: HTMLInputElement,
+  event: KeyboardEvent,
+): boolean {
+  if (document.activeElement !== input) {
+    stopHotkeyCapture();
+    return true;
+  }
+
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    stopHotkeyCapture();
+    return true;
+  }
+
+  if (event.key === 'Backspace' || event.key === 'Delete') {
+    event.preventDefault();
+    stopHotkeyCapture();
+    return true;
+  }
+
+  const preview = previewAccelerator(event);
+  if (preview && !preview.endsWith('+…')) {
+    event.preventDefault();
+    event.stopPropagation();
+    void finishHotkeyRecord(action, input, preview);
+    return true;
+  }
+
+  if (preview) {
+    event.preventDefault();
+    event.stopPropagation();
+    input.value = formatAcceleratorForDisplay(preview);
+    return true;
+  }
+
+  const accelerator = keyboardEventToAccelerator(event);
+  if (accelerator) {
+    event.preventDefault();
+    event.stopPropagation();
+    void finishHotkeyRecord(action, input, accelerator);
+    return true;
+  }
+
+  if (event.key !== 'Unidentified' && event.key !== 'Dead') {
+    setStatus(ui?.hotkeyTooManyKeys ?? 'Use at most 3 keys.', 'error');
+  }
+
+  return false;
+}
+
 function startRecording(action: HotkeyAction, input: HTMLInputElement): void {
-  stopRecordingListener();
+  stopHotkeyCapture();
   recordingAction = action;
   recordingInput = input;
   input.classList.add('recording');
@@ -497,27 +570,45 @@ function startRecording(action: HotkeyAction, input: HTMLInputElement): void {
       return;
     }
 
+    if (document.activeElement !== input) {
+      stopHotkeyCapture();
+      return;
+    }
+
+    tryCommitHotkey(action, input, event);
+  };
+
+  recordingKeyupListener = (event: KeyboardEvent) => {
+    if (recordingAction !== action || recordingInput !== input || !draft) {
+      return;
+    }
+
+    if (document.activeElement !== input) {
+      stopHotkeyCapture();
+      return;
+    }
+
+    const key = keyFromKeyboardEvent(event);
+    if (!key || event.type !== 'keyup') {
+      return;
+    }
+
+    if (event.key === 'Backspace' || event.key === 'Delete' || event.key === 'Escape') {
+      return;
+    }
+
+    const accelerator = buildAcceleratorFromEvent(event);
+    if (!accelerator) {
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
-
-    const preview = previewAccelerator(event);
-    if (preview && !preview.endsWith('+…')) {
-      void finishHotkeyRecord(action, input, preview);
-      return;
-    }
-
-    if (preview) {
-      input.value = formatAcceleratorForDisplay(preview);
-      return;
-    }
-
-    const accelerator = keyboardEventToAccelerator(event);
-    if (accelerator) {
-      void finishHotkeyRecord(action, input, accelerator);
-    }
+    void finishHotkeyRecord(action, input, accelerator);
   };
 
   window.addEventListener('keydown', recordingListener, true);
+  window.addEventListener('keyup', recordingKeyupListener, true);
 }
 
 function stopRecording(action: HotkeyAction, input: HTMLInputElement): void {
@@ -525,11 +616,7 @@ function stopRecording(action: HotkeyAction, input: HTMLInputElement): void {
     return;
   }
 
-  stopRecordingListener();
-  recordingAction = null;
-  recordingInput = null;
-  input.classList.remove('recording');
-  input.value = displayHotkeyValue(action);
+  stopHotkeyCapture();
 }
 
 function syncFilenameFieldsVisibility(): void {
@@ -686,7 +773,15 @@ async function init(): Promise<void> {
   });
 
   closeBtn.addEventListener('click', () => {
+    stopHotkeyCapture();
     window.wiRecSettings.closeWindow();
+  });
+
+  document.addEventListener('focusin', (event) => {
+    if (!recordingInput || event.target === recordingInput) {
+      return;
+    }
+    stopHotkeyCapture();
   });
 }
 

@@ -92,4 +92,20 @@ writeWav(join(outDir, 'pop.wav'), pop(sampleRate), sampleRate);
 writeWav(join(outDir, 'shutter.wav'), shutter(sampleRate), sampleRate);
 writeWav(join(outDir, 'ding.wav'), tone(660, 0.22, sampleRate, 0.4), sampleRate);
 
+writeWav(
+  join(outDir, 'record-start.wav'),
+  concat(tone(523, 0.08, sampleRate, 0.38), silence(0.02, sampleRate), tone(784, 0.12, sampleRate, 0.38)),
+  sampleRate,
+);
+writeWav(
+  join(outDir, 'record-pause.wav'),
+  tone(392, 0.16, sampleRate, 0.36),
+  sampleRate,
+);
+writeWav(
+  join(outDir, 'record-stop.wav'),
+  concat(tone(622, 0.07, sampleRate, 0.34), silence(0.04, sampleRate), tone(440, 0.18, sampleRate, 0.34)),
+  sampleRate,
+);
+
 console.log('Generated capture sounds in', outDir);

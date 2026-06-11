@@ -1,4 +1,8 @@
 import { globalShortcut } from 'electron';
+import {
+  MAX_ACCELERATOR_PARTS,
+  normalizeAcceleratorKey,
+} from '../shared/accelerator';
 import type { AppSettings, HotkeyAction } from '../shared/settings';
 import { GLOBAL_HOTKEY_ACTIONS } from '../shared/settings';
 
@@ -12,11 +16,14 @@ const MODIFIER_KEYS = new Set([
   'AltGraph',
 ]);
 
+export { MAX_ACCELERATOR_PARTS };
+
 export function normalizeAccelerator(accelerator: string): string {
   return accelerator
     .split('+')
     .map((part) => part.trim())
     .filter(Boolean)
+    .map((part) => normalizeAcceleratorKey(part))
     .join('+');
 }
 
@@ -44,7 +51,17 @@ export function isValidAccelerator(accelerator: string): boolean {
     return false;
   }
 
+  if (parts.length > MAX_ACCELERATOR_PARTS) {
+    return false;
+  }
+
   return parts.length >= 1;
+}
+
+export function usesPrintScreen(accelerator: string): boolean {
+  return normalizeAccelerator(accelerator)
+    .split('+')
+    .some((part) => part === 'PrintScreen');
 }
 
 export function findDuplicateHotkeys(hotkeys: AppSettings['hotkeys']): string | null {

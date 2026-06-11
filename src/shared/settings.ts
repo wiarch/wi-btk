@@ -90,9 +90,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
     copy: 'CommandOrControl+C',
     cancel: 'Escape',
     recordStart: 'Enter',
-    recordPause: 'P',
-    recordResume: 'Shift+P',
-    recordStop: 'CommandOrControl+Enter',
+    recordPause: 'F2',
+    recordResume: 'F2',
+    recordStop: 'F3',
   },
 };
 

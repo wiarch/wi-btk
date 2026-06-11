@@ -115,15 +115,7 @@ async function captureWindows(): Promise<Buffer> {
 }
 
 async function captureLinux(): Promise<Buffer> {
-  const attempts: Array<{ name: string; run: () => Promise<Buffer> }> = [
-    {
-      name: 'screenshot-desktop',
-      run: async () => {
-        const image = await screenshot({ format: 'png' });
-        return Buffer.isBuffer(image) ? image : Buffer.from(image);
-      },
-    },
-  ];
+  const attempts: Array<{ name: string; run: () => Promise<Buffer> }> = [];
 
   if (await commandExists('grim')) {
     attempts.push({ name: 'grim', run: captureViaGrim });
@@ -132,6 +124,14 @@ async function captureLinux(): Promise<Buffer> {
   if (await commandExists('scrot')) {
     attempts.push({ name: 'scrot', run: captureViaScrot });
   }
+
+  attempts.push({
+    name: 'screenshot-desktop',
+    run: async () => {
+      const image = await screenshot({ format: 'png' });
+      return Buffer.isBuffer(image) ? image : Buffer.from(image);
+    },
+  });
 
   if (await commandExists('import')) {
     attempts.push({ name: 'import', run: captureViaImport });

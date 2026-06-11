@@ -1,8 +1,8 @@
-import { app, BrowserWindow, ipcMain, type IpcMainEvent } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeImage, type IpcMainEvent } from 'electron';
 import { join } from 'node:path';
-import { nativeImage } from 'electron';
 import { getDictionary } from '../shared/i18n';
 import type { Language } from '../shared/settings';
+import { applyCaptureWindowLayer, presentCaptureWindow } from './captureWindowLayer';
 import { log } from './logger';
 
 let colorPickerWindow: BrowserWindow | null = null;
@@ -114,8 +114,7 @@ function createColorPickerShell(
   });
 
   win.setMenuBarVisibility(false);
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  win.setAlwaysOnTop(true, 'screen-saver');
+  applyCaptureWindowLayer(win);
   win.on('closed', () => {
     colorPickerWindow = null;
     colorPickerReady = false;
@@ -171,7 +170,6 @@ export async function openColorPicker(
 
   colorPickerWindow.hide();
   colorPickerWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
-  colorPickerWindow.setAlwaysOnTop(true, 'screen-saver');
 
   const contentReady = waitForColorPickerContentReady(colorPickerWindow);
   colorPickerWindow.webContents.send('colorpicker:start', {
@@ -183,6 +181,5 @@ export async function openColorPicker(
   });
   await contentReady;
 
-  colorPickerWindow.show();
-  colorPickerWindow.focus();
+  await presentCaptureWindow(colorPickerWindow);
 }

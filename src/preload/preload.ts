@@ -100,6 +100,18 @@ contextBridge.exposeInMainWorld('wiRecRecording', {
   releaseCapture(): Promise<void> {
     return ipcRenderer.invoke('recording:releaseCapture');
   },
+  enterLiveMode(): Promise<void> {
+    return ipcRenderer.invoke('recording:enterLiveMode');
+  },
+  exitLiveMode(): Promise<void> {
+    return ipcRenderer.invoke('recording:exitLiveMode');
+  },
+  setMousePassthrough(enabled: boolean): void {
+    ipcRenderer.send('recording:mousePassthrough', enabled);
+  },
+  playSound(cue: 'start' | 'pause' | 'stop'): void {
+    ipcRenderer.send('recording:playSound', cue);
+  },
   saveRecording(buffer: ArrayBuffer): Promise<string> {
     return ipcRenderer.invoke('recording:save', buffer);
   },

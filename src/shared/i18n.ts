@@ -92,6 +92,8 @@ type RecordingStrings = {
   fullScreen: string;
   selectRegion: string;
   startRecord: string;
+  showControls: string;
+  hideControls: string;
   countdown: string;
   cancel: string;
   recording: string;
@@ -193,6 +195,9 @@ type SettingsStrings = {
   hotkeyRequired: string;
   hotkeyNeedsModifierTitle: string;
   hotkeyNeedsModifierBody: string;
+  hotkeyTooManyKeys: string;
+  hotkeyPrintScreenLinuxTitle: string;
+  hotkeyPrintScreenLinuxBody: string;
   conflictInternalTitle: string;
   conflictInternalBody: string;
   conflictExternalTitle: string;
@@ -319,6 +324,8 @@ const en: Dictionary = {
     fullScreen: 'Full screen',
     selectRegion: 'Select region',
     startRecord: 'Start recording',
+    showControls: 'Show recording controls',
+    hideControls: 'Minimize controls',
     countdown: 'Starting in…',
     cancel: 'Cancel',
     recording: 'Recording',
@@ -403,6 +410,10 @@ const en: Dictionary = {
     hotkeyNeedsModifierTitle: 'Combination required for global hotkey',
     hotkeyNeedsModifierBody:
       '"{hotkey}" blocks normal typing. Use Ctrl, Alt or Shift for "{target}" (e.g. Ctrl+Shift+S).',
+    hotkeyTooManyKeys: 'Use at most 3 keys (e.g. Ctrl+Shift+S).',
+    hotkeyPrintScreenLinuxTitle: 'Print Screen may not work',
+    hotkeyPrintScreenLinuxBody:
+      '{hotkey} was saved, but Print Screen is often captured by the system on Linux and may not trigger WI-Rec. Prefer Ctrl+Shift+S or another combo.',
     conflictInternalTitle: 'Hotkey already assigned in WI-Rec',
     conflictInternalBody:
       '{hotkey} is assigned to "{action}". Clear it and assign to "{target}"?',
@@ -521,6 +532,8 @@ const es: Dictionary = {
     fullScreen: 'Pantalla completa',
     selectRegion: 'Seleccionar región',
     startRecord: 'Iniciar grabación',
+    showControls: 'Mostrar controles de grabación',
+    hideControls: 'Minimizar controles',
     countdown: 'Comienza en…',
     cancel: 'Cancelar',
     recording: 'Grabando',
@@ -605,6 +618,10 @@ const es: Dictionary = {
     hotkeyNeedsModifierTitle: 'Combinación obligatoria para atajo global',
     hotkeyNeedsModifierBody:
       '"{hotkey}" bloquea teclas normales. Usa Ctrl, Alt o Shift para "{target}" (ej. Ctrl+Shift+S).',
+    hotkeyTooManyKeys: 'Máximo 3 teclas (ej. Ctrl+Shift+S).',
+    hotkeyPrintScreenLinuxTitle: 'Print Screen puede no funcionar',
+    hotkeyPrintScreenLinuxBody:
+      '{hotkey} se guardó, pero en Linux el sistema suele capturar Print Screen y WI-Rec puede no responder. Mejor Ctrl+Shift+S u otra combinación.',
     conflictInternalTitle: 'Atajo ya asignado en WI-Rec',
     conflictInternalBody:
       '{hotkey} está asignado a "{action}". ¿Quitarlo y asignarlo a "{target}"?',

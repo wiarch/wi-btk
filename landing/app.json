@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "WI-Rec",
+    "slug": "wi-rec",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "wirec",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#151826",
+        "foregroundImage": "./assets/icon.png"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png",
+      "name": "WI-Rec — Captura y grabación de pantalla",
+      "shortName": "WI-Rec",
+      "description": "Captura y graba tu pantalla en Windows y Linux. Open source por Wi Arch.",
+      "themeColor": "#0c0e14",
+      "backgroundColor": "#0c0e14"
+    }
+  }
+}

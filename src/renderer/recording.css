@@ -9,9 +9,17 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #000;
   user-select: none;
   font: 13px/1.4 system-ui, -apple-system, sans-serif;
+}
+
+body.selecting {
+  background: #000;
+}
+
+body.recording {
+  background: transparent;
+  pointer-events: none;
 }
 
 #canvas {
@@ -24,12 +32,63 @@ body {
 }
 
 body.recording #canvas {
-  cursor: default;
-  pointer-events: none;
+  display: none;
 }
 
 body.countdown #canvas {
   pointer-events: none;
+}
+
+.region-indicator {
+  position: fixed;
+  z-index: 10;
+  border: 3px solid #4ade80;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px rgba(74, 222, 128, 0.35),
+    0 0 18px rgba(74, 222, 128, 0.65);
+  pointer-events: none;
+  animation: border-pulse-green 1.4s ease-in-out infinite;
+}
+
+.region-indicator.hidden {
+  display: none;
+}
+
+body.recording.paused .region-indicator {
+  border-color: #ef4444;
+  box-shadow:
+    0 0 0 1px rgba(239, 68, 68, 0.35),
+    0 0 18px rgba(239, 68, 68, 0.65);
+  animation: border-pulse-red 1.4s ease-in-out infinite;
+}
+
+@keyframes border-pulse-green {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(74, 222, 128, 0.35),
+      0 0 12px rgba(74, 222, 128, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(74, 222, 128, 0.55),
+      0 0 22px rgba(74, 222, 128, 0.85);
+  }
+}
+
+@keyframes border-pulse-red {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(239, 68, 68, 0.35),
+      0 0 12px rgba(239, 68, 68, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(239, 68, 68, 0.55),
+      0 0 22px rgba(239, 68, 68, 0.85);
+  }
 }
 
 .countdown-overlay {
@@ -51,6 +110,69 @@ body.countdown #canvas {
   font: 700 120px/1 system-ui, -apple-system, sans-serif;
   color: #fff;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+}
+
+body.recording #snip-bar {
+  display: none;
+}
+
+body.recording #record-chip,
+body.recording #record-bar {
+  pointer-events: auto;
+}
+
+.record-chip {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  z-index: 46;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  background: rgba(249, 249, 249, 0.96);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+  color: #202020;
+  cursor: pointer;
+  font: 600 12px/1 system-ui, sans-serif;
+}
+
+.record-chip.hidden {
+  display: none;
+}
+
+.record-chip-timer {
+  font: 600 12px/1 ui-monospace, monospace;
+  min-width: 44px;
+}
+
+.record-chip-chevron {
+  opacity: 0.55;
+  font-size: 10px;
+}
+
+.record-minimize-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #444;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.record-minimize-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.recording #record-bar {
+  pointer-events: auto;
 }
 
 .snip-bar-btn.primary {

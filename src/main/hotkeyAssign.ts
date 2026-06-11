@@ -2,7 +2,12 @@ import { dialog, globalShortcut } from 'electron';
 import { hotkeyLabel, t } from '../shared/i18n';
 import type { AppSettings, HotkeyAction, Language } from '../shared/settings';
 import { GLOBAL_HOTKEY_ACTIONS } from '../shared/settings';
-import { isSafeGlobalAccelerator, isValidAccelerator, normalizeAccelerator } from './hotkeys';
+import {
+  isSafeGlobalAccelerator,
+  isValidAccelerator,
+  normalizeAccelerator,
+  usesPrintScreen,
+} from './hotkeys';
 
 function formatHotkeyForUi(accelerator: string): string {
   return accelerator.replace(/CommandOrControl/g, 'Ctrl').replace(/PrintScreen/g, 'Print Screen');
@@ -64,6 +69,11 @@ export async function assignHotkeyWithConflictCheck(
 ): Promise<AssignHotkeyResult> {
   const normalized = normalizeAccelerator(accelerator);
   if (!isValidAccelerator(normalized)) {
+    return { ok: false, reason: 'invalid' };
+  }
+
+  const parts = normalized.split('+');
+  if (parts.length > 3) {
     return { ok: false, reason: 'invalid' };
   }
 
@@ -130,6 +140,22 @@ export async function assignHotkeyWithConflictCheck(
     if (response.response !== 0) {
       return { ok: false, reason: 'cancelled' };
     }
+  }
+
+  if (
+    GLOBAL_HOTKEY_ACTIONS.includes(action) &&
+    process.platform === 'linux' &&
+    usesPrintScreen(normalized)
+  ) {
+    await dialog.showMessageBox({
+      type: 'warning',
+      buttons: ['OK'],
+      title: 'WI-Rec',
+      message: t(language, 'settings.hotkeyPrintScreenLinuxTitle'),
+      detail: t(language, 'settings.hotkeyPrintScreenLinuxBody', {
+        hotkey: formatHotkeyForUi(normalized),
+      }),
+    });
   }
 
   return { ok: true, hotkeys: nextHotkeys };

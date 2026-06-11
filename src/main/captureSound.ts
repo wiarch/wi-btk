@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import type { AppSettings, CaptureSoundPreset } from '../shared/settings';
 import { log } from './logger';
 
+export type RecordingSoundCue = 'start' | 'pause' | 'stop';
+
 function soundsDir(): string {
   return join(app.getAppPath(), 'dist', 'assets', 'sounds');
 }
@@ -52,27 +54,44 @@ function playOnLinux(filePath: string): void {
   attempt();
 }
 
+function playFile(filePath: string): void {
+  if (process.platform === 'win32') {
+    playOnWindows(filePath);
+    return;
+  }
+
+  if (process.platform === 'darwin') {
+    playOnDarwin(filePath);
+    return;
+  }
+
+  playOnLinux(filePath);
+}
+
 export function playCaptureSound(settings: AppSettings): void {
   if (!settings.captureSoundEnabled) {
     return;
   }
 
-  const filePath = soundPath(settings.captureSoundPreset);
-
   try {
-    if (process.platform === 'win32') {
-      playOnWindows(filePath);
-      return;
-    }
-
-    if (process.platform === 'darwin') {
-      playOnDarwin(filePath);
-      return;
-    }
-
-    playOnLinux(filePath);
+    playFile(soundPath(settings.captureSoundPreset));
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     void log(`capture sound failed: ${message}`);
+  }
+}
+
+export function playRecordingSound(settings: AppSettings, cue: RecordingSoundCue): void {
+  if (!settings.captureSoundEnabled) {
+    return;
+  }
+
+  const filePath = join(soundsDir(), `record-${cue}.wav`);
+
+  try {
+    playFile(filePath);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    void log(`recording sound failed (${cue}): ${message}`);
   }
 }

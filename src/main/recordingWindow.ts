@@ -1,8 +1,8 @@
-import { app, BrowserWindow, ipcMain, type IpcMainEvent } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeImage, type IpcMainEvent } from 'electron';
 import { join } from 'node:path';
-import { nativeImage } from 'electron';
 import { getDictionary } from '../shared/i18n';
 import type { AppSettings, Language } from '../shared/settings';
+import { applyCaptureWindowLayer, presentCaptureWindow } from './captureWindowLayer';
 import { log } from './logger';
 
 let recordingWindow: BrowserWindow | null = null;
@@ -23,9 +23,39 @@ function endRecordingSession(): void {
 
 export function closeRecording(): void {
   if (recordingWindow && !recordingWindow.isDestroyed()) {
+    setRecordingLiveMode(false);
     recordingWindow.hide();
   }
   endRecordingSession();
+}
+
+export function setRecordingLiveMode(active: boolean): void {
+  if (!recordingWindow || recordingWindow.isDestroyed()) {
+    return;
+  }
+
+  if (active) {
+    recordingWindow.setIgnoreMouseEvents(true, { forward: true });
+    recordingWindow.setFocusable(false);
+    return;
+  }
+
+  recordingWindow.setIgnoreMouseEvents(false);
+  recordingWindow.setFocusable(true);
+}
+
+export function setRecordingMousePassthrough(enabled: boolean): void {
+  if (!recordingWindow || recordingWindow.isDestroyed()) {
+    return;
+  }
+
+  if (enabled) {
+    recordingWindow.setIgnoreMouseEvents(true, { forward: true });
+    return;
+  }
+
+  recordingWindow.setIgnoreMouseEvents(false);
+  recordingWindow.focus();
 }
 
 export function destroyRecording(): void {
@@ -70,7 +100,8 @@ function createRecordingShell(
     width: bounds.width,
     height: bounds.height,
     frame: false,
-    transparent: false,
+    transparent: true,
+    backgroundColor: '#00000000',
     resizable: false,
     movable: false,
     minimizable: false,
@@ -80,7 +111,6 @@ function createRecordingShell(
     skipTaskbar: true,
     show: false,
     focusable: true,
-    backgroundColor: '#000000',
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,
@@ -90,8 +120,7 @@ function createRecordingShell(
   });
 
   win.setMenuBarVisibility(false);
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  win.setAlwaysOnTop(true, 'screen-saver');
+  applyCaptureWindowLayer(win);
   win.on('closed', () => {
     recordingWindow = null;
     recordingReady = false;
@@ -141,9 +170,7 @@ export async function openRecording(
   const dict = getDictionary(settings.language);
 
   recordingWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
-  recordingWindow.setAlwaysOnTop(true, 'screen-saver');
-  recordingWindow.show();
-  recordingWindow.focus();
+  await presentCaptureWindow(recordingWindow);
   recordingWindow.webContents.send('recording:start', {
     imageUrl,
     width: imageSize.width,

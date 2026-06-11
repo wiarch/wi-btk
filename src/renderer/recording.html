@@ -9,6 +9,7 @@
   </head>
   <body>
     <canvas id="canvas"></canvas>
+    <div id="region-indicator" class="region-indicator hidden" aria-hidden="true"></div>
 
     <div id="countdown-overlay" class="countdown-overlay hidden" aria-hidden="true">
       <span id="countdown-value" class="countdown-value">3</span>
@@ -56,7 +57,14 @@
       <button type="button" id="cancel-btn" class="snip-close" title="Close">✕</button>
     </div>
 
+    <button type="button" id="record-chip" class="record-chip hidden" aria-hidden="true" title="Controls">
+      <span id="record-chip-dot" class="snip-record-dot"></span>
+      <span id="record-chip-timer" class="record-chip-timer">00:00</span>
+      <span class="record-chip-chevron" aria-hidden="true">▾</span>
+    </button>
+
     <div id="record-bar" class="snip-record-bar hidden" aria-hidden="true">
+      <button type="button" id="record-minimize-btn" class="record-minimize-btn" title="Minimize">▴</button>
       <span id="record-dot" class="snip-record-dot"></span>
       <span id="record-status" class="snip-record-status">Recording</span>
       <span id="record-timer" class="snip-record-timer">00:00</span>

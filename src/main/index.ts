@@ -10,13 +10,13 @@ import {
   nativeImage,
   net,
   protocol,
-  screen,
   Tray,
 } from 'electron';
 import { access, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { bootLog, getBootLogPath } from './bootLog';
+import { applyCaptureWindowLayer, getCaptureBounds, presentCaptureWindow, type ScreenBounds } from './captureWindowLayer';
 import { compositorSettle } from './compositorSettle';
 import { applyLaunchAtStartup } from './autostart';
 
@@ -47,9 +47,11 @@ import {
   destroyRecording,
   openRecording,
   prewarmRecordingWindow,
+  setRecordingLiveMode,
+  setRecordingMousePassthrough,
   setRecordingSessionEndCallback,
 } from './recordingWindow';
-import { playCaptureSound } from './captureSound';
+import { playCaptureSound, playRecordingSound, type RecordingSoundCue } from './captureSound';
 import { notifyCaptureSaved, notifySimple } from './notifications';
 import { closeSettingsWindow, openSettingsWindow } from './settingsWindow';
 import { loadSettings, saveSettings } from './settingsStore';
@@ -69,6 +71,7 @@ let overlayReady = false;
 let keepAliveWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let captureInProgress = false;
+let recordingLiveActive = false;
 let currentCapturePath: string | null = null;
 let isQuitting = false;
 let currentSettings: AppSettings | null = null;
@@ -176,26 +179,8 @@ function showError(message: string): void {
   dialog.showErrorBox('WI-Rec', message);
 }
 
-function getVirtualBounds(): { x: number; y: number; width: number; height: number } {
-  const displays = screen.getAllDisplays();
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-
-  for (const display of displays) {
-    minX = Math.min(minX, display.bounds.x);
-    minY = Math.min(minY, display.bounds.y);
-    maxX = Math.max(maxX, display.bounds.x + display.bounds.width);
-    maxY = Math.max(maxY, display.bounds.y + display.bounds.height);
-  }
-
-  return {
-    x: minX,
-    y: minY,
-    width: maxX - minX,
-    height: maxY - minY,
-  };
+function getVirtualBounds(): ScreenBounds {
+  return getCaptureBounds();
 }
 
 function resolveCaptureFilePath(requestUrl: string): string | null {
@@ -334,8 +319,7 @@ function createOverlayShell(): BrowserWindow {
   });
 
   win.setMenuBarVisibility(false);
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  win.setAlwaysOnTop(true, 'screen-saver');
+  applyCaptureWindowLayer(win);
   win.on('closed', () => {
     overlayWindow = null;
     overlayReady = false;
@@ -380,11 +364,9 @@ async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<vo
   const imageUrl = `data:${mime};base64,${encoded.toString('base64')}`;
 
   overlayWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
-  overlayWindow.setAlwaysOnTop(true, 'screen-saver');
 
   const payload = buildOverlayPayload(imageUrl, imageSize, bounds, fullScreen);
-  overlayWindow.show();
-  overlayWindow.focus();
+  await presentCaptureWindow(overlayWindow);
   overlayWindow.webContents.send('screenshot-ready', payload);
 }
 
@@ -408,10 +390,16 @@ async function prepareForScreenCapture(): Promise<void> {
   closeOverlay();
   closeColorPicker();
   closeRecording();
+  closeSettingsWindow();
+  registerHotkey();
   await compositorSettle();
 }
 
 async function triggerColorPicker(source: string, panelMode = false): Promise<void> {
+  if (recordingLiveActive) {
+    await log(`color picker ignored (${source}): recording live`);
+    return;
+  }
   if (captureInProgress) {
     await log(`color picker ignored (${source}): already in progress`);
     return;
@@ -437,6 +425,10 @@ async function triggerColorPicker(source: string, panelMode = false): Promise<vo
 }
 
 async function triggerScreenRecord(source: string): Promise<void> {
+  if (recordingLiveActive) {
+    await log(`screen record ignored (${source}): recording live`);
+    return;
+  }
   if (captureInProgress) {
     await log(`screen record ignored (${source}): already in progress`);
     return;
@@ -463,6 +455,10 @@ async function triggerScreenRecord(source: string): Promise<void> {
 }
 
 async function triggerCapture(source: string, fullScreen = false): Promise<void> {
+  if (recordingLiveActive) {
+    await log(`capture ignored (${source}): recording live`);
+    return;
+  }
   if (captureInProgress) {
     await log(`capture ignored (${source}): already in progress`);
     return;
@@ -497,7 +493,9 @@ function registerHotkey(): void {
   const settings = getSettings();
   globalShortcut.unregisterAll();
 
-  for (const action of GLOBAL_HOTKEY_ACTIONS) {
+  const actions = [...GLOBAL_HOTKEY_ACTIONS].reverse();
+
+  for (const action of actions) {
     const accelerator = normalizeForElectron(settings.hotkeys[action]);
     if (!accelerator || !isValidAccelerator(accelerator)) {
       void log(`hotkey skipped (${action}): not assigned`);
@@ -681,6 +679,10 @@ function createTray(): void {
   rebuildTray();
 
   tray.on('click', () => {
+    if (recordingLiveActive) {
+      return;
+    }
+    registerHotkey();
     void triggerCapture('tray-click');
   });
 
@@ -753,6 +755,9 @@ function setupIpc(): void {
   });
 
   ipcMain.on('overlay:switchToRecord', async () => {
+    if (recordingLiveActive) {
+      return;
+    }
     closeOverlay();
     captureInProgress = true;
     try {
@@ -781,7 +786,28 @@ function setupIpc(): void {
     clearRecordingMediaHandler();
   });
 
+  ipcMain.handle('recording:enterLiveMode', () => {
+    recordingLiveActive = true;
+    setRecordingLiveMode(true);
+  });
+
+  ipcMain.handle('recording:exitLiveMode', () => {
+    recordingLiveActive = false;
+    setRecordingLiveMode(false);
+  });
+
+  ipcMain.on('recording:mousePassthrough', (_event, enabled: boolean) => {
+    setRecordingMousePassthrough(enabled);
+  });
+
+  ipcMain.on('recording:playSound', (_event, cue: RecordingSoundCue) => {
+    playRecordingSound(getSettings(), cue);
+  });
+
   ipcMain.on('recording:switchToCapture', async () => {
+    if (recordingLiveActive) {
+      return;
+    }
     clearRecordingMediaHandler();
     closeRecording();
     captureInProgress = true;
@@ -798,6 +824,7 @@ function setupIpc(): void {
 
   ipcMain.handle('recording:save', async (_event, buffer: ArrayBuffer) => {
     clearRecordingMediaHandler();
+    recordingLiveActive = false;
     const settings = getSettings();
     const filePath = await buildRecordingSavePath(settings);
     await writeFile(filePath, Buffer.from(buffer));
@@ -833,6 +860,8 @@ function setupIpc(): void {
 
   ipcMain.on('recording:cancel', () => {
     clearRecordingMediaHandler();
+    recordingLiveActive = false;
+    setRecordingLiveMode(false);
     closeRecording();
     captureInProgress = false;
   });
@@ -1058,6 +1087,9 @@ if (gotSingleInstanceLock) {
       bootLog('tray created');
       registerHotkey();
       bootLog('hotkeys registered');
+      if (process.platform === 'linux' && process.env.WAYLAND_DISPLAY) {
+        bootLog('Wayland: z-order above panel may need compositor rules or X11 (electron --ozone-platform=x11)');
+      }
       await prewarmOverlayWindow();
       bootLog('overlay prewarmed');
       await prewarmColorPickerWindow(getVirtualBounds(), getPreloadPath());
