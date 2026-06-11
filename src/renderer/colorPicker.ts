@@ -116,6 +116,8 @@ const contrastTitle = document.getElementById('contrast-title') as HTMLHeadingEl
 const contrastChecker = document.getElementById('contrast-checker') as HTMLDivElement;
 const similarTitle = document.getElementById('similar-title') as HTMLHeadingElement;
 const similarColorsEl = document.getElementById('similar-colors') as HTMLDivElement;
+const svHandle = document.getElementById('sv-handle') as HTMLDivElement;
+const hueHandle = document.getElementById('hue-handle') as HTMLDivElement;
 const closeBtn = document.getElementById('close-btn') as HTMLButtonElement;
 const pickHint = document.getElementById('pick-hint') as HTMLParagraphElement;
 const hintEl = document.getElementById('hint') as HTMLParagraphElement;
@@ -188,11 +190,23 @@ function drawSvCanvas(hue: number): void {
   svCtx.fillRect(0, 0, w, h);
 }
 
+function updatePickerHandles(color: Rgb): void {
+  const hsv = rgbToHsv(color);
+
+  svHandle.style.left = `${hsv.s}%`;
+  svHandle.style.top = `${100 - hsv.v}%`;
+  svHandle.style.backgroundColor = rgbToHex(color);
+
+  hueHandle.style.left = `${(state.currentHue / 360) * 100}%`;
+  hueHandle.style.backgroundColor = rgbToHex(hsvToRgb({ h: state.currentHue, s: 100, v: 100 }));
+}
+
 function syncPickerControls(color: Rgb): void {
   const hsv = rgbToHsv(color);
   state.currentHue = Math.round(hsv.h);
   hueSlider.value = String(state.currentHue);
   drawSvCanvas(state.currentHue);
+  requestAnimationFrame(() => updatePickerHandles(color));
 }
 
 function createSwatchButton(color: Rgb, onPick: (c: Rgb) => void): HTMLButtonElement {
@@ -304,8 +318,6 @@ function renderSimilar(color: Rgb): void {
 function updateAdvanced(color: Rgb): void {
   if (!state.advancedOpen) return;
 
-  syncPickerControls(color);
-
   const xyz = rgbToXyz(color);
   const lab = rgbToLab(color);
   xyzValue.textContent = `${xyz.x.toFixed(2)}, ${xyz.y.toFixed(2)}, ${xyz.z.toFixed(2)}`;
@@ -325,6 +337,7 @@ function applyColor(color: Rgb, source: FormatField | null = null, copy = false)
   };
 
   syncFields(state.color, source);
+  syncPickerControls(state.color);
   updateAdvanced(state.color);
 
   if (copy) {
@@ -355,6 +368,10 @@ function positionPanelAt(clientX: number, clientY: number): void {
   panel.classList.remove('hidden');
   panel.setAttribute('aria-hidden', 'false');
 
+  if (state.advancedOpen) {
+    return;
+  }
+
   const margin = 12;
   const offset = 18;
   const panelRect = panel.getBoundingClientRect();
@@ -373,6 +390,22 @@ function positionPanelAt(clientX: number, clientY: number): void {
 
   panel.style.left = `${left}px`;
   panel.style.top = `${top}px`;
+  panel.style.right = '';
+  panel.style.bottom = '';
+}
+
+function applyPanelLayout(): void {
+  if (state.advancedOpen) {
+    panel.classList.add('panel-fullscreen');
+    panel.style.left = '0';
+    panel.style.top = '0';
+    panel.style.right = '0';
+    panel.style.bottom = '0';
+    return;
+  }
+
+  panel.classList.remove('panel-fullscreen');
+  positionPanelAt(state.panelAnchor.x, state.panelAnchor.y);
 }
 
 function showPanelAt(event: MouseEvent): void {
@@ -384,6 +417,7 @@ function showPanelAt(event: MouseEvent): void {
   advancedSection.classList.add('hidden');
   advancedSection.setAttribute('aria-hidden', 'true');
   advancedToggle.setAttribute('aria-expanded', 'false');
+  panel.classList.remove('panel-fullscreen');
   if (state.labels) advancedToggle.textContent = state.labels.advancedOptions;
   positionPanelAt(event.clientX, event.clientY);
 }
@@ -405,7 +439,7 @@ function toggleAdvanced(): void {
   }
 
   requestAnimationFrame(() => {
-    positionPanelAt(state.panelAnchor.x, state.panelAnchor.y);
+    applyPanelLayout();
   });
 }
 

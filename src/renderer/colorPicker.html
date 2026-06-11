@@ -13,6 +13,19 @@
       <span id="cursor-hex" class="cursor-hex">#000000</span>
     </div>
     <div id="panel" class="panel hidden" role="dialog" aria-hidden="true">
+      <button type="button" id="close-btn" class="panel-close-btn" title="Close">✕</button>
+
+      <div class="picker-area">
+        <div class="sv-wrap">
+          <canvas id="sv-canvas" width="280" height="140"></canvas>
+          <div id="sv-handle" class="picker-handle" aria-hidden="true"></div>
+        </div>
+        <div class="hue-wrap">
+          <input id="hue-slider" class="hue-slider" type="range" min="0" max="360" value="0" />
+          <div id="hue-handle" class="picker-handle hue-handle" aria-hidden="true"></div>
+        </div>
+      </div>
+
       <div class="format-field format-hex">
         <span class="format-label">HEX</span>
         <div class="format-box hex-box">
@@ -51,11 +64,6 @@
       <button type="button" id="advanced-toggle" class="advanced-toggle" aria-expanded="false"></button>
 
       <div id="advanced-section" class="advanced-section hidden" aria-hidden="true">
-        <div class="picker-area">
-          <canvas id="sv-canvas" width="280" height="140"></canvas>
-          <input id="hue-slider" class="hue-slider" type="range" min="0" max="360" value="0" />
-        </div>
-
         <section class="adv-block">
           <h3 id="harmonies-title" class="adv-title"></h3>
           <div id="harmonies" class="adv-groups"></div>
@@ -85,10 +93,7 @@
         </section>
       </div>
 
-      <div class="panel-footer">
-        <button type="button" id="close-btn" class="close-btn">✕</button>
-        <p id="hint" class="hint"></p>
-      </div>
+      <p id="hint" class="hint"></p>
     </div>
     <p id="pick-hint" class="pick-hint"></p>
     <script type="module" src="colorPicker.js"></script>
