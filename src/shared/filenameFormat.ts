@@ -4,7 +4,7 @@ export type FilenameMode = 'datetime' | 'sequential';
 export type FilenameDateStyle = 'iso' | 'latin';
 export type FilenameTimeStyle = 'h24' | 'h12';
 
-const APP_PREFIX = 'WI-Print';
+const APP_PREFIX = 'WI-Rec';
 
 function pad2(value: number): string {
   return String(value).padStart(2, '0');

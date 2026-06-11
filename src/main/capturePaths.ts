@@ -14,7 +14,7 @@ export function getBaseSaveDirectory(settings: AppSettings): string {
   if (custom) {
     return custom;
   }
-  return join(homedir(), 'Pictures', 'WI-Print');
+  return join(homedir(), 'Pictures', 'WI-Rec');
 }
 
 async function nextSequentialIndex(targetDir: string): Promise<number> {
@@ -22,7 +22,7 @@ async function nextSequentialIndex(targetDir: string): Promise<number> {
   let max = 0;
 
   for (const name of entries) {
-    const match = name.match(/^WI-Print-(\d+)\.[^.]+$/i);
+    const match = name.match(/^WI-Rec-(\d+)\.[^.]+$/i);
     if (match) {
       max = Math.max(max, Number.parseInt(match[1], 10));
     }

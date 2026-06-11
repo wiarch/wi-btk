@@ -26,7 +26,7 @@ export function openSettingsWindow(): void {
     maximizable: false,
     fullscreenable: false,
     autoHideMenuBar: true,
-    title: 'WI-Print',
+    title: 'WI-Rec',
     backgroundColor: '#151826',
     webPreferences: {
       preload: getPreloadPath(),

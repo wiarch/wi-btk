@@ -108,7 +108,7 @@ const en: Dictionary = {
     captureFullScreen: 'Capture full screen',
     settings: 'Settings',
     quit: 'Quit',
-    tooltip: 'WI-Print — {hotkey}',
+    tooltip: 'WI-Rec — {hotkey}',
   },
   notifications: {
     active: 'Active. {hotkey} or tray click.',
@@ -121,16 +121,16 @@ const en: Dictionary = {
     copiedAndSavedHint: 'Copied and saved — click to open folder',
     fullScreenCaptured: '{filename}',
     fullScreenCapturedHint: 'Full screen saved and copied — click to open folder',
-    trayHintTitle: 'WI-Print is running',
+    trayHintTitle: 'WI-Rec is running',
     trayHintBody:
-      'Look for the WI-Print icon in the system tray (next to the clock). If you do not see it, open the "^" hidden icons menu.\n\nRight-click the icon for Settings and Quit. Left-click to capture.',
-    alreadyRunningTitle: 'WI-Print is already running',
+      'Look for the WI-Rec icon in the system tray (next to the clock). If you do not see it, open the "^" hidden icons menu.\n\nRight-click the icon for Settings and Quit. Left-click to capture.',
+    alreadyRunningTitle: 'WI-Rec is already running',
     alreadyRunningBody:
-      'WI-Print is already active. Look for the icon in the system tray (next to the clock).',
+      'WI-Rec is already active. Look for the icon in the system tray (next to the clock).',
   },
   errors: {
     captureFailed: 'Could not capture the screen:\n\n{message}',
-    startupFailed: 'Could not start WI-Print:\n\n{message}',
+    startupFailed: 'Could not start WI-Rec:\n\n{message}',
   },
   overlay: {
     arrow: 'Arrow',
@@ -155,7 +155,7 @@ const en: Dictionary = {
     filenameSection: 'File name',
     filenameMode: 'Naming mode',
     filenameModeDatetime: 'Date and time',
-    filenameModeSequential: 'Sequential (WI-Print-1, 2, 3…)',
+    filenameModeSequential: 'Sequential (WI-Rec-1, 2, 3…)',
     filenameDateStyle: 'Date format',
     filenameDateIso: 'ISO (YYYY-MM-DD)',
     filenameDateLatin: 'Latin (DD-MM-YYYY)',
@@ -187,7 +187,7 @@ const en: Dictionary = {
     hotkeyNeedsModifierTitle: 'Combination required for global hotkey',
     hotkeyNeedsModifierBody:
       '"{hotkey}" blocks normal typing. Use Ctrl, Alt or Shift for "{target}" (e.g. Ctrl+Shift+S).',
-    conflictInternalTitle: 'Hotkey already assigned in WI-Print',
+    conflictInternalTitle: 'Hotkey already assigned in WI-Rec',
     conflictInternalBody:
       '{hotkey} is assigned to "{action}". Clear it and assign to "{target}"?',
     conflictExternalTitle: 'Hotkey may be used elsewhere',
@@ -205,7 +205,7 @@ const es: Dictionary = {
     captureFullScreen: 'Capturar pantalla completa',
     settings: 'Configuración',
     quit: 'Salir',
-    tooltip: 'WI-Print — {hotkey}',
+    tooltip: 'WI-Rec — {hotkey}',
   },
   notifications: {
     active: 'Activo. {hotkey} o click en bandeja.',
@@ -218,16 +218,16 @@ const es: Dictionary = {
     copiedAndSavedHint: 'Copiado y guardado — clic para abrir carpeta',
     fullScreenCaptured: '{filename}',
     fullScreenCapturedHint: 'Pantalla completa guardada y copiada — clic para abrir carpeta',
-    trayHintTitle: 'WI-Print está activo',
+    trayHintTitle: 'WI-Rec está activo',
     trayHintBody:
-      'Busca el icono de WI-Print en la bandeja del sistema (junto al reloj). Si no lo ves, abre el menú "^" de iconos ocultos.\n\nClic derecho: Configuración y Salir. Clic izquierdo: capturar.',
-    alreadyRunningTitle: 'WI-Print ya está en ejecución',
+      'Busca el icono de WI-Rec en la bandeja del sistema (junto al reloj). Si no lo ves, abre el menú "^" de iconos ocultos.\n\nClic derecho: Configuración y Salir. Clic izquierdo: capturar.',
+    alreadyRunningTitle: 'WI-Rec ya está en ejecución',
     alreadyRunningBody:
-      'WI-Print ya está activo. Busca el icono en la bandeja del sistema (junto al reloj).',
+      'WI-Rec ya está activo. Busca el icono en la bandeja del sistema (junto al reloj).',
   },
   errors: {
     captureFailed: 'No se pudo capturar la pantalla:\n\n{message}',
-    startupFailed: 'No se pudo iniciar WI-Print:\n\n{message}',
+    startupFailed: 'No se pudo iniciar WI-Rec:\n\n{message}',
   },
   overlay: {
     arrow: 'Flecha',
@@ -252,7 +252,7 @@ const es: Dictionary = {
     filenameSection: 'Nombre de archivo',
     filenameMode: 'Modo de nombre',
     filenameModeDatetime: 'Fecha y hora',
-    filenameModeSequential: 'Enumerado (WI-Print-1, 2, 3…)',
+    filenameModeSequential: 'Enumerado (WI-Rec-1, 2, 3…)',
     filenameDateStyle: 'Formato de fecha',
     filenameDateIso: 'ISO (AAAA-MM-DD)',
     filenameDateLatin: 'Latino (DD-MM-AAAA)',
@@ -284,7 +284,7 @@ const es: Dictionary = {
     hotkeyNeedsModifierTitle: 'Combinación obligatoria para atajo global',
     hotkeyNeedsModifierBody:
       '"{hotkey}" bloquea teclas normales. Usa Ctrl, Alt o Shift para "{target}" (ej. Ctrl+Shift+S).',
-    conflictInternalTitle: 'Atajo ya asignado en WI-Print',
+    conflictInternalTitle: 'Atajo ya asignado en WI-Rec',
     conflictInternalBody:
       '{hotkey} está asignado a "{action}". ¿Quitarlo y asignarlo a "{target}"?',
     conflictExternalTitle: 'La tecla puede estar en uso',

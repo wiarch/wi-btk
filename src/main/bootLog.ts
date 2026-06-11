@@ -4,10 +4,10 @@ import { join } from 'node:path';
 
 function logDir(): string {
   if (process.platform === 'win32') {
-    return join(process.env.APPDATA || homedir(), 'WI-Print', 'logs');
+    return join(process.env.APPDATA || homedir(), 'WI-Rec', 'logs');
   }
 
-  return join(homedir(), '.config', 'wi-print', 'logs');
+  return join(homedir(), '.config', 'wi-rec', 'logs');
 }
 
 const LOG_FILE = join(logDir(), 'boot.log');

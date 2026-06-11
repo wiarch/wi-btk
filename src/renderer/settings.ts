@@ -83,7 +83,7 @@ type AssignHotkeyResult =
   | { ok: true; hotkeys: AppSettings['hotkeys'] }
   | { ok: false; reason: 'cancelled' | 'invalid' };
 
-type WiPrintSettingsApi = {
+type WiRecSettingsApi = {
   getSettings(): Promise<AppSettings>;
   getUi(language: Language): Promise<SettingsUi>;
   assignHotkey(
@@ -101,7 +101,7 @@ type WiPrintSettingsApi = {
 
 declare global {
   interface Window {
-    wiPrintSettings: WiPrintSettingsApi;
+    wiRecSettings: WiRecSettingsApi;
   }
 }
 
@@ -304,7 +304,7 @@ async function finishHotkeyRecord(
   recordingInput = null;
   input.classList.remove('recording');
 
-  const result = await window.wiPrintSettings.assignHotkey(
+  const result = await window.wiRecSettings.assignHotkey(
     action,
     accelerator,
     draft.hotkeys,
@@ -382,7 +382,7 @@ async function refreshFilenamePreview(): Promise<void> {
     return;
   }
 
-  filenamePreviewEl.textContent = await window.wiPrintSettings.previewFilename(draft);
+  filenamePreviewEl.textContent = await window.wiRecSettings.previewFilename(draft);
 }
 
 function syncDraftFromFilenameControls(): void {
@@ -398,7 +398,7 @@ function syncDraftFromFilenameControls(): void {
 }
 
 async function refreshUi(language: Language): Promise<void> {
-  ui = await window.wiPrintSettings.getUi(language);
+  ui = await window.wiRecSettings.getUi(language);
   applyLanguage();
   syncFilenameFieldsVisibility();
   await refreshFilenamePreview();
@@ -406,11 +406,11 @@ async function refreshUi(language: Language): Promise<void> {
 
 async function init(): Promise<void> {
   try {
-    if (!window.wiPrintSettings) {
+    if (!window.wiRecSettings) {
       throw new Error('Settings API unavailable');
     }
 
-    draft = await window.wiPrintSettings.getSettings();
+    draft = await window.wiRecSettings.getSettings();
     languageSelect.value = draft.language;
     launchCheckbox.checked = draft.launchAtStartup;
     autoSaveCheckbox.checked = draft.autoSaveCaptures;
@@ -422,7 +422,7 @@ async function init(): Promise<void> {
     saveAsJpegCheckbox.checked = draft.saveAsJpeg;
     jpegQualityInput.value = String(draft.jpegQuality);
     jpegQualityValueEl.textContent = String(draft.jpegQuality);
-    saveDirectoryInput.placeholder = await window.wiPrintSettings.getResolvedSaveDirectory();
+    saveDirectoryInput.placeholder = await window.wiRecSettings.getResolvedSaveDirectory();
     await refreshUi(draft.language);
     buildHotkeyRows(draft);
   } catch (error) {
@@ -468,7 +468,7 @@ async function init(): Promise<void> {
   });
 
   browseSaveDirectoryBtn.addEventListener('click', async () => {
-    const selected = await window.wiPrintSettings.browseSaveDirectory();
+    const selected = await window.wiRecSettings.browseSaveDirectory();
     if (!selected || !draft) {
       return;
     }
@@ -503,7 +503,7 @@ async function init(): Promise<void> {
   });
 
   cancelBtn.addEventListener('click', () => {
-    window.wiPrintSettings.closeWindow();
+    window.wiRecSettings.closeWindow();
   });
 
   saveBtn.addEventListener('click', async () => {
@@ -520,14 +520,14 @@ async function init(): Promise<void> {
     syncDraftFromFilenameControls();
 
     setStatus('');
-    const result = await window.wiPrintSettings.saveSettings(draft);
+    const result = await window.wiRecSettings.saveSettings(draft);
     if (!result.ok) {
       setStatus(result.error, 'error');
       return;
     }
 
     setStatus(ui?.saved ?? 'Saved', 'ok');
-    setTimeout(() => window.wiPrintSettings.closeWindow(), 500);
+    setTimeout(() => window.wiRecSettings.closeWindow(), 500);
   });
 }
 

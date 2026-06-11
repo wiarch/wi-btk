@@ -28,7 +28,7 @@ export type ScreenshotPayload = {
   jpegQuality: number;
 };
 
-contextBridge.exposeInMainWorld('wiPrint', {
+contextBridge.exposeInMainWorld('wiRec', {
   onScreenshotReady(callback: (payload: ScreenshotPayload) => void): () => void {
     const listener = (_event: Electron.IpcRendererEvent, payload: ScreenshotPayload) => {
       callback(payload);
@@ -51,7 +51,7 @@ contextBridge.exposeInMainWorld('wiPrint', {
   },
 });
 
-contextBridge.exposeInMainWorld('wiPrintSettings', {
+contextBridge.exposeInMainWorld('wiRecSettings', {
   getSettings(): Promise<AppSettings> {
     return ipcRenderer.invoke('settings:get');
   },

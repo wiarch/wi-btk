@@ -32,7 +32,7 @@ async function readCaptureFile(path: string): Promise<Buffer> {
 }
 
 async function captureViaScrot(): Promise<Buffer> {
-  const output = join(tmpdir(), `wi-print-scrot-${Date.now()}.png`);
+  const output = join(tmpdir(), `wi-rec-scrot-${Date.now()}.png`);
   return withSystemPath(async () => {
     await execFileAsync('scrot', ['-o', output], { maxBuffer: 1024 * 1024 });
     return readCaptureFile(output);
@@ -40,7 +40,7 @@ async function captureViaScrot(): Promise<Buffer> {
 }
 
 async function captureViaGrim(): Promise<Buffer> {
-  const output = join(tmpdir(), `wi-print-grim-${Date.now()}.png`);
+  const output = join(tmpdir(), `wi-rec-grim-${Date.now()}.png`);
   return withSystemPath(async () => {
     await execFileAsync('grim', [output], { maxBuffer: 1024 * 1024 });
     return readCaptureFile(output);
@@ -48,7 +48,7 @@ async function captureViaGrim(): Promise<Buffer> {
 }
 
 async function captureViaImport(): Promise<Buffer> {
-  const output = join(tmpdir(), `wi-print-import-${Date.now()}.png`);
+  const output = join(tmpdir(), `wi-rec-import-${Date.now()}.png`);
   await execFileAsync('import', ['-window', 'root', output], {
     maxBuffer: 1024 * 1024,
   });
@@ -58,7 +58,7 @@ async function captureViaImport(): Promise<Buffer> {
 async function captureViaPortal(): Promise<Buffer> {
   const dbus = await import('dbus-next');
   const bus = dbus.sessionBus();
-  const handleToken = `wi_print_${Date.now()}`;
+  const handleToken = `wi_rec_${Date.now()}`;
   const requestPath = `/org/freedesktop/portal/desktop/request/${handleToken}`;
 
   const desktop = await bus.getProxyObject(

@@ -1,4 +1,4 @@
-# WI-Print
+# WI-Rec
 
 Captura de pantalla global multiplataforma con Electron + TypeScript.
 

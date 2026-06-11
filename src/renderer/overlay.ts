@@ -43,7 +43,7 @@ type Annotation =
   | { type: 'arrow'; x1: number; y1: number; x2: number; y2: number }
   | { type: 'rect'; x: number; y: number; width: number; height: number };
 
-type WiPrintApi = {
+type WiRecApi = {
   onScreenshotReady(callback: (payload: ScreenshotPayload) => void): () => void;
   saveImage(imageBase64: string, edited: boolean): Promise<void>;
   copyImage(imageBase64: string, edited: boolean): Promise<void>;
@@ -53,7 +53,7 @@ type WiPrintApi = {
 
 declare global {
   interface Window {
-    wiPrint: WiPrintApi;
+    wiRec: WiRecApi;
   }
 }
 
@@ -470,7 +470,7 @@ toolbar.addEventListener('click', (event) => {
   }
 
   if (action === 'close') {
-    window.wiPrint.cancel();
+    window.wiRec.cancel();
     return;
   }
 
@@ -480,17 +480,17 @@ toolbar.addEventListener('click', (event) => {
   }
 
   if (action === 'save') {
-    void window.wiPrint.saveImage(imageBase64, hasEdits());
+    void window.wiRec.saveImage(imageBase64, hasEdits());
   }
 
   if (action === 'copy') {
-    void window.wiPrint.copyImage(imageBase64, hasEdits());
+    void window.wiRec.copyImage(imageBase64, hasEdits());
   }
 });
 
 window.addEventListener('keydown', (event) => {
   if (eventMatchesAccelerator(event, state.hotkeys.cancel)) {
-    window.wiPrint.cancel();
+    window.wiRec.cancel();
     return;
   }
 
@@ -514,13 +514,13 @@ window.addEventListener('keydown', (event) => {
 
     if (eventMatchesAccelerator(event, state.hotkeys.save)) {
       event.preventDefault();
-      void window.wiPrint.saveImage(imageBase64, hasEdits());
+      void window.wiRec.saveImage(imageBase64, hasEdits());
       return;
     }
 
     if (eventMatchesAccelerator(event, state.hotkeys.copy)) {
       event.preventDefault();
-      void window.wiPrint.copyImage(imageBase64, hasEdits());
+      void window.wiRec.copyImage(imageBase64, hasEdits());
     }
   }
 });
@@ -561,7 +561,7 @@ function applyOverlayButtons(
   }
 }
 
-window.wiPrint.onScreenshotReady((payload: ScreenshotPayload) => {
+window.wiRec.onScreenshotReady((payload: ScreenshotPayload) => {
   state.mode = 'select';
   state.tool = 'arrow';
   state.dragging = false;
@@ -593,9 +593,9 @@ window.wiPrint.onScreenshotReady((payload: ScreenshotPayload) => {
     }
   };
   state.image.onerror = () => {
-    console.error('[WI-Print] failed to load capture image');
+    console.error('[WI-Rec] failed to load capture image');
   };
   state.image.src = payload.imageUrl;
 });
 
-window.wiPrint.ready();
+window.wiRec.ready();

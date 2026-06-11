@@ -17,7 +17,7 @@ export function notifyCaptureSaved(
   const body = `${t(language, titleKey, { path: filePath, filename })}\n${filePath}\n${t(language, hintKey)}`;
 
   const notification = new Notification({
-    title: 'WI-Print',
+    title: 'WI-Rec',
     body,
   });
 

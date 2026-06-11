@@ -1,13 +1,13 @@
 {
-  "name": "wi-print",
-  "productName": "WI-Print",
+  "name": "wi-rec",
+  "productName": "WI-Rec",
   "version": "1.0.0",
   "description": "Global screenshot tool for Windows and Linux",
   "author": {
     "name": "wiarch",
     "email": "dev@wiarch.local"
   },
-  "desktopName": "wi-print",
+  "desktopName": "wi-rec",
   "license": "MIT",
   "main": "dist/main/index.js",
   "scripts": {
@@ -31,8 +31,8 @@
     "typescript": "^5.8.3"
   },
   "build": {
-    "appId": "com.wiarch.wiprint",
-    "productName": "WI-Print",
+    "appId": "com.wiarch.wirec",
+    "productName": "WI-Rec",
     "forceCodeSigning": false,
     "directories": {
       "output": "release"
@@ -71,7 +71,7 @@
           ]
         }
       ],
-      "artifactName": "WI-Print-${version}-${arch}.${ext}"
+      "artifactName": "WI-Rec-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -86,12 +86,12 @@
       ],
       "category": "Graphics",
       "maintainer": "wiarch <dev@wiarch.local>",
-      "executableName": "wi-print",
-      "artifactName": "WI-Print-${version}-${arch}.${ext}",
+      "executableName": "wi-rec",
+      "artifactName": "WI-Rec-${version}-${arch}.${ext}",
       "syncDesktopName": true,
       "desktop": {
         "entry": {
-          "StartupWMClass": "wi-print"
+          "StartupWMClass": "wi-rec"
         }
       }
     },

@@ -5,15 +5,15 @@ import { app } from 'electron';
 
 function getLogFile(): string {
   try {
-    return join(app.getPath('userData'), 'wi-print.log');
+    return join(app.getPath('userData'), 'wi-rec.log');
   } catch {
-    return join(homedir(), '.config', 'wi-print', 'wi-print.log');
+    return join(homedir(), '.config', 'wi-rec', 'wi-rec.log');
   }
 }
 
 export async function log(message: string): Promise<void> {
   const line = `[${new Date().toISOString()}] ${message}\n`;
-  console.log(`[WI-Print] ${message}`);
+  console.log(`[WI-Rec] ${message}`);
 
   try {
     const logFile = getLogFile();

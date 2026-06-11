@@ -3,7 +3,7 @@ const en = {
         capture: 'Capture screen',
         settings: 'Settings',
         quit: 'Quit',
-        tooltip: 'WI-Print — {hotkey}',
+        tooltip: 'WI-Rec — {hotkey}',
     },
     notifications: {
         active: 'Active. {hotkey} or tray click.',
@@ -48,7 +48,7 @@ const es = {
         capture: 'Capturar pantalla',
         settings: 'Configuración',
         quit: 'Salir',
-        tooltip: 'WI-Print — {hotkey}',
+        tooltip: 'WI-Rec — {hotkey}',
     },
     notifications: {
         active: 'Activo. {hotkey} o click en bandeja.',

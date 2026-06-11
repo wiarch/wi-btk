@@ -3,7 +3,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { app } from 'electron';
 
-const DESKTOP_NAME = 'wi-print.desktop';
+const DESKTOP_NAME = 'wi-rec.desktop';
 
 function linuxAutostartPath(): string {
   return join(homedir(), '.config', 'autostart', DESKTOP_NAME);
@@ -41,7 +41,7 @@ async function setLinuxAutostart(enabled: boolean): Promise<void> {
     '[Desktop Entry]',
     'Type=Application',
     'Version=1.0',
-    'Name=WI-Print',
+    'Name=WI-Rec',
     `Exec=${execPath}${args ? ` ${args}` : ''}`,
     'Terminal=false',
     'Categories=Graphics;',
@@ -61,7 +61,7 @@ export async function applyLaunchAtStartup(enabled: boolean): Promise<void> {
 
   app.setLoginItemSettings({
     openAtLogin: enabled,
-    name: 'WI-Print',
+    name: 'WI-Rec',
     path: process.execPath,
     args: app.isPackaged ? [] : [app.getAppPath()],
   });

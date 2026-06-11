@@ -71,7 +71,7 @@ export async function assignHotkeyWithConflictCheck(
     const response = await dialog.showMessageBox({
       type: 'warning',
       buttons: [t(language, 'settings.conflictCancel')],
-      title: 'WI-Print',
+      title: 'WI-Rec',
       message: t(language, 'settings.hotkeyNeedsModifierTitle'),
       detail: t(language, 'settings.hotkeyNeedsModifierBody', {
         hotkey: formatHotkeyForUi(normalized),
@@ -94,7 +94,7 @@ export async function assignHotkeyWithConflictCheck(
       ],
       defaultId: 0,
       cancelId: 1,
-      title: 'WI-Print',
+      title: 'WI-Rec',
       message: t(language, 'settings.conflictInternalTitle'),
       detail: t(language, 'settings.conflictInternalBody', {
         hotkey: formatHotkeyForUi(normalized),
@@ -119,7 +119,7 @@ export async function assignHotkeyWithConflictCheck(
       ],
       defaultId: 1,
       cancelId: 1,
-      title: 'WI-Print',
+      title: 'WI-Rec',
       message: t(language, 'settings.conflictExternalTitle'),
       detail: t(language, 'settings.conflictExternalBody', {
         hotkey: formatHotkeyForUi(normalized),

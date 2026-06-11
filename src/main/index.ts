@@ -55,7 +55,7 @@ if (process.platform === 'linux') {
 }
 
 if (process.platform === 'win32') {
-  app.setAppUserModelId('com.wiarch.wiprint');
+  app.setAppUserModelId('com.wiarch.wirec');
 }
 
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -65,8 +65,8 @@ if (!gotSingleInstanceLock) {
   app.whenReady().then(() => {
     dialog.showMessageBox({
       type: 'info',
-      title: 'WI-Print',
-      message: 'WI-Print is already running',
+      title: 'WI-Rec',
+      message: 'WI-Rec is already running',
       detail: 'Check the system tray icon next to the clock.',
       buttons: ['OK'],
     });
@@ -77,13 +77,13 @@ if (!gotSingleInstanceLock) {
 function setupProcessErrorHandlers(): void {
   process.on('uncaughtException', (error) => {
     void log(`uncaughtException: ${error.message}`);
-    dialog.showErrorBox('WI-Print', error.message);
+    dialog.showErrorBox('WI-Rec', error.message);
   });
 
   process.on('unhandledRejection', (reason) => {
     const message = reason instanceof Error ? reason.message : String(reason);
     void log(`unhandledRejection: ${message}`);
-    dialog.showErrorBox('WI-Print', message);
+    dialog.showErrorBox('WI-Rec', message);
   });
 }
 
@@ -91,7 +91,7 @@ setupProcessErrorHandlers();
 
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: 'wiprint',
+    scheme: 'wirec',
     privileges: {
       standard: true,
       secure: true,
@@ -141,8 +141,8 @@ function closeOverlay(): void {
 }
 
 function showError(message: string): void {
-  notifySimple('WI-Print', message);
-  dialog.showErrorBox('WI-Print', message);
+  notifySimple('WI-Rec', message);
+  dialog.showErrorBox('WI-Rec', message);
 }
 
 function getVirtualBounds(): { x: number; y: number; width: number; height: number } {
@@ -177,7 +177,7 @@ function resolveCaptureFilePath(requestUrl: string): string | null {
     const encoded = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname;
     return decodeURIComponent(encoded);
   } catch {
-    const prefix = 'wiprint://capture/';
+    const prefix = 'wirec://capture/';
     if (!requestUrl.startsWith(prefix)) {
       return null;
     }
@@ -288,7 +288,7 @@ async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<vo
   const bounds = getVirtualBounds();
   const settings = getSettings();
   const tempExt = settings.saveAsJpeg ? 'jpg' : 'png';
-  const capturePath = join(app.getPath('temp'), `wi-print-capture-${Date.now()}.${tempExt}`);
+  const capturePath = join(app.getPath('temp'), `wi-rec-capture-${Date.now()}.${tempExt}`);
   await writeFile(capturePath, encodeCaptureForSave(image, settings));
   currentCapturePath = capturePath;
 
@@ -327,7 +327,7 @@ async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<vo
   });
 
   const payload = buildOverlayPayload(
-    `wiprint://capture/${encodeURIComponent(capturePath)}`,
+    `wirec://capture/${encodeURIComponent(capturePath)}`,
     imageSize,
     bounds,
     fullScreen,
@@ -414,7 +414,7 @@ function registerHotkey(): void {
           ? ` ${t(settings.language, 'notifications.hotkeyUbuntuConflict')}`
           : '';
       notifySimple(
-        'WI-Print',
+        'WI-Rec',
         `${t(settings.language, 'notifications.hotkeyUnavailable', {
           hotkey: formatHotkeyForUi(accelerator),
         })}${detail}`,
@@ -555,7 +555,7 @@ function createTray(): void {
   });
 
   notifySimple(
-    'WI-Print',
+    'WI-Rec',
     t(settings.language, 'notifications.active', {
       hotkey: formatHotkeyForUi(settings.hotkeys.capture),
     }),
@@ -606,7 +606,7 @@ function setupIpc(): void {
         return;
       }
 
-      notifySimple('WI-Print', t(settings.language, 'notifications.copied'));
+      notifySimple('WI-Rec', t(settings.language, 'notifications.copied'));
     },
   );
 
@@ -785,14 +785,14 @@ if (gotSingleInstanceLock) {
       bootLog(`app path=${app.getAppPath()}, log=${getBootLogPath()}`);
 
       if (process.platform === 'linux') {
-        app.setName('WI-Print');
+        app.setName('WI-Rec');
       }
 
       currentSettings = await loadSettings();
       bootLog('settings loaded');
       await applyLaunchAtStartup(currentSettings.launchAtStartup);
 
-      protocol.handle('wiprint', (request) => {
+      protocol.handle('wirec', (request) => {
         const filePath = resolveCaptureFilePath(request.url);
         if (!filePath) {
           return new Response('Not found', { status: 404 });
