@@ -138,7 +138,7 @@ export async function openRecording(
   }
 
   const imageUrl = `data:image/png;base64,${image.toPNG().toString('base64')}`;
-  const labels = getDictionary(settings.language).recording;
+  const dict = getDictionary(settings.language);
 
   recordingWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
   recordingWindow.setAlwaysOnTop(true, 'screen-saver');
@@ -148,7 +148,8 @@ export async function openRecording(
     imageUrl,
     width: imageSize.width,
     height: imageSize.height,
-    labels,
+    snipLabels: dict.snip,
+    labels: dict.recording,
     defaults: {
       desktopAudio: settings.recordDesktopAudio,
       micEnabled: settings.recordMicEnabled,

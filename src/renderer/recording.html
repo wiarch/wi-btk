@@ -4,43 +4,59 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WI-Rec Recording</title>
+    <link rel="stylesheet" href="snip-toolbar.css" />
     <link rel="stylesheet" href="recording.css" />
   </head>
   <body>
     <canvas id="canvas"></canvas>
 
-    <div id="setup-panel" class="setup-panel">
-      <h2 id="panel-title" class="panel-title">Screen recording</h2>
-      <div class="setup-options">
-        <label class="setup-check">
-          <input id="desktop-audio" type="checkbox" />
-          <span id="desktop-audio-label">Desktop audio</span>
-        </label>
-        <div class="setup-row">
-          <label id="mic-label" class="setup-label" for="mic-select">Microphone</label>
-          <select id="mic-select" class="setup-select"></select>
+    <div id="snip-bar" class="snip-bar">
+      <div class="snip-modes">
+        <button type="button" id="mode-screenshot" class="snip-mode" disabled title="Captura">📷</button>
+        <button type="button" id="mode-record" class="snip-mode active" title="Grabar">🎥</button>
+      </div>
+      <div class="snip-divider"></div>
+      <div class="snip-menu-wrap">
+        <button type="button" id="region-menu-btn" class="snip-menu-btn" aria-expanded="false">
+          <span>▭</span><span>▾</span>
+        </button>
+        <div id="region-menu" class="snip-menu hidden">
+          <button type="button" class="snip-menu-item active" data-region="rectangle">
+            <span class="snip-menu-icon">▭</span>
+            <span id="label-rectangle">Rectangle</span>
+          </button>
+          <button type="button" class="snip-menu-item" data-region="fullscreen">
+            <span class="snip-menu-icon">⬚</span>
+            <span id="label-fullscreen">Full screen</span>
+          </button>
         </div>
-        <label class="setup-check">
-          <input id="mic-mute" type="checkbox" />
-          <span id="mic-mute-label">Mute microphone</span>
-        </label>
       </div>
-      <div class="setup-actions">
-        <button type="button" id="full-screen-btn" class="btn primary">Full screen</button>
-        <button type="button" id="region-btn" class="btn secondary">Select region</button>
+      <div class="snip-divider"></div>
+      <div class="snip-menu-wrap">
+        <button type="button" id="audio-menu-btn" class="snip-icon-btn" aria-expanded="false" title="Audio">🔊</button>
+        <div id="audio-menu" class="snip-menu snip-audio-panel hidden">
+          <label class="snip-check">
+            <input id="desktop-audio" type="checkbox" />
+            <span id="desktop-audio-label">Desktop audio</span>
+          </label>
+          <label class="snip-check">
+            <input id="mic-mute" type="checkbox" />
+            <span id="mic-mute-label">Mute microphone</span>
+          </label>
+          <span id="mic-label" class="snip-select-label">Microphone</span>
+          <select id="mic-select" class="snip-select"></select>
+        </div>
       </div>
-      <p id="region-hint" class="region-hint hidden"></p>
-      <div id="region-actions" class="setup-actions hidden">
-        <button type="button" id="start-region-btn" class="btn primary">Start recording</button>
-      </div>
-      <button type="button" id="cancel-btn" class="btn ghost">Cancel</button>
+      <span class="snip-spacer"></span>
+      <button type="button" id="cancel-btn" class="snip-close" title="Close">✕</button>
     </div>
 
-    <div id="record-bar" class="record-bar hidden" aria-hidden="true">
-      <span id="record-status" class="record-status">Recording</span>
-      <span id="record-timer" class="record-timer">00:00</span>
-      <button type="button" id="pause-btn" class="btn bar-btn">Pause</button>
-      <button type="button" id="stop-btn" class="btn bar-btn danger">Stop</button>
+    <div id="record-bar" class="snip-record-bar hidden" aria-hidden="true">
+      <span id="record-dot" class="snip-record-dot"></span>
+      <span id="record-status" class="snip-record-status">Recording</span>
+      <span id="record-timer" class="snip-record-timer">00:00</span>
+      <button type="button" id="pause-btn" class="snip-bar-btn">Pause</button>
+      <button type="button" id="stop-btn" class="snip-bar-btn danger">Stop</button>
     </div>
 
     <script type="module" src="recording.js"></script>

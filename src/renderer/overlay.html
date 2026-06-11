@@ -4,10 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WI-Rec</title>
+    <link rel="stylesheet" href="snip-toolbar.css" />
     <link rel="stylesheet" href="overlay.css" />
   </head>
   <body>
     <canvas id="canvas"></canvas>
+
+    <div id="snip-bar" class="snip-bar">
+      <div class="snip-modes">
+        <button type="button" id="mode-screenshot" class="snip-mode active" title="Screenshot">📷</button>
+        <button type="button" id="mode-record" class="snip-mode" title="Record">🎥</button>
+      </div>
+      <div class="snip-divider"></div>
+      <div class="snip-menu-wrap">
+        <button type="button" id="region-menu-btn" class="snip-menu-btn" aria-expanded="false">
+          <span>▭</span><span>▾</span>
+        </button>
+        <div id="region-menu" class="snip-menu hidden">
+          <button type="button" class="snip-menu-item active" data-region="rectangle">
+            <span class="snip-menu-icon">▭</span>
+            <span id="label-rectangle">Rectangle</span>
+          </button>
+          <button type="button" class="snip-menu-item" data-region="fullscreen">
+            <span class="snip-menu-icon">⬚</span>
+            <span id="label-fullscreen">Full screen</span>
+          </button>
+        </div>
+      </div>
+      <span class="snip-spacer"></span>
+      <button type="button" id="cancel-btn" class="snip-close" title="Close">✕</button>
+    </div>
+
     <div id="toolbar" class="toolbar hidden" role="toolbar" aria-hidden="true">
       <button type="button" class="tool-btn active" data-tool="arrow" title="Flecha">↗</button>
       <button type="button" class="tool-btn" data-tool="rect" title="Rectángulo">□</button>

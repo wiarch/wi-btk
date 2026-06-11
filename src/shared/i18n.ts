@@ -110,6 +110,15 @@ type OverlayStrings = {
   close: string;
 };
 
+type SnipStrings = {
+  screenshot: string;
+  record: string;
+  rectangle: string;
+  fullScreen: string;
+  close: string;
+  audio: string;
+};
+
 type SettingsStrings = {
   title: string;
   subtitle: string;
@@ -182,6 +191,7 @@ type Dictionary = {
   notifications: NotificationStrings;
   errors: ErrorStrings;
   overlay: OverlayStrings;
+  snip: SnipStrings;
   colorPicker: ColorPickerStrings;
   recording: RecordingStrings;
   settings: SettingsStrings;
@@ -229,6 +239,14 @@ const en: Dictionary = {
     copy: 'Copy',
     save: 'Save',
     close: 'Close',
+  },
+  snip: {
+    screenshot: 'Screenshot',
+    record: 'Record',
+    rectangle: 'Rectangle',
+    fullScreen: 'Full screen',
+    close: 'Close',
+    audio: 'Audio',
   },
   colorPicker: {
     windowTitle: 'WI-Rec (Color Picker)',
@@ -407,6 +425,14 @@ const es: Dictionary = {
     copy: 'Copiar',
     save: 'Guardar',
     close: 'Cerrar',
+  },
+  snip: {
+    screenshot: 'Captura',
+    record: 'Grabar',
+    rectangle: 'Rectángulo',
+    fullScreen: 'Pantalla completa',
+    close: 'Cerrar',
+    audio: 'Audio',
   },
   colorPicker: {
     windowTitle: 'WI-Rec (Cuentagotas)',

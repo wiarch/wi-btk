@@ -4,6 +4,14 @@ export {};
 
 type SelectionBounds = { x: number; y: number; width: number; height: number };
 
+type SnipLabels = {
+  screenshot: string;
+  record: string;
+  rectangle: string;
+  fullScreen: string;
+  close: string;
+};
+
 type ScreenshotPayload = {
   imageUrl: string;
   width: number;
@@ -26,6 +34,7 @@ type ScreenshotPayload = {
     save: string;
     close: string;
   };
+  snipLabels: SnipLabels;
   hotkeyDisplay: {
     arrow: string;
     rect: string;
@@ -48,6 +57,7 @@ type WiRecApi = {
   saveImage(imageBase64: string, edited: boolean): Promise<void>;
   copyImage(imageBase64: string, edited: boolean): Promise<void>;
   cancel(): void;
+  switchToRecord(): void;
   ready(): void;
 };
 
@@ -58,6 +68,14 @@ declare global {
 }
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const snipBar = document.getElementById('snip-bar') as HTMLDivElement;
+const modeScreenshot = document.getElementById('mode-screenshot') as HTMLButtonElement;
+const modeRecord = document.getElementById('mode-record') as HTMLButtonElement;
+const regionMenuBtn = document.getElementById('region-menu-btn') as HTMLButtonElement;
+const regionMenu = document.getElementById('region-menu') as HTMLDivElement;
+const labelRectangle = document.getElementById('label-rectangle') as HTMLSpanElement;
+const labelFullscreen = document.getElementById('label-fullscreen') as HTMLSpanElement;
+const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
 const toolbar = document.getElementById('toolbar') as HTMLDivElement;
 const sizeLabel = document.getElementById('size-label') as HTMLSpanElement;
 const ctx = canvas.getContext('2d');
@@ -95,7 +113,42 @@ const state = {
   },
   saveAsJpeg: true,
   jpegQuality: 85,
+  regionMenuOpen: false,
 };
+
+function closeRegionMenu(): void {
+  state.regionMenuOpen = false;
+  regionMenu.classList.add('hidden');
+  regionMenuBtn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleRegionMenu(): void {
+  if (state.regionMenuOpen) {
+    closeRegionMenu();
+    return;
+  }
+
+  state.regionMenuOpen = true;
+  regionMenu.classList.remove('hidden');
+  regionMenuBtn.setAttribute('aria-expanded', 'true');
+}
+
+function showSnipBar(): void {
+  snipBar.classList.remove('hidden');
+}
+
+function hideSnipBar(): void {
+  closeRegionMenu();
+  snipBar.classList.add('hidden');
+}
+
+function applySnipLabels(labels: SnipLabels): void {
+  modeScreenshot.title = labels.screenshot;
+  modeRecord.title = labels.record;
+  labelRectangle.textContent = labels.rectangle;
+  labelFullscreen.textContent = labels.fullScreen;
+  cancelBtn.title = labels.close;
+}
 
 function hasEdits(): boolean {
   return state.annotations.length > 0;
@@ -256,6 +309,7 @@ function positionToolbar(): void {
 }
 
 function showToolbar(): void {
+  hideSnipBar();
   toolbar.classList.remove('hidden');
   toolbar.setAttribute('aria-hidden', 'false');
   document.body.classList.add('mode-annotate');
@@ -354,10 +408,47 @@ function resizeSelection(handle: string, x: number, y: number, base: SelectionBo
   return normalizeSelection(left, top, right, bottom);
 }
 
+regionMenuBtn.addEventListener('click', (event) => {
+  event.stopPropagation();
+  toggleRegionMenu();
+});
+
+regionMenu.querySelectorAll('[data-region]').forEach((button) => {
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const region = (button as HTMLButtonElement).dataset.region;
+    regionMenu.querySelectorAll('.snip-menu-item').forEach((item) => {
+      item.classList.toggle('active', item === button);
+    });
+    closeRegionMenu();
+
+    if (region === 'fullscreen') {
+      state.selection = { x: 0, y: 0, width: canvas.width, height: canvas.height };
+      drawScene();
+      enterAnnotateMode();
+    }
+  });
+});
+
+modeRecord.addEventListener('click', () => {
+  window.wiRec.switchToRecord();
+});
+
+cancelBtn.addEventListener('click', () => {
+  window.wiRec.cancel();
+});
+
+window.addEventListener('mousedown', (event) => {
+  if (!(event.target instanceof HTMLElement)) return;
+  if (event.target.closest('.snip-menu-wrap')) return;
+  closeRegionMenu();
+});
+
 canvas.addEventListener('mousedown', (event) => {
   const point = toImageCoords(event);
 
   if (state.mode === 'select') {
+    closeRegionMenu();
     state.dragging = true;
     state.startX = point.x;
     state.startY = point.y;
@@ -596,7 +687,9 @@ window.wiRec.onScreenshotReady((payload: ScreenshotPayload) => {
   state.saveAsJpeg = payload.saveAsJpeg;
   state.jpegQuality = payload.jpegQuality;
   applyOverlayButtons(payload.overlayLabels, payload.hotkeyDisplay);
+  applySnipLabels(payload.snipLabels);
   hideToolbar();
+  showSnipBar();
 
   canvas.width = payload.width;
   canvas.height = payload.height;

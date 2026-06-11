@@ -17,6 +17,14 @@ export type ScreenshotPayload = {
     save: string;
     close: string;
   };
+  snipLabels: {
+    screenshot: string;
+    record: string;
+    rectangle: string;
+    fullScreen: string;
+    close: string;
+    audio: string;
+  };
   hotkeyDisplay: {
     arrow: string;
     rect: string;
@@ -45,6 +53,9 @@ contextBridge.exposeInMainWorld('wiRec', {
   },
   cancel(): void {
     ipcRenderer.send('overlay:cancel');
+  },
+  switchToRecord(): void {
+    ipcRenderer.send('overlay:switchToRecord');
   },
   ready(): void {
     ipcRenderer.send('overlay:ready');
@@ -85,6 +96,9 @@ contextBridge.exposeInMainWorld('wiRecRecording', {
   },
   prepareCapture(options: { desktopAudio: boolean }): Promise<void> {
     return ipcRenderer.invoke('recording:prepareCapture', options);
+  },
+  releaseCapture(): Promise<void> {
+    return ipcRenderer.invoke('recording:releaseCapture');
   },
   saveRecording(buffer: ArrayBuffer): Promise<string> {
     return ipcRenderer.invoke('recording:save', buffer);

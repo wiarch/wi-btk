@@ -264,6 +264,7 @@ function buildOverlayPayload(
       cancel: settings.hotkeys.cancel,
     },
     overlayLabels: dict.overlay,
+    snipLabels: dict.snip,
     hotkeyDisplay: {
       arrow: formatHotkeyForUi(settings.hotkeys.arrow),
       rect: formatHotkeyForUi(settings.hotkeys.rect),
@@ -743,6 +744,24 @@ function setupIpc(): void {
 
   ipcMain.on('overlay:cancel', () => {
     closeOverlay();
+    captureInProgress = false;
+  });
+
+  ipcMain.on('overlay:switchToRecord', async () => {
+    closeOverlay();
+    captureInProgress = true;
+    try {
+      const imageBuffer = await captureImage();
+      const bounds = getVirtualBounds();
+      const settings = getSettings();
+      await openRecording(imageBuffer, bounds, getPreloadPath(), settings);
+    } catch (error) {
+      captureInProgress = false;
+      clearRecordingMediaHandler();
+      const settings = getSettings();
+      const message = error instanceof Error ? error.message : String(error);
+      showError(t(settings.language, 'errors.captureFailed', { message }));
+    }
   });
 
   ipcMain.on('colorpicker:cancel', () => {
@@ -751,6 +770,10 @@ function setupIpc(): void {
 
   ipcMain.handle('recording:prepareCapture', (_event, options: { desktopAudio: boolean }) => {
     setRecordingMediaHandler(options.desktopAudio);
+  });
+
+  ipcMain.handle('recording:releaseCapture', () => {
+    clearRecordingMediaHandler();
   });
 
   ipcMain.handle('recording:save', async (_event, buffer: ArrayBuffer) => {
