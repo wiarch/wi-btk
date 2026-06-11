@@ -20,6 +20,7 @@ type HotkeyAction =
 type FilenameMode = 'datetime' | 'sequential';
 type FilenameDateStyle = 'iso' | 'latin';
 type FilenameTimeStyle = 'h24' | 'h12';
+type CaptureSoundPreset = 'chime' | 'pop' | 'shutter' | 'ding';
 
 type AppSettings = {
   language: Language;
@@ -32,6 +33,8 @@ type AppSettings = {
   filenameMode: FilenameMode;
   filenameDateStyle: FilenameDateStyle;
   filenameTimeStyle: FilenameTimeStyle;
+  captureSoundEnabled: boolean;
+  captureSoundPreset: CaptureSoundPreset;
   hotkeys: Record<HotkeyAction, string>;
 };
 
@@ -76,7 +79,15 @@ type SettingsUi = {
   notAssigned: string;
   save: string;
   cancel: string;
+  close: string;
   saved: string;
+  captureSound: string;
+  captureSoundEnabled: string;
+  captureSoundPreset: string;
+  captureSoundChime: string;
+  captureSoundPop: string;
+  captureSoundShutter: string;
+  captureSoundDing: string;
 };
 
 type AssignHotkeyResult =
@@ -96,6 +107,7 @@ type WiRecSettingsApi = {
   browseSaveDirectory(): Promise<string | null>;
   getResolvedSaveDirectory(): Promise<string>;
   previewFilename(settings: AppSettings): Promise<string>;
+  previewCaptureSound(settings: AppSettings): Promise<void>;
   closeWindow(): void;
 };
 
@@ -155,11 +167,27 @@ const globalHotkeysTitleEl = document.getElementById('global-hotkeys-title') as 
 const captureHotkeysTitleEl = document.getElementById('capture-hotkeys-title') as HTMLHeadingElement;
 const globalHotkeyGrid = document.getElementById('global-hotkey-grid') as HTMLDivElement;
 const overlayHotkeyGrid = document.getElementById('overlay-hotkey-grid') as HTMLDivElement;
-const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
-const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
+const captureSoundTitleEl = document.getElementById('capture-sound-title') as HTMLHeadingElement;
+const captureSoundEnabledCheckbox = document.getElementById('capture-sound-enabled') as HTMLInputElement;
+const captureSoundEnabledLabelEl = document.getElementById('capture-sound-enabled-label') as HTMLSpanElement;
+const captureSoundPresetFieldEl = document.getElementById('capture-sound-preset-field') as HTMLDivElement;
+const captureSoundPresetLabelEl = document.getElementById('capture-sound-preset-label') as HTMLLabelElement;
+const captureSoundPresetSelect = document.getElementById('capture-sound-preset') as HTMLSelectElement;
+const closeBtn = document.getElementById('close-btn') as HTMLButtonElement;
 const statusEl = document.getElementById('status') as HTMLParagraphElement;
 
+const CAPTURE_SOUND_PRESETS: CaptureSoundPreset[] = ['chime', 'pop', 'shutter', 'ding'];
+
+const SOUND_LABEL_KEYS: Record<CaptureSoundPreset, keyof SettingsUi> = {
+  chime: 'captureSoundChime',
+  pop: 'captureSoundPop',
+  shutter: 'captureSoundShutter',
+  ding: 'captureSoundDing',
+};
+
 let draft: AppSettings | null = null;
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let savedStatusTimer: ReturnType<typeof setTimeout> | null = null;
 let ui: SettingsUi | null = null;
 let recordingAction: HotkeyAction | null = null;
 let recordingInput: HTMLInputElement | null = null;
@@ -223,8 +251,14 @@ function applyLanguage(): void {
   hotkeysHintEl.textContent = ui.hotkeysHint;
   globalHotkeysTitleEl.textContent = ui.globalHotkeys;
   captureHotkeysTitleEl.textContent = ui.captureHotkeys;
-  saveBtn.textContent = ui.save;
-  cancelBtn.textContent = ui.cancel;
+  closeBtn.textContent = ui.close;
+  captureSoundTitleEl.textContent = ui.captureSound;
+  captureSoundEnabledLabelEl.textContent = ui.captureSoundEnabled;
+  captureSoundPresetLabelEl.textContent = ui.captureSoundPreset;
+
+  for (const [index, preset] of CAPTURE_SOUND_PRESETS.entries()) {
+    captureSoundPresetSelect.options[index].textContent = ui[SOUND_LABEL_KEYS[preset]];
+  }
 
   const langOptions = languageSelect.options;
   langOptions[0].textContent = ui.languageEn;
@@ -239,6 +273,56 @@ function applyLanguage(): void {
   }
 
   refreshHotkeyInputs();
+  syncCaptureSoundPresetVisibility();
+}
+
+function syncCaptureSoundPresetVisibility(): void {
+  const enabled = captureSoundEnabledCheckbox.checked;
+  captureSoundPresetFieldEl.style.display = enabled ? '' : 'none';
+}
+
+function syncDraftFromControls(): void {
+  if (!draft) {
+    return;
+  }
+
+  draft.language = languageSelect.value as Language;
+  draft.launchAtStartup = launchCheckbox.checked;
+  draft.autoSaveCaptures = autoSaveCheckbox.checked;
+  draft.saveDirectory = saveDirectoryInput.value.trim();
+  draft.useCaptureSubfolders = useSubfoldersCheckbox.checked;
+  draft.captureSoundEnabled = captureSoundEnabledCheckbox.checked;
+  draft.captureSoundPreset = captureSoundPresetSelect.value as CaptureSoundPreset;
+  syncDraftFromFilenameControls();
+}
+
+async function persistDraft(): Promise<void> {
+  if (!draft) {
+    return;
+  }
+
+  syncDraftFromControls();
+  const result = await window.wiRecSettings.saveSettings(draft);
+  if (!result.ok) {
+    setStatus(result.error, 'error');
+    return;
+  }
+
+  setStatus(ui?.saved ?? 'Saved', 'ok');
+  if (savedStatusTimer) {
+    clearTimeout(savedStatusTimer);
+  }
+  savedStatusTimer = setTimeout(() => setStatus(''), 2000);
+}
+
+function schedulePersist(delayMs = 400): void {
+  if (persistTimer) {
+    clearTimeout(persistTimer);
+  }
+  persistTimer = setTimeout(() => {
+    persistTimer = null;
+    void persistDraft();
+  }, delayMs);
 }
 
 function buildHotkeyRow(
@@ -319,7 +403,7 @@ async function finishHotkeyRecord(
   draft.hotkeys = result.hotkeys;
   refreshHotkeyInputs();
   input.blur();
-  setStatus('');
+  await persistDraft();
 }
 
 function startRecording(action: HotkeyAction, input: HTMLInputElement): void {
@@ -422,6 +506,8 @@ async function init(): Promise<void> {
     saveAsJpegCheckbox.checked = draft.saveAsJpeg;
     jpegQualityInput.value = String(draft.jpegQuality);
     jpegQualityValueEl.textContent = String(draft.jpegQuality);
+    captureSoundEnabledCheckbox.checked = draft.captureSoundEnabled;
+    captureSoundPresetSelect.value = draft.captureSoundPreset;
     saveDirectoryInput.placeholder = await window.wiRecSettings.getResolvedSaveDirectory();
     await refreshUi(draft.language);
     buildHotkeyRows(draft);
@@ -437,34 +523,23 @@ async function init(): Promise<void> {
     }
     draft.language = languageSelect.value as Language;
     await refreshUi(draft.language);
+    await persistDraft();
   });
 
   launchCheckbox.addEventListener('change', () => {
-    if (!draft) {
-      return;
-    }
-    draft.launchAtStartup = launchCheckbox.checked;
+    schedulePersist();
   });
 
   autoSaveCheckbox.addEventListener('change', () => {
-    if (!draft) {
-      return;
-    }
-    draft.autoSaveCaptures = autoSaveCheckbox.checked;
+    schedulePersist();
   });
 
   saveDirectoryInput.addEventListener('input', () => {
-    if (!draft) {
-      return;
-    }
-    draft.saveDirectory = saveDirectoryInput.value.trim();
+    schedulePersist();
   });
 
   useSubfoldersCheckbox.addEventListener('change', () => {
-    if (!draft) {
-      return;
-    }
-    draft.useCaptureSubfolders = useSubfoldersCheckbox.checked;
+    schedulePersist();
   });
 
   browseSaveDirectoryBtn.addEventListener('click', async () => {
@@ -472,62 +547,54 @@ async function init(): Promise<void> {
     if (!selected || !draft) {
       return;
     }
-    draft.saveDirectory = selected;
     saveDirectoryInput.value = selected;
+    schedulePersist(0);
+  });
+
+  captureSoundEnabledCheckbox.addEventListener('change', () => {
+    syncCaptureSoundPresetVisibility();
+    schedulePersist();
+  });
+
+  captureSoundPresetSelect.addEventListener('change', async () => {
+    if (!draft) {
+      return;
+    }
+    syncDraftFromControls();
+    if (draft.captureSoundEnabled) {
+      await window.wiRecSettings.previewCaptureSound(draft);
+    }
+    schedulePersist(0);
   });
 
   filenameModeSelect.addEventListener('change', async () => {
-    syncDraftFromFilenameControls();
     syncFilenameFieldsVisibility();
     await refreshFilenamePreview();
+    schedulePersist();
   });
 
   filenameDateStyleSelect.addEventListener('change', async () => {
-    syncDraftFromFilenameControls();
     await refreshFilenamePreview();
+    schedulePersist();
   });
 
   filenameTimeStyleSelect.addEventListener('change', async () => {
-    syncDraftFromFilenameControls();
     await refreshFilenamePreview();
+    schedulePersist();
   });
 
   saveAsJpegCheckbox.addEventListener('change', async () => {
-    syncDraftFromFilenameControls();
     await refreshFilenamePreview();
+    schedulePersist();
   });
 
   jpegQualityInput.addEventListener('input', () => {
     jpegQualityValueEl.textContent = jpegQualityInput.value;
-    syncDraftFromFilenameControls();
+    schedulePersist();
   });
 
-  cancelBtn.addEventListener('click', () => {
+  closeBtn.addEventListener('click', () => {
     window.wiRecSettings.closeWindow();
-  });
-
-  saveBtn.addEventListener('click', async () => {
-    if (!draft) {
-      return;
-    }
-
-    if (!draft) {
-      return;
-    }
-
-    draft.saveDirectory = saveDirectoryInput.value.trim();
-    draft.useCaptureSubfolders = useSubfoldersCheckbox.checked;
-    syncDraftFromFilenameControls();
-
-    setStatus('');
-    const result = await window.wiRecSettings.saveSettings(draft);
-    if (!result.ok) {
-      setStatus(result.error, 'error');
-      return;
-    }
-
-    setStatus(ui?.saved ?? 'Saved', 'ok');
-    setTimeout(() => window.wiRecSettings.closeWindow(), 500);
   });
 }
 

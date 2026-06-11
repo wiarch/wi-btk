@@ -32,6 +32,20 @@
           <input id="auto-save-captures" type="checkbox" />
           <span id="auto-save-label">Always save captures to disk (including copy)</span>
         </label>
+        <h3 id="capture-sound-title" class="section-label">Capture sound</h3>
+        <label class="checkbox-row">
+          <input id="capture-sound-enabled" type="checkbox" checked />
+          <span id="capture-sound-enabled-label">Play sound on capture</span>
+        </label>
+        <div class="field" id="capture-sound-preset-field">
+          <label id="capture-sound-preset-label" for="capture-sound-preset">Sound</label>
+          <select id="capture-sound-preset">
+            <option value="chime">Chime</option>
+            <option value="pop">Pop</option>
+            <option value="shutter">Shutter</option>
+            <option value="ding">Ding</option>
+          </select>
+        </div>
         <div class="field">
           <label id="save-directory-label" for="save-directory">Save folder</label>
           <div class="path-row">
@@ -89,8 +103,7 @@
       </section>
 
       <footer class="footer">
-        <button type="button" id="cancel-btn" class="btn secondary">Cancel</button>
-        <button type="button" id="save-btn" class="btn primary">Save</button>
+        <button type="button" id="close-btn" class="btn primary">Close</button>
       </footer>
 
       <p id="status" class="status" aria-live="polite"></p>

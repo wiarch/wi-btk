@@ -1,7 +1,12 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { app } from 'electron';
-import { AppSettings, DEFAULT_SETTINGS, GLOBAL_HOTKEY_ACTIONS } from '../shared/settings';
+import {
+  AppSettings,
+  CAPTURE_SOUND_PRESETS,
+  DEFAULT_SETTINGS,
+  GLOBAL_HOTKEY_ACTIONS,
+} from '../shared/settings';
 import { isSafeGlobalAccelerator } from './hotkeys';
 
 function settingsPath(): string {
@@ -44,6 +49,10 @@ function mergeSettings(partial: Partial<AppSettings> & { captureFullScreen?: boo
     filenameMode: partial.filenameMode ?? DEFAULT_SETTINGS.filenameMode,
     filenameDateStyle: partial.filenameDateStyle ?? DEFAULT_SETTINGS.filenameDateStyle,
     filenameTimeStyle: partial.filenameTimeStyle ?? DEFAULT_SETTINGS.filenameTimeStyle,
+    captureSoundEnabled: partial.captureSoundEnabled ?? DEFAULT_SETTINGS.captureSoundEnabled,
+    captureSoundPreset: CAPTURE_SOUND_PRESETS.includes(partial.captureSoundPreset as never)
+      ? (partial.captureSoundPreset as AppSettings['captureSoundPreset'])
+      : DEFAULT_SETTINGS.captureSoundPreset,
     hotkeys,
   };
 }

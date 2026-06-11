@@ -12,6 +12,9 @@ export type HotkeyAction =
 export type FilenameMode = 'datetime' | 'sequential';
 export type FilenameDateStyle = 'iso' | 'latin';
 export type FilenameTimeStyle = 'h24' | 'h12';
+export type CaptureSoundPreset = 'chime' | 'pop' | 'shutter' | 'ding';
+
+export const CAPTURE_SOUND_PRESETS: CaptureSoundPreset[] = ['chime', 'pop', 'shutter', 'ding'];
 
 export type AppSettings = {
   language: Language;
@@ -24,6 +27,8 @@ export type AppSettings = {
   filenameMode: FilenameMode;
   filenameDateStyle: FilenameDateStyle;
   filenameTimeStyle: FilenameTimeStyle;
+  captureSoundEnabled: boolean;
+  captureSoundPreset: CaptureSoundPreset;
   hotkeys: Record<HotkeyAction, string>;
 };
 
@@ -38,6 +43,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   filenameMode: 'datetime',
   filenameDateStyle: 'iso',
   filenameTimeStyle: 'h24',
+  captureSoundEnabled: true,
+  captureSoundPreset: 'chime',
   hotkeys: {
     capture: 'Alt+Shift+S',
     captureFullScreen: 'Ctrl+Shift+F11',

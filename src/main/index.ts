@@ -33,6 +33,7 @@ import {
   normalizeForElectron,
 } from './hotkeys';
 import { log } from './logger';
+import { playCaptureSound } from './captureSound';
 import { notifyCaptureSaved, notifySimple } from './notifications';
 import { closeSettingsWindow, openSettingsWindow } from './settingsWindow';
 import { loadSettings, saveSettings } from './settingsStore';
@@ -43,6 +44,7 @@ import type { AppSettings, HotkeyAction, Language } from '../shared/settings';
 import { DEFAULT_SETTINGS, GLOBAL_HOTKEY_ACTIONS, OVERLAY_HOTKEY_ACTIONS } from '../shared/settings';
 
 let overlayWindow: BrowserWindow | null = null;
+let overlayReady = false;
 let keepAliveWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let captureInProgress = false;
@@ -134,9 +136,17 @@ async function clearCaptureFile(): Promise<void> {
 
 function closeOverlay(): void {
   if (overlayWindow && !overlayWindow.isDestroyed()) {
-    overlayWindow.close();
+    overlayWindow.hide();
+  }
+  void clearCaptureFile();
+}
+
+function destroyOverlay(): void {
+  if (overlayWindow && !overlayWindow.isDestroyed()) {
+    overlayWindow.destroy();
   }
   overlayWindow = null;
+  overlayReady = false;
   void clearCaptureFile();
 }
 
@@ -189,6 +199,18 @@ function resolveCaptureFilePath(requestUrl: string): string | null {
 async function captureImage(): Promise<Buffer> {
   const errors: string[] = [];
 
+  if (process.platform === 'linux' || process.platform === 'win32') {
+    try {
+      const { captureScreen } = await import('./capture');
+      const buffer = await captureScreen();
+      await log(`capture ok via platform snapshot (${buffer.length} bytes)`);
+      return buffer;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      errors.push(`platform snapshot: ${message}`);
+    }
+  }
+
   try {
     const buffer = await captureScreenElectron();
     await log(`capture ok via desktopCapturer (${buffer.length} bytes)`);
@@ -196,20 +218,6 @@ async function captureImage(): Promise<Buffer> {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     errors.push(`desktopCapturer: ${message}`);
-  }
-
-  if (process.platform !== 'linux') {
-    throw new Error(errors.join('\n'));
-  }
-
-  try {
-    const { captureScreen } = await import('./capture');
-    const buffer = await captureScreen();
-    await log(`capture ok via fallback (${buffer.length} bytes)`);
-    return buffer;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    errors.push(`fallback: ${message}`);
   }
 
   throw new Error(errors.join('\n'));
@@ -276,23 +284,9 @@ function waitForOverlayReady(win: BrowserWindow): Promise<void> {
   });
 }
 
-async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<void> {
-  closeOverlay();
-
-  const image = nativeImage.createFromBuffer(imageBuffer);
-  const imageSize = image.getSize();
-  if (imageSize.width < 1 || imageSize.height < 1) {
-    throw new Error('Captured image is empty');
-  }
-
+function createOverlayShell(): BrowserWindow {
   const bounds = getVirtualBounds();
-  const settings = getSettings();
-  const tempExt = settings.saveAsJpeg ? 'jpg' : 'png';
-  const capturePath = join(app.getPath('temp'), `wi-rec-capture-${Date.now()}.${tempExt}`);
-  await writeFile(capturePath, encodeCaptureForSave(image, settings));
-  currentCapturePath = capturePath;
-
-  overlayWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     x: bounds.x,
     y: bounds.y,
     width: bounds.width,
@@ -308,7 +302,7 @@ async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<vo
     skipTaskbar: true,
     show: false,
     focusable: true,
-    backgroundColor: '#111111',
+    backgroundColor: '#000000',
     webPreferences: {
       preload: getPreloadPath(),
       contextIsolation: true,
@@ -317,28 +311,59 @@ async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<vo
     },
   });
 
-  overlayWindow.setMenuBarVisibility(false);
-  overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  overlayWindow.setAlwaysOnTop(true, 'screen-saver');
-
-  overlayWindow.on('closed', () => {
+  win.setMenuBarVisibility(false);
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  win.setAlwaysOnTop(true, 'screen-saver');
+  win.on('closed', () => {
     overlayWindow = null;
+    overlayReady = false;
     void clearCaptureFile();
   });
 
-  const payload = buildOverlayPayload(
-    `wirec://capture/${encodeURIComponent(capturePath)}`,
-    imageSize,
-    bounds,
-    fullScreen,
-  );
+  return win;
+}
 
+async function prewarmOverlayWindow(): Promise<void> {
+  if (overlayReady && overlayWindow && !overlayWindow.isDestroyed()) {
+    return;
+  }
+
+  overlayWindow = createOverlayShell();
   const readyPromise = waitForOverlayReady(overlayWindow);
   await overlayWindow.loadFile(getOverlayHtmlPath());
   await readyPromise;
-  overlayWindow.webContents.send('screenshot-ready', payload);
+  overlayReady = true;
+  await log('overlay prewarmed');
+}
+
+async function openOverlay(imageBuffer: Buffer, fullScreen: boolean): Promise<void> {
+  if (!overlayReady || !overlayWindow || overlayWindow.isDestroyed()) {
+    await prewarmOverlayWindow();
+  }
+
+  if (!overlayWindow) {
+    throw new Error('Overlay window unavailable');
+  }
+
+  const image = nativeImage.createFromBuffer(imageBuffer);
+  const imageSize = image.getSize();
+  if (imageSize.width < 1 || imageSize.height < 1) {
+    throw new Error('Captured image is empty');
+  }
+
+  const bounds = getVirtualBounds();
+  const settings = getSettings();
+  const encoded = encodeCaptureForSave(image, settings);
+  const mime = settings.saveAsJpeg ? 'image/jpeg' : 'image/png';
+  const imageUrl = `data:${mime};base64,${encoded.toString('base64')}`;
+
+  overlayWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
+  overlayWindow.setAlwaysOnTop(true, 'screen-saver');
+
+  const payload = buildOverlayPayload(imageUrl, imageSize, bounds, fullScreen);
   overlayWindow.show();
   overlayWindow.focus();
+  overlayWindow.webContents.send('screenshot-ready', payload);
 }
 
 async function saveFullScreenCapture(imageBuffer: Buffer): Promise<void> {
@@ -354,6 +379,7 @@ async function saveFullScreenCapture(imageBuffer: Buffer): Promise<void> {
     'notifications.fullScreenCapturedHint',
     filePath,
   );
+  playCaptureSound(settings);
 }
 
 async function triggerCapture(source: string, fullScreen = false): Promise<void> {
@@ -366,6 +392,7 @@ async function triggerCapture(source: string, fullScreen = false): Promise<void>
   await log(`capture started (${source}, fullScreen=${fullScreen})`);
 
   try {
+    closeOverlay();
     const imageBuffer = await captureImage();
 
     if (fullScreen) {
@@ -496,7 +523,7 @@ function createKeepAliveWindow(): void {
 
 function quitApp(): void {
   isQuitting = true;
-  closeOverlay();
+  destroyOverlay();
   closeSettingsWindow();
   app.quit();
 }
@@ -579,6 +606,7 @@ function setupIpc(): void {
         'notifications.savedHint',
         filePath,
       );
+      playCaptureSound(settings);
     },
   );
 
@@ -603,10 +631,12 @@ function setupIpc(): void {
           'notifications.copiedAndSavedHint',
           filePath,
         );
+        playCaptureSound(settings);
         return;
       }
 
       notifySimple('WI-Rec', t(settings.language, 'notifications.copied'));
+      playCaptureSound(settings);
     },
   );
 
@@ -639,7 +669,9 @@ function setupIpc(): void {
         payload.accelerator,
         payload.hotkeys,
       );
-      registerHotkey();
+      if (result.ok) {
+        await applySettings({ ...getSettings(), hotkeys: result.hotkeys });
+      }
       return result;
     },
   );
@@ -670,6 +702,8 @@ function setupIpc(): void {
       filenameMode: settings.filenameMode,
       filenameDateStyle: settings.filenameDateStyle,
       filenameTimeStyle: settings.filenameTimeStyle,
+      captureSoundEnabled: settings.captureSoundEnabled,
+      captureSoundPreset: settings.captureSoundPreset,
       hotkeys: normalizedHotkeys,
     };
 
@@ -765,6 +799,10 @@ function setupIpc(): void {
   ipcMain.on('settings:close', () => {
     closeSettingsWindow();
   });
+
+  ipcMain.handle('settings:previewCaptureSound', (_event, draft: AppSettings) => {
+    playCaptureSound(draft);
+  });
 }
 
 if (gotSingleInstanceLock) {
@@ -808,6 +846,8 @@ if (gotSingleInstanceLock) {
       bootLog('tray created');
       registerHotkey();
       bootLog('hotkeys registered');
+      await prewarmOverlayWindow();
+      bootLog('overlay prewarmed');
       await maybeShowWindowsTrayHint(currentSettings.language);
 
       await log('app ready');

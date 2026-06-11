@@ -81,4 +81,7 @@ contextBridge.exposeInMainWorld('wiRecSettings', {
   closeWindow(): void {
     ipcRenderer.send('settings:close');
   },
+  previewCaptureSound(settings: AppSettings): Promise<void> {
+    return ipcRenderer.invoke('settings:previewCaptureSound', settings);
+  },
 });

@@ -71,8 +71,10 @@ const STROKE = '#f43f5e';
 const HANDLE = 7;
 const OVERLAY_ALPHA = 0.45;
 
+type FrozenFrame = ImageBitmap | HTMLImageElement;
+
 const state = {
-  image: new Image(),
+  frame: null as FrozenFrame | null,
   mode: 'select' as 'select' | 'annotate',
   tool: 'arrow' as Tool,
   dragging: false,
@@ -187,9 +189,13 @@ function drawHandles(sel: SelectionBounds): void {
 }
 
 function drawScene(): void {
-  const { image, selection, annotations, draft } = state;
+  const { frame, selection, annotations, draft } = state;
+  if (!frame) {
+    return;
+  }
+
   drawCtx.clearRect(0, 0, canvas.width, canvas.height);
-  drawCtx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  drawCtx.drawImage(frame, 0, 0, canvas.width, canvas.height);
   drawCtx.fillStyle = `rgba(0, 0, 0, ${OVERLAY_ALPHA})`;
   drawCtx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -198,7 +204,7 @@ function drawScene(): void {
   }
 
   drawCtx.drawImage(
-    image,
+    frame,
     selection.x,
     selection.y,
     selection.width,
@@ -282,8 +288,12 @@ function exportImage(): string {
     return '';
   }
 
+  if (!state.frame) {
+    return '';
+  }
+
   offCtx.drawImage(
-    state.image,
+    state.frame,
     sel.x,
     sel.y,
     sel.width,
@@ -561,6 +571,17 @@ function applyOverlayButtons(
   }
 }
 
+async function loadFrozenFrame(imageUrl: string): Promise<void> {
+  if (state.frame instanceof ImageBitmap) {
+    state.frame.close();
+  }
+
+  const response = await fetch(imageUrl);
+  const blob = await response.blob();
+  state.frame = await createImageBitmap(blob);
+  drawScene();
+}
+
 window.wiRec.onScreenshotReady((payload: ScreenshotPayload) => {
   state.mode = 'select';
   state.tool = 'arrow';
@@ -580,22 +601,21 @@ window.wiRec.onScreenshotReady((payload: ScreenshotPayload) => {
   canvas.width = payload.width;
   canvas.height = payload.height;
 
-  state.image.onload = () => {
-    drawScene();
-    if (payload.captureFullScreen) {
-      state.selection = {
-        x: 0,
-        y: 0,
-        width: canvas.width,
-        height: canvas.height,
-      };
-      enterAnnotateMode();
-    }
-  };
-  state.image.onerror = () => {
-    console.error('[WI-Rec] failed to load capture image');
-  };
-  state.image.src = payload.imageUrl;
+  void loadFrozenFrame(payload.imageUrl)
+    .then(() => {
+      if (payload.captureFullScreen) {
+        state.selection = {
+          x: 0,
+          y: 0,
+          width: canvas.width,
+          height: canvas.height,
+        };
+        enterAnnotateMode();
+      }
+    })
+    .catch(() => {
+      console.error('[WI-Rec] failed to load frozen capture frame');
+    });
 });
 
 window.wiRec.ready();

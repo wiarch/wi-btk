@@ -79,7 +79,15 @@ type SettingsStrings = {
   notAssigned: string;
   save: string;
   cancel: string;
+  close: string;
   saved: string;
+  captureSound: string;
+  captureSoundEnabled: string;
+  captureSoundPreset: string;
+  captureSoundChime: string;
+  captureSoundPop: string;
+  captureSoundShutter: string;
+  captureSoundDing: string;
   hotkeyConflict: string;
   hotkeyInvalid: string;
   hotkeyRequired: string;
@@ -180,7 +188,15 @@ const en: Dictionary = {
     notAssigned: 'Not assigned',
     save: 'Save',
     cancel: 'Cancel',
-    saved: 'Settings saved',
+    close: 'Close',
+    saved: 'Saved',
+    captureSound: 'Capture sound',
+    captureSoundEnabled: 'Play sound on capture',
+    captureSoundPreset: 'Sound',
+    captureSoundChime: 'Chime',
+    captureSoundPop: 'Pop',
+    captureSoundShutter: 'Shutter',
+    captureSoundDing: 'Ding',
     hotkeyConflict: 'Hotkey already in use: {hotkey}',
     hotkeyInvalid: 'Invalid hotkey: {hotkey}',
     hotkeyRequired: 'Assign a hotkey for: {action}',
@@ -277,7 +293,15 @@ const es: Dictionary = {
     notAssigned: 'Sin asignar',
     save: 'Guardar',
     cancel: 'Cancelar',
-    saved: 'Configuración guardada',
+    close: 'Cerrar',
+    saved: 'Guardado',
+    captureSound: 'Sonido de captura',
+    captureSoundEnabled: 'Reproducir sonido al capturar',
+    captureSoundPreset: 'Sonido',
+    captureSoundChime: 'Campanilla',
+    captureSoundPop: 'Pop',
+    captureSoundShutter: 'Obturador',
+    captureSoundDing: 'Ding',
     hotkeyConflict: 'Atajo ya en uso: {hotkey}',
     hotkeyInvalid: 'Atajo inválido: {hotkey}',
     hotkeyRequired: 'Asigna un atajo para: {action}',

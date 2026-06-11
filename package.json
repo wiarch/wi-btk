@@ -11,7 +11,7 @@
   "license": "MIT",
   "main": "dist/main/index.js",
   "scripts": {
-    "build": "tsc && tsc -p tsconfig.renderer.json && node scripts/copy-static.mjs",
+    "build": "node scripts/generate-sounds.mjs && tsc && tsc -p tsconfig.renderer.json && node scripts/copy-static.mjs",
     "dev": "npm run build && electron . --enable-logging",
     "start": "npm run build && electron .",
     "build:win": "npm run build && electron-builder --win",

@@ -38,10 +38,27 @@ export async function captureScreenElectron(): Promise<Buffer> {
     throw new Error('desktopCapturer returned no screen sources');
   }
 
+  const targetArea = virtual.width * virtual.height * maxScale * maxScale;
+  let bestSource = sources[0];
+  let bestArea = 0;
+
+  for (const item of sources) {
+    const size = item.thumbnail.getSize();
+    const area = size.width * size.height;
+    const displayMatch = item.display_id === String(primary.id) ? 1.05 : 1;
+    const adjusted = area * displayMatch;
+    if (adjusted > bestArea) {
+      bestArea = adjusted;
+      bestSource = item;
+    }
+  }
+
   const source =
-    sources.find((item) => item.display_id === String(primary.id)) ??
-    sources.find((item) => item.id.toLowerCase().includes('screen')) ??
-    sources[0];
+    bestArea >= targetArea * 0.75
+      ? bestSource
+      : (sources.find((item) => item.display_id === String(primary.id)) ??
+        sources.find((item) => item.id.toLowerCase().includes('screen')) ??
+        bestSource);
 
   const png = source.thumbnail.toPNG();
   if (png.length === 0) {

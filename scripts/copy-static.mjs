@@ -14,3 +14,4 @@ cpSync(join(root, 'src', 'renderer', 'overlay.css'), join(out, 'overlay.css'));
 cpSync(join(root, 'src', 'renderer', 'settings.html'), join(out, 'settings.html'));
 cpSync(join(root, 'src', 'renderer', 'settings.css'), join(out, 'settings.css'));
 cpSync(join(root, 'assets', 'tray-icon.png'), join(assetsOut, 'tray-icon.png'));
+cpSync(join(root, 'assets', 'sounds'), join(assetsOut, 'sounds'), { recursive: true });
