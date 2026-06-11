@@ -44,7 +44,7 @@ import { playCaptureSound } from './captureSound';
 import { notifyCaptureSaved, notifySimple } from './notifications';
 import { closeSettingsWindow, openSettingsWindow } from './settingsWindow';
 import { loadSettings, saveSettings } from './settingsStore';
-import { getTrayIconPath } from './trayIcon';
+import { loadTrayIcon } from './trayIcon';
 import { previewCaptureFilename } from '../shared/filenameFormat';
 import { getDictionary, hotkeyLabel, t } from '../shared/i18n';
 import type { AppSettings, HotkeyAction, Language } from '../shared/settings';
@@ -616,17 +616,11 @@ async function maybeShowWindowsTrayHint(language: Language): Promise<void> {
 
 function createTray(): void {
   const settings = getSettings();
-  const iconPath = getTrayIconPath();
-  let icon = nativeImage.createFromPath(iconPath);
+  const icon = loadTrayIcon((reason) => {
+    void log(`${reason}, using embedded fallback`);
+  });
 
-  if (icon.isEmpty()) {
-    void log(`tray icon missing at ${iconPath}, using fallback`);
-    icon = nativeImage.createFromDataURL(
-      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAMElEQVR4Ae3OMQEAAAgDINc/9K3hYwAAAAAAAAAAAAAAAAAAAADgXwNTAAE8h3fYAAAAAElFTkSuQmCC',
-    );
-  }
-
-  tray = new Tray(icon.resize({ width: 22, height: 22 }));
+  tray = new Tray(icon);
   rebuildTray();
 
   tray.on('click', () => {
