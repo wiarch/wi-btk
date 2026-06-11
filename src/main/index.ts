@@ -33,6 +33,13 @@ import {
   normalizeForElectron,
 } from './hotkeys';
 import { log } from './logger';
+import {
+  closeColorPicker,
+  destroyColorPicker,
+  openColorPicker,
+  prewarmColorPickerWindow,
+  setColorPickerSessionEndCallback,
+} from './colorPickerWindow';
 import { playCaptureSound } from './captureSound';
 import { notifyCaptureSaved, notifySimple } from './notifications';
 import { closeSettingsWindow, openSettingsWindow } from './settingsWindow';
@@ -382,6 +389,32 @@ async function saveFullScreenCapture(imageBuffer: Buffer): Promise<void> {
   playCaptureSound(settings);
 }
 
+async function triggerColorPicker(source: string): Promise<void> {
+  if (captureInProgress) {
+    await log(`color picker ignored (${source}): already in progress`);
+    return;
+  }
+
+  captureInProgress = true;
+  await log(`color picker started (${source})`);
+
+  try {
+    closeOverlay();
+    closeColorPicker();
+    const imageBuffer = await captureImage();
+    const bounds = getVirtualBounds();
+    const settings = getSettings();
+    await openColorPicker(imageBuffer, bounds, getPreloadPath(), settings.language);
+    await log('color picker opened');
+  } catch (error) {
+    captureInProgress = false;
+    const settings = getSettings();
+    const message = error instanceof Error ? error.message : String(error);
+    await log(`color picker failed (${source}): ${message}`);
+    showError(t(settings.language, 'errors.captureFailed', { message }));
+  }
+}
+
 async function triggerCapture(source: string, fullScreen = false): Promise<void> {
   if (captureInProgress) {
     await log(`capture ignored (${source}): already in progress`);
@@ -393,6 +426,7 @@ async function triggerCapture(source: string, fullScreen = false): Promise<void>
 
   try {
     closeOverlay();
+    closeColorPicker();
     const imageBuffer = await captureImage();
 
     if (fullScreen) {
@@ -429,9 +463,13 @@ function registerHotkey(): void {
       continue;
     }
 
-    const fullScreen = action === 'captureFullScreen';
     const registered = globalShortcut.register(accelerator, () => {
-      void triggerCapture(`hotkey:${action}`, fullScreen);
+      if (action === 'colorPicker') {
+        void triggerColorPicker(`hotkey:${action}`);
+        return;
+      }
+
+      void triggerCapture(`hotkey:${action}`, action === 'captureFullScreen');
     });
 
     if (!registered) {
@@ -484,6 +522,12 @@ function rebuildTray(): void {
       },
     },
     {
+      label: `${t(settings.language, 'tray.colorPicker')} (${formatHotkeyForUi(settings.hotkeys.colorPicker)})`,
+      click: () => {
+        void triggerColorPicker('tray-menu');
+      },
+    },
+    {
       label: t(settings.language, 'tray.settings'),
       click: () => {
         openSettingsWindow();
@@ -524,6 +568,7 @@ function createKeepAliveWindow(): void {
 function quitApp(): void {
   isQuitting = true;
   destroyOverlay();
+  destroyColorPicker();
   closeSettingsWindow();
   app.quit();
 }
@@ -642,6 +687,16 @@ function setupIpc(): void {
 
   ipcMain.on('overlay:cancel', () => {
     closeOverlay();
+  });
+
+  ipcMain.on('colorpicker:cancel', () => {
+    closeColorPicker();
+  });
+
+  ipcMain.handle('colorpicker:copy', (_event, hex: string) => {
+    const settings = getSettings();
+    clipboard.writeText(hex);
+    notifySimple('WI-Rec', t(settings.language, 'notifications.colorCopied', { hex }));
   });
 
   ipcMain.handle('settings:get', () => {
@@ -840,6 +895,9 @@ if (gotSingleInstanceLock) {
       });
 
       setupIpc();
+      setColorPickerSessionEndCallback(() => {
+        captureInProgress = false;
+      });
       createKeepAliveWindow();
       bootLog('keep-alive window created');
       createTray();
@@ -848,6 +906,8 @@ if (gotSingleInstanceLock) {
       bootLog('hotkeys registered');
       await prewarmOverlayWindow();
       bootLog('overlay prewarmed');
+      await prewarmColorPickerWindow(getVirtualBounds(), getPreloadPath());
+      bootLog('color picker prewarmed');
       await maybeShowWindowsTrayHint(currentSettings.language);
 
       await log('app ready');

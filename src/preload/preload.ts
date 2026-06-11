@@ -51,6 +51,26 @@ contextBridge.exposeInMainWorld('wiRec', {
   },
 });
 
+contextBridge.exposeInMainWorld('wiRecColorPicker', {
+  onStart(callback: (payload: Record<string, unknown>) => void): () => void {
+    const listener = (_event: Electron.IpcRendererEvent, payload: Record<string, unknown>) => {
+      callback(payload);
+    };
+
+    ipcRenderer.on('colorpicker:start', listener);
+    return () => ipcRenderer.removeListener('colorpicker:start', listener);
+  },
+  copyColor(hex: string): Promise<void> {
+    return ipcRenderer.invoke('colorpicker:copy', hex);
+  },
+  cancel(): void {
+    ipcRenderer.send('colorpicker:cancel');
+  },
+  signalReady(): void {
+    ipcRenderer.send('colorpicker:shell-ready');
+  },
+});
+
 contextBridge.exposeInMainWorld('wiRecSettings', {
   getSettings(): Promise<AppSettings> {
     return ipcRenderer.invoke('settings:get');

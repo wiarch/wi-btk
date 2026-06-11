@@ -1,0 +1,240 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  user-select: none;
+  font: 13px/1.4 system-ui, -apple-system, sans-serif;
+}
+
+#canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+body.picked #canvas {
+  cursor: default;
+}
+
+.pick-hint {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(24, 24, 28, 0.92);
+  color: #f4f4f5;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.pick-hint.hidden {
+  display: none;
+}
+
+.cursor-preview {
+  position: fixed;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(24, 24, 28, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  transform: translate(16px, 16px);
+}
+
+.cursor-preview.hidden {
+  display: none;
+}
+
+.cursor-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.cursor-hex {
+  font: 600 12px/1 ui-monospace, monospace;
+  color: #f4f4f5;
+  letter-spacing: 0.02em;
+}
+
+.panel {
+  position: fixed;
+  z-index: 30;
+  width: min(420px, calc(100vw - 24px));
+  padding: 14px 12px 10px;
+  border-radius: 14px;
+  background: rgba(18, 20, 28, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  color: #e8eaf0;
+  pointer-events: auto;
+}
+
+.panel.hidden {
+  display: none;
+}
+
+.format-field {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.format-hex {
+  margin-bottom: 16px;
+}
+
+.format-label {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  padding: 0 8px;
+  font: 600 11px/1 system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  color: #c5cad8;
+  background: rgba(18, 20, 28, 0.97);
+}
+
+.format-grid .format-label {
+  left: 14px;
+  transform: none;
+  font-size: 10px;
+}
+
+.format-box {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.format-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.format-grid .format-field {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.format-grid .format-box {
+  min-height: 52px;
+  padding: 14px 6px 8px;
+  justify-content: center;
+}
+
+.format-box input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #f0f2f8;
+  font: 500 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: center;
+  outline: none;
+  user-select: text;
+}
+
+.hex-box {
+  gap: 8px;
+  padding-left: 10px;
+}
+
+.hex-swatch {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.hex-box input {
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.copy-icon-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d5daf0;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.copy-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 8px;
+}
+
+.close-btn {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f4f4f5;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.close-btn:hover {
+  background: rgba(185, 28, 28, 0.85);
+}
+
+.hint {
+  flex: 1;
+  font-size: 11px;
+  color: #9aa3b8;
+  text-align: right;
+}
+
+@media (max-width: 520px) {
+  .format-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .format-grid .format-field {
+    margin-bottom: 4px;
+  }
+}

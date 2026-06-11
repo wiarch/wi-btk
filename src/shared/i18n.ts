@@ -3,6 +3,7 @@ import type { HotkeyAction, Language } from './settings';
 type TrayStrings = {
   capture: string;
   captureFullScreen: string;
+  colorPicker: string;
   settings: string;
   quit: string;
   tooltip: string;
@@ -19,10 +20,17 @@ type NotificationStrings = {
   copiedAndSavedHint: string;
   fullScreenCaptured: string;
   fullScreenCapturedHint: string;
+  colorCopied: string;
   trayHintTitle: string;
   trayHintBody: string;
   alreadyRunningTitle: string;
   alreadyRunningBody: string;
+};
+
+type ColorPickerStrings = {
+  pickHint: string;
+  copiedHint: string;
+  close: string;
 };
 
 type ErrorStrings = {
@@ -68,6 +76,7 @@ type SettingsStrings = {
   hotkeysHint: string;
   hotkeyCapture: string;
   hotkeyCaptureFullScreen: string;
+  hotkeyColorPicker: string;
   hotkeyArrow: string;
   hotkeyRect: string;
   hotkeySave: string;
@@ -107,6 +116,7 @@ type Dictionary = {
   notifications: NotificationStrings;
   errors: ErrorStrings;
   overlay: OverlayStrings;
+  colorPicker: ColorPickerStrings;
   settings: SettingsStrings;
 };
 
@@ -114,6 +124,7 @@ const en: Dictionary = {
   tray: {
     capture: 'Capture screen',
     captureFullScreen: 'Capture full screen',
+    colorPicker: 'Color picker',
     settings: 'Settings',
     quit: 'Quit',
     tooltip: 'WI-Rec — {hotkey}',
@@ -129,6 +140,7 @@ const en: Dictionary = {
     copiedAndSavedHint: 'Copied and saved — click to open folder',
     fullScreenCaptured: '{filename}',
     fullScreenCapturedHint: 'Full screen saved and copied — click to open folder',
+    colorCopied: 'Color copied: {hex}',
     trayHintTitle: 'WI-Rec is running',
     trayHintBody:
       'Look for the WI-Rec icon in the system tray (next to the clock). If you do not see it, open the "^" hidden icons menu.\n\nRight-click the icon for Settings and Quit. Left-click to capture.',
@@ -145,6 +157,11 @@ const en: Dictionary = {
     rect: 'Rectangle',
     copy: 'Copy',
     save: 'Save',
+    close: 'Close',
+  },
+  colorPicker: {
+    pickHint: 'Click anywhere to pick a color',
+    copiedHint: 'Copied to clipboard',
     close: 'Close',
   },
   settings: {
@@ -177,6 +194,7 @@ const en: Dictionary = {
     hotkeysHint: 'Click a field and press the desired key combination.',
     hotkeyCapture: 'Capture with region selection',
     hotkeyCaptureFullScreen: 'Capture full screen (save + clipboard)',
+    hotkeyColorPicker: 'Color picker (eyedropper)',
     hotkeyArrow: 'Arrow tool',
     hotkeyRect: 'Rectangle tool',
     hotkeySave: 'Save screenshot',
@@ -219,6 +237,7 @@ const es: Dictionary = {
   tray: {
     capture: 'Capturar pantalla',
     captureFullScreen: 'Capturar pantalla completa',
+    colorPicker: 'Cuentagotas de color',
     settings: 'Configuración',
     quit: 'Salir',
     tooltip: 'WI-Rec — {hotkey}',
@@ -234,6 +253,7 @@ const es: Dictionary = {
     copiedAndSavedHint: 'Copiado y guardado — clic para abrir carpeta',
     fullScreenCaptured: '{filename}',
     fullScreenCapturedHint: 'Pantalla completa guardada y copiada — clic para abrir carpeta',
+    colorCopied: 'Color copiado: {hex}',
     trayHintTitle: 'WI-Rec está activo',
     trayHintBody:
       'Busca el icono de WI-Rec en la bandeja del sistema (junto al reloj). Si no lo ves, abre el menú "^" de iconos ocultos.\n\nClic derecho: Configuración y Salir. Clic izquierdo: capturar.',
@@ -250,6 +270,11 @@ const es: Dictionary = {
     rect: 'Rectángulo',
     copy: 'Copiar',
     save: 'Guardar',
+    close: 'Cerrar',
+  },
+  colorPicker: {
+    pickHint: 'Haz clic en cualquier punto para capturar el color',
+    copiedHint: 'Copiado al portapapeles',
     close: 'Cerrar',
   },
   settings: {
@@ -282,6 +307,7 @@ const es: Dictionary = {
     hotkeysHint: 'Haz clic en un campo y pulsa la combinación deseada.',
     hotkeyCapture: 'Capturar con selección de región',
     hotkeyCaptureFullScreen: 'Capturar pantalla completa (guardar + portapapeles)',
+    hotkeyColorPicker: 'Cuentagotas de color',
     hotkeyArrow: 'Herramienta flecha',
     hotkeyRect: 'Herramienta rectángulo',
     hotkeySave: 'Guardar captura',
@@ -349,6 +375,7 @@ export function hotkeyLabel(language: Language, action: HotkeyAction): string {
   const map: Record<HotkeyAction, string> = {
     capture: 'settings.hotkeyCapture',
     captureFullScreen: 'settings.hotkeyCaptureFullScreen',
+    colorPicker: 'settings.hotkeyColorPicker',
     arrow: 'settings.hotkeyArrow',
     rect: 'settings.hotkeyRect',
     save: 'settings.hotkeySave',

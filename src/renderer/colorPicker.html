@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Rec Color Picker</title>
+    <link rel="stylesheet" href="colorPicker.css" />
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <div id="cursor-preview" class="cursor-preview hidden" aria-hidden="true">
+      <span id="cursor-swatch" class="cursor-swatch"></span>
+      <span id="cursor-hex" class="cursor-hex">#000000</span>
+    </div>
+    <div id="panel" class="panel hidden" role="dialog" aria-hidden="true">
+      <div class="format-field format-hex">
+        <span class="format-label">HEX</span>
+        <div class="format-box hex-box">
+          <span id="hex-swatch" class="hex-swatch"></span>
+          <input id="hex-input" type="text" spellcheck="false" maxlength="7" />
+          <button type="button" id="copy-hex-btn" class="copy-icon-btn" title="Copy">⧉</button>
+        </div>
+      </div>
+      <div class="format-grid">
+        <div class="format-field">
+          <span class="format-label">RGB</span>
+          <div class="format-box">
+            <input id="rgb-input" type="text" spellcheck="false" />
+          </div>
+        </div>
+        <div class="format-field">
+          <span class="format-label">CMYK</span>
+          <div class="format-box">
+            <input id="cmyk-input" type="text" spellcheck="false" />
+          </div>
+        </div>
+        <div class="format-field">
+          <span class="format-label">HSV</span>
+          <div class="format-box">
+            <input id="hsv-input" type="text" spellcheck="false" />
+          </div>
+        </div>
+        <div class="format-field">
+          <span class="format-label">HSL</span>
+          <div class="format-box">
+            <input id="hsl-input" type="text" spellcheck="false" />
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button type="button" id="close-btn" class="close-btn">✕</button>
+        <p id="hint" class="hint"></p>
+      </div>
+    </div>
+    <p id="pick-hint" class="pick-hint"></p>
+    <script type="module" src="colorPicker.js"></script>
+  </body>
+</html>

@@ -11,6 +11,7 @@ type Language = 'en' | 'es';
 type HotkeyAction =
   | 'capture'
   | 'captureFullScreen'
+  | 'colorPicker'
   | 'arrow'
   | 'rect'
   | 'save'
@@ -70,6 +71,7 @@ type SettingsUi = {
   captureHotkeys: string;
   hotkeyCapture: string;
   hotkeyCaptureFullScreen: string;
+  hotkeyColorPicker: string;
   hotkeyArrow: string;
   hotkeyRect: string;
   hotkeySave: string;
@@ -117,12 +119,13 @@ declare global {
   }
 }
 
-const GLOBAL_ACTIONS: HotkeyAction[] = ['capture', 'captureFullScreen'];
+const GLOBAL_ACTIONS: HotkeyAction[] = ['capture', 'captureFullScreen', 'colorPicker'];
 const OVERLAY_ACTIONS: HotkeyAction[] = ['arrow', 'rect', 'save', 'copy', 'cancel'];
 
 const HOTKEY_LABEL_KEYS: Record<HotkeyAction, keyof SettingsUi> = {
   capture: 'hotkeyCapture',
   captureFullScreen: 'hotkeyCaptureFullScreen',
+  colorPicker: 'hotkeyColorPicker',
   arrow: 'hotkeyArrow',
   rect: 'hotkeyRect',
   save: 'hotkeySave',
