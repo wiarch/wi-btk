@@ -55,11 +55,45 @@ async function captureViaImport(): Promise<Buffer> {
   return readCaptureFile(output);
 }
 
+async function waitForBusName(bus: { name?: string | null; once: (event: string, listener: () => void) => void }): Promise<string> {
+  if (bus.name) {
+    return bus.name;
+  }
+
+  return new Promise((resolve, reject) => {
+    bus.once('connected', () => {
+      if (bus.name) {
+        resolve(bus.name);
+        return;
+      }
+      reject(new Error('dbus session bus connected without unique name'));
+    });
+    bus.once('error', reject);
+  });
+}
+
+function portalRequestPath(uniqueName: string, handleToken: string): string {
+  const sender = uniqueName.replace(/^:/, '').replace(/\./g, '_');
+  return `/org/freedesktop/portal/desktop/request/${sender}/${handleToken}`;
+}
+
+const PORTAL_REQUEST_INTROSPECTION = `<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.freedesktop.portal.Request">
+    <signal name="Response">
+      <arg type="u" name="response"/>
+      <arg type="a{sv}" name="results"/>
+    </signal>
+  </interface>
+</node>`;
+
 async function captureViaPortal(): Promise<Buffer> {
   const dbus = await import('dbus-next');
+  const { Variant } = dbus;
   const bus = dbus.sessionBus();
+  const uniqueName = await waitForBusName(bus);
   const handleToken = `wi_rec_${Date.now()}`;
-  const requestPath = `/org/freedesktop/portal/desktop/request/${handleToken}`;
+  const requestPath = portalRequestPath(uniqueName, handleToken);
 
   const desktop = await bus.getProxyObject(
     'org.freedesktop.portal.Desktop',
@@ -69,13 +103,14 @@ async function captureViaPortal(): Promise<Buffer> {
   const requestObject = await bus.getProxyObject(
     'org.freedesktop.portal.Desktop',
     requestPath,
+    PORTAL_REQUEST_INTROSPECTION,
   );
   const request = requestObject.getInterface('org.freedesktop.portal.Request');
 
   const uri = await new Promise<string>((resolve, reject) => {
     const timeout = setTimeout(() => reject(new Error('portal timeout')), 15000);
 
-    request.on('Response', (response: number, results: Record<string, { value: string }>) => {
+    request.on('Response', (response: number, results: Record<string, unknown>) => {
       clearTimeout(timeout);
 
       if (response !== 0) {
@@ -83,7 +118,16 @@ async function captureViaPortal(): Promise<Buffer> {
         return;
       }
 
-      const value = results?.uri?.value;
+      const uriEntry = results?.uri;
+      const value =
+        uriEntry instanceof Variant
+          ? String(uriEntry.value)
+          : typeof uriEntry === 'object' && uriEntry !== null && 'value' in uriEntry
+            ? String((uriEntry as { value: unknown }).value)
+            : typeof uriEntry === 'string'
+              ? uriEntry
+              : null;
+
       if (!value) {
         reject(new Error('portal returned no uri'));
         return;
@@ -94,8 +138,8 @@ async function captureViaPortal(): Promise<Buffer> {
 
     void screenshot
       .Screenshot({
-        interactive: false,
-        handle_token: handleToken,
+        interactive: new Variant('b', false),
+        handle_token: new Variant('s', handleToken),
       })
       .catch((error: Error) => {
         clearTimeout(timeout);
@@ -116,28 +160,35 @@ async function captureWindows(): Promise<Buffer> {
 
 async function captureLinux(): Promise<Buffer> {
   const attempts: Array<{ name: string; run: () => Promise<Buffer> }> = [];
+  const onWayland = process.env.XDG_SESSION_TYPE === 'wayland';
 
   if (await commandExists('grim')) {
     attempts.push({ name: 'grim', run: captureViaGrim });
+  }
+
+  if (onWayland) {
+    attempts.push({ name: 'xdg-desktop-portal', run: captureViaPortal });
   }
 
   if (await commandExists('scrot')) {
     attempts.push({ name: 'scrot', run: captureViaScrot });
   }
 
-  attempts.push({
-    name: 'screenshot-desktop',
-    run: async () => {
-      const image = await screenshot({ format: 'png' });
-      return Buffer.isBuffer(image) ? image : Buffer.from(image);
-    },
-  });
+  if (!onWayland) {
+    attempts.push({
+      name: 'screenshot-desktop',
+      run: async () => {
+        const image = await screenshot({ format: 'png' });
+        return Buffer.isBuffer(image) ? image : Buffer.from(image);
+      },
+    });
 
-  if (await commandExists('import')) {
-    attempts.push({ name: 'import', run: captureViaImport });
+    if (await commandExists('import')) {
+      attempts.push({ name: 'import', run: captureViaImport });
+    }
+
+    attempts.push({ name: 'xdg-desktop-portal', run: captureViaPortal });
   }
-
-  attempts.push({ name: 'xdg-desktop-portal', run: captureViaPortal });
 
   const errors: string[] = [];
 

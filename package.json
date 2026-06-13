@@ -105,5 +105,8 @@
         "xdg-desktop-portal-gtk"
       ]
     }
+  },
+  "allowScripts": {
+    "electron@35.7.5": true
   }
 }
