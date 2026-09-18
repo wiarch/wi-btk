@@ -120,6 +120,41 @@ for (const name of ['rate.html', 'rate.css']) {
   copyFile(join(wirateRenderer, name), join(wirateOut, name));
 }
 
+const wicolorRenderer = join(root, 'src', 'apps', 'wicolor', 'renderer');
+const wicolorOut = join(root, 'dist', 'apps', 'wicolor', 'renderer');
+mkdirSync(wicolorOut, { recursive: true });
+for (const name of ['color.html', 'color.css']) {
+  copyFile(join(wicolorRenderer, name), join(wicolorOut, name));
+}
+
+const wiviewRenderer = join(root, 'src', 'apps', 'wiview', 'renderer');
+const wiviewOut = join(root, 'dist', 'apps', 'wiview', 'renderer');
+mkdirSync(wiviewOut, { recursive: true });
+for (const name of ['view.html', 'view.css']) {
+  copyFile(join(wiviewRenderer, name), join(wiviewOut, name));
+}
+
+const wiremoteRenderer = join(root, 'src', 'apps', 'wiremote', 'renderer');
+const wiremoteOut = join(root, 'dist', 'apps', 'wiremote', 'renderer');
+mkdirSync(wiremoteOut, { recursive: true });
+for (const name of ['remote.html', 'remote.css']) {
+  copyFile(join(wiremoteRenderer, name), join(wiremoteOut, name));
+}
+
+const wiweatherRenderer = join(root, 'src', 'apps', 'wiweather', 'renderer');
+const wiweatherOut = join(root, 'dist', 'apps', 'wiweather', 'renderer');
+mkdirSync(wiweatherOut, { recursive: true });
+for (const name of ['weather.html', 'weather.css']) {
+  copyFile(join(wiweatherRenderer, name), join(wiweatherOut, name));
+}
+
+const wiwidgetRenderer = join(root, 'src', 'apps', 'wiwidget', 'renderer');
+const wiwidgetOut = join(root, 'dist', 'apps', 'wiwidget', 'renderer');
+mkdirSync(wiwidgetOut, { recursive: true });
+for (const name of ['manager.html', 'manager.css', 'widget.html', 'widget.css']) {
+  copyFile(join(wiwidgetRenderer, name), join(wiwidgetOut, name));
+}
+
 const wisystemRenderer = join(root, 'src', 'apps', 'wisystem', 'renderer');
 const wisystemOut = join(root, 'dist', 'apps', 'wisystem', 'renderer');
 mkdirSync(wisystemOut, { recursive: true });

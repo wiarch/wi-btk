@@ -22,7 +22,13 @@ import { compositorSettle } from '../../wirec/main/compositorSettle';
 import { applyLaunchAtStartup } from './autostart';
 
 bootLog('main module loaded');
-import { buildCaptureSavePath, buildRecordingSavePath, getBaseSaveDirectory } from '../../wirec/main/capturePaths';
+import {
+  buildCaptureSavePath,
+  buildLoomSavePath,
+  buildRecordingSavePath,
+  buildVoiceSavePath,
+  getBaseSaveDirectory,
+} from '../../wirec/main/capturePaths';
 import { encodeCaptureForClipboard, encodeCaptureForSave } from '../../wirec/main/imageEncode';
 import { captureScreenElectron } from '../../wirec/main/captureElectron';
 import { assignHotkeyWithConflictCheck } from '../../wirec/main/hotkeyAssign';
@@ -47,6 +53,7 @@ import {
   closeRecording,
   destroyRecording,
   openRecording,
+  openVoiceRecording,
   prewarmRecordingWindow,
   setRecordingLiveMode,
   setRecordingMousePassthrough,
@@ -72,6 +79,28 @@ import { setupWinotesIpc, teardownWinotes } from '../../winotes/main/register';
 import { setupWirateIpc, teardownWirate } from '../../wirate/main/register';
 import { setupWinetestIpc, teardownWinetest } from '../../winetest/main/register';
 import { setupWicamIpc, teardownWicam } from '../../wicam/main/register';
+import {
+  setupWicolorIpc,
+  teardownWicolor,
+  setWicolorPickScreenHandler,
+  broadcastPickedColor,
+} from '../../wicolor/main/register';
+import {
+  setupWiviewIpc,
+  teardownWiview,
+  registerWiviewHotkeys,
+  setWiviewQuickOpenHandler,
+  triggerWiviewQuickOpen,
+} from '../../wiview/main/register';
+import { loadWiviewSettings } from '../../wiview/main/settingsStore';
+import { setupWiremoteIpc, teardownWiremote } from '../../wiremote/main/register';
+import { setupWiweatherIpc, teardownWiweather } from '../../wiweather/main/register';
+import {
+  setupWiwidgetIpc,
+  teardownWiwidget,
+  setWiwidgetAppEnabled,
+  restoreWiwidgetWindows,
+} from '../../wiwidget/main/register';
 import { setupWisystemIpc, teardownWisystem } from '../../wisystem/main/register';
 import {
   setupWidimmerIpc,
@@ -153,6 +182,17 @@ protocol.registerSchemesAsPrivileged([
       secure: true,
       supportFetchAPI: true,
       corsEnabled: true,
+      bypassCSP: true,
+    },
+  },
+  {
+    scheme: 'wiview',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true,
       bypassCSP: true,
     },
   },
@@ -416,6 +456,27 @@ async function saveFullScreenCapture(imageBuffer: Buffer): Promise<void> {
   playCaptureSound(settings);
 }
 
+let windowsHiddenForPicker: BrowserWindow[] = [];
+
+function hideAppWindowsForPicker(): void {
+  windowsHiddenForPicker = [];
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed() && win.isVisible()) {
+      windowsHiddenForPicker.push(win);
+      win.hide();
+    }
+  }
+}
+
+function restoreAppWindowsAfterPicker(): void {
+  for (const win of windowsHiddenForPicker) {
+    if (!win.isDestroyed()) {
+      win.showInactive();
+    }
+  }
+  windowsHiddenForPicker = [];
+}
+
 async function prepareForScreenCapture(): Promise<void> {
   closeOverlay();
   closeColorPicker();
@@ -425,8 +486,11 @@ async function prepareForScreenCapture(): Promise<void> {
 }
 
 async function triggerColorPicker(source: string, panelMode = false): Promise<void> {
-  if (!isAppEnabled(getSettings().enabledApps, 'wirec')) {
-    await log(`color picker ignored (${source}): wirec disabled`);
+  const settings = getSettings();
+  const wirecOn = isAppEnabled(settings.enabledApps, 'wirec');
+  const wicolorOn = isAppEnabled(settings.enabledApps, 'wicolor');
+  if (!wirecOn && !wicolorOn) {
+    await log(`color picker ignored (${source}): wirec/wicolor disabled`);
     return;
   }
   if (recordingLiveActive) {
@@ -443,21 +507,22 @@ async function triggerColorPicker(source: string, panelMode = false): Promise<vo
 
   try {
     await prepareForScreenCapture();
+    hideAppWindowsForPicker();
+    await compositorSettle(220);
     const imageBuffer = await captureImage();
     const bounds = getVirtualBounds();
-    const settings = getSettings();
     await openColorPicker(imageBuffer, bounds, getPreloadPath(), settings.language, { panelMode });
     await log('color picker opened');
   } catch (error) {
     captureInProgress = false;
-    const settings = getSettings();
+    restoreAppWindowsAfterPicker();
     const message = error instanceof Error ? error.message : String(error);
     await log(`color picker failed (${source}): ${message}`);
     showError(t(settings.language, 'errors.captureFailed', { message }));
   }
 }
 
-async function triggerScreenRecord(source: string): Promise<void> {
+async function triggerScreenRecord(source: string, mode: 'screen' | 'loom' = 'screen'): Promise<void> {
   if (!isAppEnabled(getSettings().enabledApps, 'wirec')) {
     await log(`screen record ignored (${source}): wirec disabled`);
     return;
@@ -472,14 +537,14 @@ async function triggerScreenRecord(source: string): Promise<void> {
   }
 
   captureInProgress = true;
-  await log(`screen record started (${source})`);
+  await log(`screen record started (${source}, mode=${mode})`);
 
   try {
     await prepareForScreenCapture();
     const imageBuffer = await captureImage();
     const bounds = getVirtualBounds();
     const settings = getSettings();
-    await openRecording(imageBuffer, bounds, getPreloadPath(), settings);
+    await openRecording(imageBuffer, bounds, getPreloadPath(), settings, mode);
     await log('recording opened');
   } catch (error) {
     captureInProgress = false;
@@ -487,6 +552,41 @@ async function triggerScreenRecord(source: string): Promise<void> {
     const settings = getSettings();
     const message = error instanceof Error ? error.message : String(error);
     await log(`screen record failed (${source}): ${message}`);
+    showError(t(settings.language, 'errors.captureFailed', { message }));
+  }
+}
+
+async function triggerLoomRecord(source: string): Promise<void> {
+  await triggerScreenRecord(source, 'loom');
+}
+
+async function triggerVoiceRecord(source: string): Promise<void> {
+  if (!isAppEnabled(getSettings().enabledApps, 'wirec')) {
+    await log(`voice record ignored (${source}): wirec disabled`);
+    return;
+  }
+  if (recordingLiveActive) {
+    await log(`voice record ignored (${source}): recording live`);
+    return;
+  }
+  if (captureInProgress) {
+    await log(`voice record ignored (${source}): already in progress`);
+    return;
+  }
+
+  captureInProgress = true;
+  await log(`voice record started (${source})`);
+
+  try {
+    const bounds = getVirtualBounds();
+    const settings = getSettings();
+    await openVoiceRecording(bounds, getPreloadPath(), settings);
+    await log('voice recording opened');
+  } catch (error) {
+    captureInProgress = false;
+    const settings = getSettings();
+    const message = error instanceof Error ? error.message : String(error);
+    await log(`voice record failed (${source}): ${message}`);
     showError(t(settings.language, 'errors.captureFailed', { message }));
   }
 }
@@ -534,10 +634,18 @@ function registerHotkey(): void {
   const settings = getSettings();
   globalShortcut.unregisterAll();
 
-  if (isAppEnabled(settings.enabledApps, 'wirec')) {
+  const wirecOn = isAppEnabled(settings.enabledApps, 'wirec');
+  const wicolorOn = isAppEnabled(settings.enabledApps, 'wicolor');
+  const colorHotkeys = new Set<HotkeyAction>(['colorPicker', 'colorPickerPanel']);
+
+  if (wirecOn || wicolorOn) {
     const actions = [...GLOBAL_HOTKEY_ACTIONS].reverse();
 
     for (const action of actions) {
+      if (!wirecOn && !colorHotkeys.has(action)) {
+        continue;
+      }
+
       const accelerator = normalizeForElectron(settings.hotkeys[action]);
       if (!accelerator || !isValidAccelerator(accelerator)) {
         void log(`hotkey skipped (${action}): not assigned`);
@@ -565,6 +673,11 @@ function registerHotkey(): void {
           return;
         }
 
+        if (action === 'voiceRecord') {
+          void triggerVoiceRecord(`hotkey:${action}`);
+          return;
+        }
+
         void triggerCapture(`hotkey:${action}`, action === 'captureFullScreen');
       });
 
@@ -575,7 +688,7 @@ function registerHotkey(): void {
       }
     }
   } else {
-    void log('wirec disabled — global capture hotkeys skipped');
+    void log('wirec/wicolor disabled — global capture hotkeys skipped');
   }
 
   void loadWideviceSettings()
@@ -615,8 +728,18 @@ function registerHotkey(): void {
     })
     .catch(() => undefined);
 
+  void loadWiviewSettings()
+    .then((wiviewSettings) => {
+      registerWiviewHotkeys(
+        wiviewSettings,
+        isAppEnabled(getSettings().enabledApps, 'wiview'),
+      );
+    })
+    .catch(() => undefined);
+
   setWiclockAppEnabled(isAppEnabled(getSettings().enabledApps, 'wiclock'));
   setWidimmerAppEnabled(isAppEnabled(getSettings().enabledApps, 'widimmer'));
+  setWiwidgetAppEnabled(isAppEnabled(getSettings().enabledApps, 'wiwidget'));
 }
 
 async function applySettings(settings: AppSettings): Promise<void> {
@@ -674,6 +797,18 @@ function rebuildTray(): void {
         label: `${t(settings.language, 'tray.screenRecord')} (${formatHotkeyForUi(settings.hotkeys.screenRecord)})`,
         click: () => {
           void triggerScreenRecord('tray-menu');
+        },
+      },
+      {
+        label: `${t(settings.language, 'tray.voiceRecord')} (${formatHotkeyForUi(settings.hotkeys.voiceRecord)})`,
+        click: () => {
+          void triggerVoiceRecord('tray-menu');
+        },
+      },
+      {
+        label: t(settings.language, 'tray.wiview'),
+        click: () => {
+          void triggerWiviewQuickOpen();
         },
       },
       { type: 'separator' },
@@ -787,6 +922,25 @@ function setupIpc(): void {
   setupWirateIpc();
   setupWinetestIpc();
   setupWicamIpc();
+  setupWicolorIpc();
+  setWicolorPickScreenHandler(() => {
+    void triggerColorPicker('wicolor', false);
+  });
+  ipcMain.handle('wicolor:getPickHotkey', () => {
+    return formatHotkeyForUi(getSettings().hotkeys.colorPicker);
+  });
+  setupWiviewIpc((wiviewSettings) => {
+    registerWiviewHotkeys(
+      wiviewSettings,
+      isAppEnabled(getSettings().enabledApps, 'wiview'),
+    );
+  });
+  setWiviewQuickOpenHandler(() => {
+    void triggerWiviewQuickOpen();
+  });
+  setupWiremoteIpc();
+  setupWiweatherIpc();
+  setupWiwidgetIpc();
   setupWisystemIpc();
   setupWidimmerIpc();
   setupWitranslateIpc();
@@ -857,7 +1011,7 @@ function setupIpc(): void {
       const imageBuffer = await captureImage();
       const bounds = getVirtualBounds();
       const settings = getSettings();
-      await openRecording(imageBuffer, bounds, getPreloadPath(), settings);
+      await openRecording(imageBuffer, bounds, getPreloadPath(), settings, 'screen');
     } catch (error) {
       captureInProgress = false;
       clearRecordingMediaHandler();
@@ -865,6 +1019,24 @@ function setupIpc(): void {
       const message = error instanceof Error ? error.message : String(error);
       showError(t(settings.language, 'errors.captureFailed', { message }));
     }
+  });
+
+  ipcMain.on('overlay:switchToLoomRecord', () => {
+    if (recordingLiveActive) {
+      return;
+    }
+    closeOverlay();
+    captureInProgress = false;
+    void triggerLoomRecord('switch-from-overlay');
+  });
+
+  ipcMain.on('overlay:switchToVoiceRecord', () => {
+    if (recordingLiveActive) {
+      return;
+    }
+    closeOverlay();
+    captureInProgress = false;
+    void triggerVoiceRecord('switch-from-overlay');
   });
 
   ipcMain.on('colorpicker:cancel', () => {
@@ -915,21 +1087,57 @@ function setupIpc(): void {
     }
   });
 
-  ipcMain.handle('recording:save', async (_event, buffer: ArrayBuffer) => {
+  ipcMain.on('recording:switchToScreenRecord', async () => {
+    if (recordingLiveActive) {
+      return;
+    }
     clearRecordingMediaHandler();
-    recordingLiveActive = false;
-    const settings = getSettings();
-    const filePath = await buildRecordingSavePath(settings);
-    await writeFile(filePath, Buffer.from(buffer));
-    notifyCaptureSaved(
-      settings.language,
-      'notifications.recordingSaved',
-      'notifications.recordingSavedHint',
-      filePath,
-    );
-    playCaptureSound(settings);
-    return filePath;
+    closeRecording();
+    captureInProgress = false;
+    void triggerScreenRecord('switch-from-voice');
   });
+
+  ipcMain.on('recording:switchToLoomRecord', async () => {
+    if (recordingLiveActive) {
+      return;
+    }
+    clearRecordingMediaHandler();
+    closeRecording();
+    captureInProgress = false;
+    void triggerLoomRecord('switch-from-recording');
+  });
+
+  ipcMain.handle(
+    'recording:save',
+    async (_event, buffer: ArrayBuffer, options?: { kind?: 'screen' | 'voice' | 'loom' }) => {
+      clearRecordingMediaHandler();
+      recordingLiveActive = false;
+      const settings = getSettings();
+      const kind = options?.kind === 'voice' ? 'voice' : options?.kind === 'loom' ? 'loom' : 'screen';
+      const filePath =
+        kind === 'voice'
+          ? await buildVoiceSavePath(settings)
+          : kind === 'loom'
+            ? await buildLoomSavePath(settings)
+            : await buildRecordingSavePath(settings);
+      await writeFile(filePath, Buffer.from(buffer));
+      const titleKey =
+        kind === 'voice'
+          ? 'notifications.voiceSaved'
+          : kind === 'loom'
+            ? 'notifications.loomSaved'
+            : 'notifications.recordingSaved';
+      const hintKey =
+        kind === 'voice'
+          ? 'notifications.voiceSavedHint'
+          : kind === 'loom'
+            ? 'notifications.loomSavedHint'
+            : 'notifications.recordingSavedHint';
+      notifyCaptureSaved(settings.language, titleKey, hintKey, filePath);
+      playCaptureSound(settings);
+      return filePath;
+    },
+  );
 
   ipcMain.handle(
     'recording:persistPreferences',
@@ -963,6 +1171,7 @@ function setupIpc(): void {
     const settings = getSettings();
     clipboard.writeText(hex);
     notifySimple('WI-BTK', t(settings.language, 'notifications.colorCopied', { hex }));
+    broadcastPickedColor(hex);
   });
 
   ipcMain.handle('settings:get', () => {
@@ -1174,6 +1383,7 @@ if (gotSingleInstanceLock) {
       });
       setColorPickerSessionEndCallback(() => {
         captureInProgress = false;
+        restoreAppWindowsAfterPicker();
       });
       setRecordingSessionEndCallback(() => {
         captureInProgress = false;
@@ -1197,6 +1407,7 @@ if (gotSingleInstanceLock) {
 
       await log('app ready');
       bootLog('startup complete');
+      void restoreWiwidgetWindows().catch(() => undefined);
 
       app.on('activate', () => {
         registerHotkey();
@@ -1229,6 +1440,11 @@ app.on('will-quit', () => {
   teardownWirate();
   teardownWinetest();
   teardownWicam();
+  teardownWicolor();
+  teardownWiview();
+  teardownWiremote();
+  teardownWiweather();
+  teardownWiwidget();
   teardownWisystem();
   teardownWidimmer();
   teardownWitranslate();

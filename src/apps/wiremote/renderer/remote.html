@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Remote</title>
+    <link rel="stylesheet" href="remote.css" />
+  </head>
+  <body>
+    <div class="remote-app">
+      <header class="top">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">⇄</span>
+          <div>
+            <h1>WI-Remote</h1>
+            <p class="sub">Escritorio remoto · LAN (estilo AnyDesk)</p>
+          </div>
+        </div>
+        <button type="button" class="btn ghost" id="popout-btn" title="Ventana aparte">⧉</button>
+      </header>
+
+      <div class="grid">
+        <section class="card host-card">
+          <h2>Este equipo (Host)</h2>
+          <p class="lead">Compartí tu pantalla con otro WI-BTK en la red.</p>
+          <div class="id-block">
+            <span class="label">Dirección</span>
+            <div id="host-address" class="id-value">—</div>
+            <span class="label">PIN</span>
+            <div id="host-pin" class="id-value pin">----</div>
+          </div>
+          <label class="check">
+            <input id="allow-control" type="checkbox" checked />
+            Permitir control remoto (mouse/teclado)
+          </label>
+          <div class="row">
+            <button type="button" class="btn primary" id="host-start">Iniciar host</button>
+            <button type="button" class="btn danger" id="host-stop" disabled>Detener</button>
+          </div>
+        </section>
+
+        <section class="card guest-card">
+          <h2>Conectar (Cliente)</h2>
+          <p class="lead">Entrá a otro equipo en la misma red.</p>
+          <label class="field">
+            <span>IP del host</span>
+            <input id="guest-host" type="text" placeholder="192.168.1.20" spellcheck="false" />
+          </label>
+          <label class="field">
+            <span>Puerto</span>
+            <input id="guest-port" type="number" min="1024" max="65535" value="19876" />
+          </label>
+          <label class="field">
+            <span>PIN</span>
+            <input id="guest-pin" type="text" maxlength="4" placeholder="1234" spellcheck="false" />
+          </label>
+          <div class="row">
+            <button type="button" class="btn primary" id="guest-connect">Conectar</button>
+            <button type="button" class="btn danger" id="guest-stop" disabled>Desconectar</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="stage card">
+        <div class="stage-head">
+          <h2>Sesión</h2>
+          <span id="status" class="status">Inactivo</span>
+        </div>
+        <div id="viewer" class="viewer">
+          <p id="viewer-empty" class="empty">La pantalla remota aparece aquí</p>
+          <img id="remote-frame" class="remote-frame hidden" alt="Remote desktop" />
+        </div>
+        <p class="hint">LAN only · Windows control via SendInput · No nube / sin NAT</p>
+      </section>
+    </div>
+    <script type="module" src="remote.js"></script>
+  </body>
+</html>

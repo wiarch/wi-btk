@@ -64,6 +64,7 @@ export const DEFAULT_WIREC_SETTINGS: WirecSettings = {
     colorPicker: 'Alt+Shift+C',
     colorPickerPanel: 'Alt+Shift+V',
     screenRecord: 'Alt+Shift+R',
+    voiceRecord: 'Alt+Shift+M',
     arrow: 'A',
     rect: 'R',
     save: 'CommandOrControl+S',
@@ -82,7 +83,16 @@ export const GLOBAL_HOTKEY_ACTIONS: HotkeyAction[] = [
   'colorPicker',
   'colorPickerPanel',
   'screenRecord',
+  'voiceRecord',
 ];
+
+export function getVoiceRecordingMimeType(): string {
+  return 'audio/webm;codecs=opus';
+}
+
+export function getVoiceRecordingFileExtension(): string {
+  return 'webm';
+}
 export const OVERLAY_HOTKEY_ACTIONS: HotkeyAction[] = ['arrow', 'rect', 'save', 'copy', 'cancel'];
 export const RECORDING_HOTKEY_ACTIONS: HotkeyAction[] = [
   'recordStart',

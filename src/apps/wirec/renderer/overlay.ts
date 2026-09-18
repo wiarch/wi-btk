@@ -7,6 +7,8 @@ type SelectionBounds = { x: number; y: number; width: number; height: number };
 type SnipLabels = {
   screenshot: string;
   record: string;
+  voice: string;
+  loom: string;
   rectangle: string;
   fullScreen: string;
   close: string;
@@ -58,6 +60,8 @@ type WiRecApi = {
   copyImage(imageBase64: string, edited: boolean): Promise<void>;
   cancel(): void;
   switchToRecord(): void;
+  switchToVoiceRecord(): void;
+  switchToLoomRecord(): void;
   ready(): void;
 };
 
@@ -71,6 +75,8 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const snipBar = document.getElementById('snip-bar') as HTMLDivElement;
 const modeScreenshot = document.getElementById('mode-screenshot') as HTMLButtonElement;
 const modeRecord = document.getElementById('mode-record') as HTMLButtonElement;
+const modeLoom = document.getElementById('mode-loom') as HTMLButtonElement;
+const modeVoice = document.getElementById('mode-voice') as HTMLButtonElement;
 const regionMenuBtn = document.getElementById('region-menu-btn') as HTMLButtonElement;
 const regionMenu = document.getElementById('region-menu') as HTMLDivElement;
 const labelRectangle = document.getElementById('label-rectangle') as HTMLSpanElement;
@@ -145,6 +151,8 @@ function hideSnipBar(): void {
 function applySnipLabels(labels: SnipLabels): void {
   modeScreenshot.title = labels.screenshot;
   modeRecord.title = labels.record;
+  modeLoom.title = labels.loom;
+  modeVoice.title = labels.voice;
   labelRectangle.textContent = labels.rectangle;
   labelFullscreen.textContent = labels.fullScreen;
   cancelBtn.title = labels.close;
@@ -432,6 +440,14 @@ regionMenu.querySelectorAll('[data-region]').forEach((button) => {
 
 modeRecord.addEventListener('click', () => {
   window.wiRec.switchToRecord();
+});
+
+modeLoom.addEventListener('click', () => {
+  window.wiRec.switchToLoomRecord();
+});
+
+modeVoice.addEventListener('click', () => {
+  window.wiRec.switchToVoiceRecord();
 });
 
 cancelBtn.addEventListener('click', () => {

@@ -151,6 +151,7 @@ export async function openRecording(
   bounds: { x: number; y: number; width: number; height: number },
   preloadPath: string,
   settings: AppSettings,
+  mode: 'screen' | 'loom' = 'screen',
 ): Promise<void> {
   if (!recordingReady || !recordingWindow || recordingWindow.isDestroyed()) {
     await prewarmRecordingWindow(bounds, preloadPath);
@@ -172,6 +173,7 @@ export async function openRecording(
   recordingWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
   await presentCaptureWindow(recordingWindow);
   recordingWindow.webContents.send('recording:start', {
+    mode,
     imageUrl,
     width: imageSize.width,
     height: imageSize.height,
@@ -180,6 +182,49 @@ export async function openRecording(
     defaults: {
       desktopAudio: settings.recordDesktopAudio,
       micEnabled: settings.recordMicEnabled,
+      micDeviceId: settings.recordMicDeviceId,
+    },
+    recordSettings: {
+      format: settings.recordFormat,
+      quality: settings.recordQuality,
+      frameRate: settings.recordFrameRate,
+    },
+    hotkeys: {
+      start: settings.hotkeys.recordStart,
+      pause: settings.hotkeys.recordPause,
+      resume: settings.hotkeys.recordResume,
+      stop: settings.hotkeys.recordStop,
+    },
+  });
+}
+
+export async function openVoiceRecording(
+  bounds: { x: number; y: number; width: number; height: number },
+  preloadPath: string,
+  settings: AppSettings,
+): Promise<void> {
+  if (!recordingReady || !recordingWindow || recordingWindow.isDestroyed()) {
+    await prewarmRecordingWindow(bounds, preloadPath);
+  }
+
+  if (!recordingWindow) {
+    throw new Error('Recording window unavailable');
+  }
+
+  const dict = getDictionary(settings.language);
+
+  recordingWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height });
+  await presentCaptureWindow(recordingWindow);
+  recordingWindow.webContents.send('recording:start', {
+    mode: 'voice',
+    imageUrl: '',
+    width: Math.max(1, bounds.width),
+    height: Math.max(1, bounds.height),
+    snipLabels: dict.snip,
+    labels: dict.recording,
+    defaults: {
+      desktopAudio: false,
+      micEnabled: true,
       micDeviceId: settings.recordMicDeviceId,
     },
     recordSettings: {

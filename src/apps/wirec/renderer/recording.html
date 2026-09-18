@@ -19,9 +19,11 @@
       <div class="snip-modes">
         <button type="button" id="mode-screenshot" class="snip-mode" title="Captura">📷</button>
         <button type="button" id="mode-record" class="snip-mode active" title="Grabar">🎥</button>
+        <button type="button" id="mode-loom" class="snip-mode" title="Loom">◎</button>
+        <button type="button" id="mode-voice" class="snip-mode" title="Voz">🎤</button>
       </div>
       <div class="snip-divider"></div>
-      <div class="snip-menu-wrap">
+      <div class="snip-menu-wrap" id="region-menu-wrap">
         <button type="button" id="region-menu-btn" class="snip-menu-btn" aria-expanded="false">
           <span>▭</span><span>▾</span>
         </button>
@@ -36,11 +38,11 @@
           </button>
         </div>
       </div>
-      <div class="snip-divider"></div>
+      <div class="snip-divider" id="region-divider"></div>
       <div class="snip-menu-wrap">
         <button type="button" id="audio-menu-btn" class="snip-icon-btn" aria-expanded="false" title="Audio">🔊</button>
         <div id="audio-menu" class="snip-menu snip-audio-panel hidden">
-          <label class="snip-check">
+          <label class="snip-check" id="desktop-audio-row">
             <input id="desktop-audio" type="checkbox" />
             <span id="desktop-audio-label">Desktop audio</span>
           </label>
@@ -48,8 +50,32 @@
             <input id="mic-mute" type="checkbox" />
             <span id="mic-mute-label">Mute microphone</span>
           </label>
+          <label class="snip-check" id="camera-mute-row" hidden>
+            <input id="camera-mute" type="checkbox" />
+            <span id="camera-mute-label">Hide camera</span>
+          </label>
           <span id="mic-label" class="snip-select-label">Microphone</span>
           <select id="mic-select" class="snip-select"></select>
+          <span id="cam-label" class="snip-select-label" hidden>Camera</span>
+          <select id="cam-select" class="snip-select" hidden></select>
+        </div>
+      </div>
+      <div class="snip-menu-wrap" id="voice-fx-wrap" hidden>
+        <button type="button" id="voice-fx-btn" class="snip-icon-btn" aria-expanded="false" title="Voice FX"> FX </button>
+        <div id="voice-fx-menu" class="snip-menu snip-audio-panel hidden">
+          <span id="voice-fx-label" class="snip-select-label">Voice effect</span>
+          <select id="voice-fx-select" class="snip-select"></select>
+          <label class="snip-check">
+            <input id="voice-monitor" type="checkbox" />
+            <span id="voice-monitor-label">Monitor (hear FX)</span>
+          </label>
+          <span id="voice-pads-label" class="snip-select-label">Soundboard</span>
+          <div id="voice-pads" class="voice-pads">
+            <button type="button" class="voice-pad" data-pad="honk" title="Honk">📢</button>
+            <button type="button" class="voice-pad" data-pad="rim" title="Rim">🥁</button>
+            <button type="button" class="voice-pad" data-pad="laser" title="Laser">🔫</button>
+            <button type="button" class="voice-pad" data-pad="boom" title="Boom">💥</button>
+          </div>
         </div>
       </div>
       <button type="button" id="start-record-btn" class="snip-bar-btn primary hidden">Start</button>
@@ -68,6 +94,12 @@
       <span id="record-dot" class="snip-record-dot"></span>
       <span id="record-status" class="snip-record-status">Recording</span>
       <span id="record-timer" class="snip-record-timer">00:00</span>
+      <div id="record-voice-pads" class="voice-pads record-voice-pads hidden">
+        <button type="button" class="voice-pad" data-pad="honk" title="Honk">📢</button>
+        <button type="button" class="voice-pad" data-pad="rim" title="Rim">🥁</button>
+        <button type="button" class="voice-pad" data-pad="laser" title="Laser">🔫</button>
+        <button type="button" class="voice-pad" data-pad="boom" title="Boom">💥</button>
+      </div>
       <button type="button" id="pause-btn" class="snip-bar-btn">Pause</button>
       <button type="button" id="stop-btn" class="snip-bar-btn danger">Stop</button>
     </div>

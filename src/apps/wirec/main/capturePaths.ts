@@ -65,3 +65,33 @@ export async function buildRecordingSavePath(settings: AppSettings): Promise<str
   const ext = getRecordingFileExtension(settings.recordFormat);
   return join(targetDir, `${basename}.${ext}`);
 }
+
+export async function buildVoiceSavePath(settings: AppSettings): Promise<string> {
+  const base = getBaseSaveDirectory(settings);
+  const targetDir = settings.useCaptureSubfolders
+    ? join(base, CAPTURE_SUBFOLDERS.voz)
+    : base;
+
+  await mkdir(targetDir, { recursive: true });
+
+  const sequentialIndex =
+    settings.filenameMode === 'sequential' ? await nextSequentialIndex(targetDir) : 1;
+  const basename = buildCaptureBasename(settings, sequentialIndex);
+
+  return join(targetDir, `${basename}.webm`);
+}
+
+export async function buildLoomSavePath(settings: AppSettings): Promise<string> {
+  const base = getBaseSaveDirectory(settings);
+  const targetDir = settings.useCaptureSubfolders
+    ? join(base, CAPTURE_SUBFOLDERS.loom)
+    : base;
+
+  await mkdir(targetDir, { recursive: true });
+
+  const sequentialIndex =
+    settings.filenameMode === 'sequential' ? await nextSequentialIndex(targetDir) : 1;
+  const basename = buildCaptureBasename(settings, sequentialIndex);
+  const ext = getRecordingFileExtension(settings.recordFormat);
+  return join(targetDir, `${basename}.${ext}`);
+}

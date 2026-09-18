@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Color</title>
+    <link rel="stylesheet" href="color.css" />
+  </head>
+  <body>
+    <div class="color-app">
+      <header class="toolbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>WI-Color</h1>
+            <p class="sub">Picker · Colorsbook · Tint</p>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button type="button" class="tool tool-dropper" id="pick-btn" title="Gotero">
+            <span aria-hidden="true">⌖</span>
+            <span class="tool-label">Gotero</span>
+            <kbd id="pick-hotkey">Alt+Shift+C</kbd>
+          </button>
+          <button type="button" class="tool" id="add-btn" title="Guardar en Colorsbook">＋</button>
+          <button type="button" class="tool" id="copy-btn" title="Copiar HEX">⧉</button>
+          <button type="button" class="tool" id="random-btn" title="Color aleatorio">⚄</button>
+        </div>
+      </header>
+
+      <section class="stage">
+        <div class="preview-wrap">
+          <div id="preview" class="preview" style="background:#E5E9F0"></div>
+          <div class="hex-row">
+            <input id="hex-input" class="hex-input" type="text" spellcheck="false" maxlength="7" value="#E5E9F0" />
+            <button type="button" class="btn ghost" id="hex-copy">Copy</button>
+          </div>
+        </div>
+
+        <div class="picker-block">
+          <div class="sv-wrap">
+            <canvas id="sv-canvas" width="320" height="180"></canvas>
+            <div id="sv-handle" class="handle" aria-hidden="true"></div>
+          </div>
+          <input id="hue-slider" class="hue" type="range" min="0" max="360" value="210" />
+
+          <div class="sliders">
+            <label class="slider-row">
+              <span>R</span>
+              <input id="r-slider" type="range" min="0" max="255" value="229" />
+              <input id="r-num" type="number" min="0" max="255" value="229" />
+            </label>
+            <label class="slider-row">
+              <span>G</span>
+              <input id="g-slider" type="range" min="0" max="255" value="233" />
+              <input id="g-num" type="number" min="0" max="255" value="233" />
+            </label>
+            <label class="slider-row">
+              <span>B</span>
+              <input id="b-slider" type="range" min="0" max="255" value="240" />
+              <input id="b-num" type="number" min="0" max="255" value="240" />
+            </label>
+          </div>
+
+          <div class="formats">
+            <div><span>RGB</span><code id="rgb-out">229, 233, 240</code></div>
+            <div><span>HSL</span><code id="hsl-out">210° 27% 92%</code></div>
+            <div><span>HSV</span><code id="hsv-out">210° 5% 94%</code></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Tint</h2>
+          <p>Tonos HSL · 3 niveles</p>
+        </div>
+        <div id="tint-levels" class="tint-levels"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Colorsbook</h2>
+          <div class="book-tools">
+            <select id="palette-select"></select>
+            <button type="button" class="btn ghost" id="new-palette">Nueva</button>
+          </div>
+        </div>
+        <div id="book-grid" class="book-grid"></div>
+        <p class="hint">Clic = aplicar · Clic derecho = quitar</p>
+      </section>
+
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+    <script type="module" src="color.js"></script>
+  </body>
+</html>

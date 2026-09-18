@@ -6,6 +6,7 @@ export type HotkeyAction =
   | 'colorPicker'
   | 'colorPickerPanel'
   | 'screenRecord'
+  | 'voiceRecord'
   | 'arrow'
   | 'rect'
   | 'save'

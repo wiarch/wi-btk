@@ -103,10 +103,15 @@ body {
 
 .shell.sidebar-compact .brand-text,
 .shell.sidebar-compact .nav-label,
+.shell.sidebar-compact .nav-group-toggle,
 .shell.sidebar-compact .search,
 .shell.sidebar-compact .compact-label,
 .shell.sidebar-compact .search-empty {
   display: none;
+}
+
+.shell.sidebar-compact .nav-group-items {
+  display: flex !important;
 }
 
 .shell.sidebar-compact .sidebar {
@@ -295,6 +300,70 @@ body {
   padding: 4px 4px 8px;
   margin-right: 2px;
   overscroll-behavior: contain;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.nav-group.is-empty {
+  display: none !important;
+}
+
+.nav-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px 6px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.nav-group-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.nav-group-chevron {
+  display: inline-flex;
+  width: 12px;
+  justify-content: center;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.nav-group.is-open .nav-group-chevron {
+  transform: rotate(90deg);
+}
+
+.nav-group-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-group-items {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-group.is-open .nav-group-items {
+  display: flex;
 }
 
 .nav-item {

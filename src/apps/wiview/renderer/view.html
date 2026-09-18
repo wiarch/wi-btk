@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-View</title>
+    <link rel="stylesheet" href="view.css" />
+  </head>
+  <body>
+    <div class="view-app">
+      <header class="top">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">▷</span>
+          <div>
+            <h1>WI-View</h1>
+            <p class="sub">Imágenes · Video · Música</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="open-btn">Abrir</button>
+          <button type="button" class="btn ghost" id="popout-btn" title="Ventana aparte">⧉</button>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="side-head">
+            <h2>Recientes</h2>
+            <button type="button" class="link" id="clear-recent">Limpiar</button>
+          </div>
+          <div id="recent-list" class="recent-list"></div>
+          <p class="hint" id="hotkey-hint">Atajo: Alt+Shift+W</p>
+        </aside>
+
+        <main class="stage">
+          <div id="empty" class="empty">
+            <p>Abrí una imagen, video o audio</p>
+            <p class="muted">Arrastrá archivos aquí o usá Abrir / atajo rápido</p>
+          </div>
+
+          <div id="image-stage" class="media-stage hidden">
+            <img id="image-el" alt="" />
+          </div>
+
+          <div id="video-stage" class="media-stage hidden">
+            <video id="video-el" controls playsinline></video>
+          </div>
+
+          <div id="audio-stage" class="media-stage audio-stage hidden">
+            <div class="vinyl" aria-hidden="true"></div>
+            <p id="audio-title" class="audio-title">Audio</p>
+            <audio id="audio-el" controls></audio>
+          </div>
+
+          <div id="transport" class="transport hidden">
+            <button type="button" class="icon-btn" id="prev-btn" title="Anterior">‹</button>
+            <button type="button" class="icon-btn" id="play-btn" title="Play/Pause">▶</button>
+            <button type="button" class="icon-btn" id="next-btn" title="Siguiente">›</button>
+            <span id="now-playing" class="now-playing"></span>
+            <label class="vol">
+              <span>Vol</span>
+              <input id="volume" type="range" min="0" max="100" value="85" />
+            </label>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="view.js"></script>
+  </body>
+</html>

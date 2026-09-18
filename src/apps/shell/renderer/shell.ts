@@ -15,6 +15,7 @@ type HotkeyAction =
   | 'colorPicker'
   | 'colorPickerPanel'
   | 'screenRecord'
+  | 'voiceRecord'
   | 'arrow'
   | 'rect'
   | 'save'
@@ -76,11 +77,15 @@ type SettingsUi = {
   navClock: string;
   navNotes: string;
   navRate: string;
+  navWeather: string;
   navSystem: string;
   navDimmer: string;
   navTranslate: string;
   navNetest: string;
   navCam: string;
+  navColor: string;
+  navWidget: string;
+  navView: string;
   navDevice: string;
   homeTitle: string;
   homeSubtitle: string;
@@ -101,11 +106,15 @@ type SettingsUi = {
   descClock: string;
   descNotes: string;
   descRate: string;
+  descWeather: string;
   descSystem: string;
   descDimmer: string;
   descTranslate: string;
   descNetest: string;
   descCam: string;
+  descColor: string;
+  descWidget: string;
+  descView: string;
   descDevice: string;
   soonTitle: string;
   soonBody: string;
@@ -143,6 +152,7 @@ type SettingsUi = {
   hotkeyColorPicker: string;
   hotkeyColorPickerPanel: string;
   hotkeyScreenRecord: string;
+  hotkeyVoiceRecord: string;
   hotkeyArrow: string;
   hotkeyRect: string;
   hotkeySave: string;
@@ -212,6 +222,7 @@ const GLOBAL_ACTIONS: HotkeyAction[] = [
   'colorPicker',
   'colorPickerPanel',
   'screenRecord',
+  'voiceRecord',
 ];
 const OVERLAY_ACTIONS: HotkeyAction[] = ['arrow', 'rect', 'save', 'copy', 'cancel'];
 const RECORDING_ACTIONS: HotkeyAction[] = ['recordStart', 'recordPause', 'recordResume', 'recordStop'];
@@ -222,6 +233,7 @@ const HOTKEY_LABEL_KEYS: Record<HotkeyAction, keyof SettingsUi> = {
   colorPicker: 'hotkeyColorPicker',
   colorPickerPanel: 'hotkeyColorPickerPanel',
   screenRecord: 'hotkeyScreenRecord',
+  voiceRecord: 'hotkeyVoiceRecord',
   arrow: 'hotkeyArrow',
   rect: 'hotkeyRect',
   save: 'hotkeySave',
@@ -258,11 +270,15 @@ const descCalcEl = document.getElementById('desc-calc') as HTMLElement | null;
 const descClockEl = document.getElementById('desc-clock') as HTMLElement | null;
 const descNotesEl = document.getElementById('desc-notes') as HTMLElement | null;
 const descRateEl = document.getElementById('desc-rate') as HTMLElement | null;
+const descWeatherEl = document.getElementById('desc-weather') as HTMLElement | null;
 const descSystemEl = document.getElementById('desc-system') as HTMLElement | null;
 const descDimmerEl = document.getElementById('desc-dimmer') as HTMLElement | null;
 const descTranslateEl = document.getElementById('desc-translate') as HTMLElement | null;
 const descNetestEl = document.getElementById('desc-netest') as HTMLElement;
 const descCamEl = document.getElementById('desc-cam') as HTMLElement | null;
+const descColorEl = document.getElementById('desc-color') as HTMLElement | null;
+const descWidgetEl = document.getElementById('desc-widget') as HTMLElement | null;
+const descViewEl = document.getElementById('desc-view') as HTMLElement | null;
 const descDeviceEl = document.getElementById('desc-device') as HTMLElement;
 const wirecSubtitleEl = document.getElementById('wirec-subtitle') as HTMLParagraphElement;
 const captureSectionTitleEl = document.getElementById('capture-general-title') as HTMLHeadingElement;
@@ -280,12 +296,17 @@ const panelWicalc = document.getElementById('panel-wicalc') as HTMLElement;
 const panelWiclock = document.getElementById('panel-wiclock') as HTMLElement;
 const panelWinotes = document.getElementById('panel-winotes') as HTMLElement;
 const panelWirate = document.getElementById('panel-wirate') as HTMLElement;
+const panelWiweather = document.getElementById('panel-wiweather') as HTMLElement;
 const panelWisystem = document.getElementById('panel-wisystem') as HTMLElement;
 const panelWidimmer = document.getElementById('panel-widimmer') as HTMLElement;
 const panelWitranslate = document.getElementById('panel-witranslate') as HTMLElement;
 const panelWidraw = document.getElementById('panel-widraw') as HTMLElement;
 const panelWinetest = document.getElementById('panel-winetest') as HTMLElement;
 const panelWicam = document.getElementById('panel-wicam') as HTMLElement;
+const panelWicolor = document.getElementById('panel-wicolor') as HTMLElement;
+const panelWiview = document.getElementById('panel-wiview') as HTMLElement;
+const panelWiremote = document.getElementById('panel-wiremote') as HTMLElement;
+const panelWiwidget = document.getElementById('panel-wiwidget') as HTMLElement;
 const panelWidevice = document.getElementById('panel-widevice') as HTMLElement;
 const panelSoon = document.getElementById('panel-soon') as HTMLElement;
 const generalTitleEl = document.getElementById('general-title') as HTMLHeadingElement;
@@ -412,11 +433,15 @@ function applyLanguage(): void {
   descClockEl && (descClockEl.textContent = ui.descClock);
   descNotesEl && (descNotesEl.textContent = ui.descNotes);
   descRateEl && (descRateEl.textContent = ui.descRate);
+  descWeatherEl && (descWeatherEl.textContent = ui.descWeather);
   descSystemEl && (descSystemEl.textContent = ui.descSystem);
   descDimmerEl && (descDimmerEl.textContent = ui.descDimmer);
   descTranslateEl && (descTranslateEl.textContent = ui.descTranslate);
   descNetestEl.textContent = ui.descNetest;
   descCamEl && (descCamEl.textContent = ui.descCam);
+  descColorEl && (descColorEl.textContent = ui.descColor);
+  descWidgetEl && (descWidgetEl.textContent = ui.descWidget);
+  descViewEl && (descViewEl.textContent = ui.descView);
   descDeviceEl.textContent = ui.descDevice;
   wirecSubtitleEl.textContent = ui.wirecSubtitle;
   captureSectionTitleEl.textContent = ui.captureSection;
@@ -518,13 +543,17 @@ const MODULE_META: Record<
   wiclock: { nameKey: 'navClock', descKey: 'descClock', soon: false },
   winotes: { nameKey: 'navNotes', descKey: 'descNotes', soon: false },
   wirate: { nameKey: 'navRate', descKey: 'descRate', soon: false },
+  wiweather: { nameKey: 'navWeather', descKey: 'descWeather', soon: false },
   wisystem: { nameKey: 'navSystem', descKey: 'descSystem', soon: false },
   widimmer: { nameKey: 'navDimmer', descKey: 'descDimmer', soon: false },
   witranslate: { nameKey: 'navTranslate', descKey: 'descTranslate', soon: false },
-  wiremote: { nameKey: 'navRemote', descKey: 'descRemote', soon: true },
+  wiremote: { nameKey: 'navRemote', descKey: 'descRemote', soon: false },
   widraw: { nameKey: 'navDraw', descKey: 'descDraw', soon: false },
   winetest: { nameKey: 'navNetest', descKey: 'descNetest', soon: false },
   wicam: { nameKey: 'navCam', descKey: 'descCam', soon: false },
+  wicolor: { nameKey: 'navColor', descKey: 'descColor', soon: false },
+  wiview: { nameKey: 'navView', descKey: 'descView', soon: false },
+  wiwidget: { nameKey: 'navWidget', descKey: 'descWidget', soon: false },
   widevice: { nameKey: 'navDevice', descKey: 'descDevice', soon: false },
 };
 
@@ -543,18 +572,101 @@ function matchesQuery(haystack: string, query: string): boolean {
   return tokens.every((token) => haystack.includes(token));
 }
 
+const NAV_GROUPS_KEY = 'wi-btk-nav-groups';
+
+function readOpenNavGroups(): Set<string> {
+  try {
+    const raw = localStorage.getItem(NAV_GROUPS_KEY);
+    if (!raw) {
+      return new Set(['capture']);
+    }
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return new Set(['capture']);
+    }
+    return new Set(parsed.filter((id): id is string => typeof id === 'string'));
+  } catch {
+    return new Set(['capture']);
+  }
+}
+
+function persistOpenNavGroups(): void {
+  const open = [...shellNav.querySelectorAll<HTMLElement>('.nav-group.is-open')]
+    .map((group) => group.dataset.group)
+    .filter((id): id is string => Boolean(id));
+  try {
+    localStorage.setItem(NAV_GROUPS_KEY, JSON.stringify(open));
+  } catch {
+    // ignore
+  }
+}
+
+function setNavGroupOpen(group: HTMLElement, open: boolean): void {
+  group.classList.toggle('is-open', open);
+  const toggle = group.querySelector<HTMLButtonElement>('.nav-group-toggle');
+  toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function applyNavGroupState(forceOpenIds?: Iterable<string>): void {
+  const forced = forceOpenIds ? new Set(forceOpenIds) : null;
+  const saved = forced ? null : readOpenNavGroups();
+
+  for (const group of shellNav.querySelectorAll<HTMLElement>('.nav-group')) {
+    const id = group.dataset.group;
+    if (!id) {
+      continue;
+    }
+    const open = forced ? forced.has(id) : Boolean(saved?.has(id));
+    setNavGroupOpen(group, open);
+  }
+}
+
+function ensureActiveNavGroupOpen(): void {
+  const active = shellNav.querySelector<HTMLElement>('.nav-item.active');
+  const group = active?.closest<HTMLElement>('.nav-group');
+  if (!group) {
+    return;
+  }
+  setNavGroupOpen(group, true);
+  persistOpenNavGroups();
+}
+
+function syncNavGroupVisibility(): void {
+  for (const group of shellNav.querySelectorAll<HTMLElement>('.nav-group')) {
+    const items = group.querySelectorAll<HTMLButtonElement>('.nav-item');
+    const visible = [...items].some(
+      (item) =>
+        !item.classList.contains('is-filtered-out') && !item.classList.contains('is-app-disabled'),
+    );
+    group.classList.toggle('is-empty', !visible);
+  }
+}
+
 function applySearchFilter(): void {
   const query = shellSearchInput.value.trim().toLowerCase();
   let visibleNav = 0;
+  const matchingGroups = new Set<string>();
 
   for (const item of shellNav.querySelectorAll<HTMLButtonElement>('.nav-item')) {
     const match = matchesQuery(navSearchText(item), query);
     item.classList.toggle('is-filtered-out', !match);
     if (match) {
       visibleNav += 1;
+      const groupId = item.closest<HTMLElement>('.nav-group')?.dataset.group;
+      if (groupId) {
+        matchingGroups.add(groupId);
+      }
     }
   }
 
+  if (query) {
+    applyNavGroupState(matchingGroups);
+  } else {
+    applyNavGroupState();
+    ensureActiveNavGroupOpen();
+  }
+
+  syncNavGroupVisibility();
   searchEmptyEl.hidden = !query || visibleNav > 0;
 
   const moduleList = document.getElementById('home-module-list');
@@ -636,6 +748,8 @@ function applyAppEnablement(): void {
     }
     item.classList.toggle('is-app-disabled', !isAppEnabledLocal(panelId));
   }
+
+  syncNavGroupVisibility();
 }
 
 function setAppEnabled(appId: string, enabled: boolean): void {
@@ -672,12 +786,17 @@ function showPanel(panelId: string): void {
     | 'wiclock'
     | 'winotes'
     | 'wirate'
+    | 'wiweather'
     | 'wisystem'
     | 'widimmer'
     | 'witranslate'
     | 'widraw'
     | 'winetest'
     | 'wicam'
+    | 'wicolor'
+    | 'wiview'
+    | 'wiremote'
+    | 'wiwidget'
     | 'widevice'
     | 'soon' = 'home';
   if (meta.soon) {
@@ -691,12 +810,17 @@ function showPanel(panelId: string): void {
     panelId === 'wiclock' ||
     panelId === 'winotes' ||
     panelId === 'wirate' ||
+    panelId === 'wiweather' ||
     panelId === 'wisystem' ||
     panelId === 'widimmer' ||
     panelId === 'witranslate' ||
     panelId === 'widraw' ||
     panelId === 'winetest' ||
     panelId === 'wicam' ||
+    panelId === 'wicolor' ||
+    panelId === 'wiview' ||
+    panelId === 'wiremote' ||
+    panelId === 'wiwidget' ||
     panelId === 'widevice' ||
     panelId === 'home'
   ) {
@@ -713,12 +837,17 @@ function showPanel(panelId: string): void {
     [panelWiclock, 'wiclock'],
     [panelWinotes, 'winotes'],
     [panelWirate, 'wirate'],
+    [panelWiweather, 'wiweather'],
     [panelWisystem, 'wisystem'],
     [panelWidimmer, 'widimmer'],
     [panelWitranslate, 'witranslate'],
     [panelWidraw, 'widraw'],
     [panelWinetest, 'winetest'],
     [panelWicam, 'wicam'],
+    [panelWicolor, 'wicolor'],
+    [panelWiview, 'wiview'],
+    [panelWiremote, 'wiremote'],
+    [panelWiwidget, 'wiwidget'],
     [panelWidevice, 'widevice'],
     [panelSoon, 'soon'],
   ];
@@ -731,6 +860,8 @@ function showPanel(panelId: string): void {
   for (const item of shellNav.querySelectorAll<HTMLButtonElement>('.nav-item')) {
     item.classList.toggle('active', item.dataset.panel === panelId);
   }
+
+  ensureActiveNavGroupOpen();
 
   if (target === 'soon' && ui) {
     soonModuleNameEl.textContent = String(ui[meta.nameKey]);
@@ -869,6 +1000,156 @@ function setupUtilityBridges(): void {
       return;
     }
 
+    if (data.channel === 'wi-weather') {
+      const api = (window as unknown as { wiWeather?: Record<string, (...args: unknown[]) => unknown> })
+        .wiWeather;
+      const frame = document.getElementById('wiweather-frame') as HTMLIFrameElement | null;
+      if (!api) {
+        return;
+      }
+      if (data.method === 'notify') {
+        api.notify?.(...(data.args ?? []));
+        return;
+      }
+      try {
+        const result = await Promise.resolve(api[data.method]?.(...(data.args ?? [])));
+        frame?.contentWindow?.postMessage(
+          { channel: 'wi-weather-response', id: data.id, result },
+          '*',
+        );
+      } catch (error) {
+        frame?.contentWindow?.postMessage(
+          {
+            channel: 'wi-weather-response',
+            id: data.id,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          '*',
+        );
+      }
+      return;
+    }
+
+    if (data.channel === 'wi-color') {
+      const api = (window as unknown as { wiColor?: Record<string, (...args: unknown[]) => unknown> })
+        .wiColor;
+      const frame = document.getElementById('wicolor-frame') as HTMLIFrameElement | null;
+      if (!api) {
+        return;
+      }
+      if (data.method === 'notify') {
+        api.notify?.(...(data.args ?? []));
+        return;
+      }
+      try {
+        const result = await Promise.resolve(api[data.method]?.(...(data.args ?? [])));
+        frame?.contentWindow?.postMessage(
+          { channel: 'wi-color-response', id: data.id, result },
+          '*',
+        );
+      } catch (error) {
+        frame?.contentWindow?.postMessage(
+          {
+            channel: 'wi-color-response',
+            id: data.id,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          '*',
+        );
+      }
+      return;
+    }
+
+    if (data.channel === 'wi-view') {
+      const api = (window as unknown as { wiView?: Record<string, (...args: unknown[]) => unknown> })
+        .wiView;
+      const frame = document.getElementById('wiview-frame') as HTMLIFrameElement | null;
+      if (!api) {
+        return;
+      }
+      if (data.method === 'notify' || data.method === 'sendInput') {
+        api[data.method]?.(...(data.args ?? []));
+        return;
+      }
+      try {
+        const result = await Promise.resolve(api[data.method]?.(...(data.args ?? [])));
+        frame?.contentWindow?.postMessage(
+          { channel: 'wi-view-response', id: data.id, result },
+          '*',
+        );
+      } catch (error) {
+        frame?.contentWindow?.postMessage(
+          {
+            channel: 'wi-view-response',
+            id: data.id,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          '*',
+        );
+      }
+      return;
+    }
+
+    if (data.channel === 'wi-remote') {
+      const api = (window as unknown as { wiRemote?: Record<string, (...args: unknown[]) => unknown> })
+        .wiRemote;
+      const frame = document.getElementById('wiremote-frame') as HTMLIFrameElement | null;
+      if (!api) {
+        return;
+      }
+      if (data.method === 'notify' || data.method === 'sendInput') {
+        api[data.method]?.(...(data.args ?? []));
+        return;
+      }
+      try {
+        const result = await Promise.resolve(api[data.method]?.(...(data.args ?? [])));
+        frame?.contentWindow?.postMessage(
+          { channel: 'wi-remote-response', id: data.id, result },
+          '*',
+        );
+      } catch (error) {
+        frame?.contentWindow?.postMessage(
+          {
+            channel: 'wi-remote-response',
+            id: data.id,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          '*',
+        );
+      }
+      return;
+    }
+
+    if (data.channel === 'wi-widget') {
+      const api = (window as unknown as { wiWidget?: Record<string, (...args: unknown[]) => unknown> })
+        .wiWidget;
+      const frame = document.getElementById('wiwidget-frame') as HTMLIFrameElement | null;
+      if (!api) {
+        return;
+      }
+      if (data.method === 'notify') {
+        api.notify?.(...(data.args ?? []));
+        return;
+      }
+      try {
+        const result = await Promise.resolve(api[data.method]?.(...(data.args ?? [])));
+        frame?.contentWindow?.postMessage(
+          { channel: 'wi-widget-response', id: data.id, result },
+          '*',
+        );
+      } catch (error) {
+        frame?.contentWindow?.postMessage(
+          {
+            channel: 'wi-widget-response',
+            id: data.id,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          '*',
+        );
+      }
+      return;
+    }
+
     if (data.channel === 'wi-system') {
       const api = (window as unknown as { wiSystem?: Record<string, (...args: unknown[]) => unknown> })
         .wiSystem;
@@ -996,6 +1277,87 @@ function setupUtilityBridges(): void {
   rateApi?.onSettingsChanged?.((settings) => {
     const frame = document.getElementById('wirate-frame') as HTMLIFrameElement | null;
     frame?.contentWindow?.postMessage({ channel: 'wi-rate-settings', settings }, '*');
+  });
+
+  const weatherApi = (window as unknown as {
+    wiWeather?: { onSettingsChanged?: (listener: (settings: unknown) => void) => () => void };
+  }).wiWeather;
+  weatherApi?.onSettingsChanged?.((settings) => {
+    const frame = document.getElementById('wiweather-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-weather-settings', settings }, '*');
+  });
+
+  const colorApi = (window as unknown as {
+    wiColor?: {
+      onSettingsChanged?: (listener: (settings: unknown) => void) => () => void;
+      onPicked?: (listener: (hex: string) => void) => () => void;
+    };
+  }).wiColor;
+  colorApi?.onSettingsChanged?.((settings) => {
+    const frame = document.getElementById('wicolor-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-color-settings', settings }, '*');
+  });
+  colorApi?.onPicked?.((hex) => {
+    const frame = document.getElementById('wicolor-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-color-picked', hex }, '*');
+  });
+
+  const viewApi = (window as unknown as {
+    wiView?: {
+      onSettingsChanged?: (listener: (settings: unknown) => void) => () => void;
+      onOpenFiles?: (listener: (paths: string[]) => void) => () => void;
+    };
+  }).wiView;
+  viewApi?.onSettingsChanged?.((settings) => {
+    const frame = document.getElementById('wiview-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-view-settings', settings }, '*');
+  });
+  viewApi?.onOpenFiles?.((paths) => {
+    const frame = document.getElementById('wiview-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-view-open', paths }, '*');
+  });
+
+  const remoteApi = (window as unknown as {
+    wiRemote?: {
+      onStatus?: (listener: (status: string) => void) => () => void;
+      onConnected?: (listener: (role: string) => void) => () => void;
+      onDisconnected?: (listener: () => void) => () => void;
+      onFrame?: (listener: (frame: { data: string; width: number; height: number }) => void) => () => void;
+      onError?: (listener: (message: string) => void) => () => void;
+      onSettingsChanged?: (listener: (settings: unknown) => void) => () => void;
+    };
+  }).wiRemote;
+  remoteApi?.onStatus?.((status) => {
+    const frame = document.getElementById('wiremote-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-remote-status', status }, '*');
+  });
+  remoteApi?.onConnected?.((role) => {
+    const frame = document.getElementById('wiremote-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-remote-connected', role }, '*');
+  });
+  remoteApi?.onDisconnected?.(() => {
+    const frame = document.getElementById('wiremote-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-remote-disconnected' }, '*');
+  });
+  remoteApi?.onFrame?.((frameData) => {
+    const frame = document.getElementById('wiremote-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-remote-frame', frame: frameData }, '*');
+  });
+  remoteApi?.onError?.((message) => {
+    const frame = document.getElementById('wiremote-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-remote-error', message }, '*');
+  });
+  remoteApi?.onSettingsChanged?.((settings) => {
+    const frame = document.getElementById('wiremote-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-remote-settings', settings }, '*');
+  });
+
+  const widgetApi = (window as unknown as {
+    wiWidget?: { onSettingsChanged?: (listener: (settings: unknown) => void) => () => void };
+  }).wiWidget;
+  widgetApi?.onSettingsChanged?.((settings) => {
+    const frame = document.getElementById('wiwidget-frame') as HTMLIFrameElement | null;
+    frame?.contentWindow?.postMessage({ channel: 'wi-widget-settings', settings }, '*');
   });
 
   const dimmerApi = (window as unknown as {
@@ -1287,6 +1649,17 @@ function setupShellNavigation(): void {
   setupUtilityBridges();
 
   shellNav.addEventListener('click', (event) => {
+    const groupToggle = (event.target as HTMLElement).closest<HTMLButtonElement>('.nav-group-toggle');
+    if (groupToggle) {
+      const group = groupToggle.closest<HTMLElement>('.nav-group');
+      if (!group || shellSearchInput.value.trim()) {
+        return;
+      }
+      setNavGroupOpen(group, !group.classList.contains('is-open'));
+      persistOpenNavGroups();
+      return;
+    }
+
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>('.nav-item');
     if (
       !button?.dataset.panel ||

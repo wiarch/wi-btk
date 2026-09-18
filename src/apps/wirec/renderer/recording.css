@@ -17,6 +17,10 @@ body.selecting {
   background: #000;
 }
 
+body.voice-mode.selecting {
+  background: transparent;
+}
+
 body.recording {
   background: transparent;
   pointer-events: none;
@@ -31,8 +35,52 @@ body.recording {
   cursor: crosshair;
 }
 
+body.voice-mode #canvas,
 body.recording #canvas {
   display: none;
+}
+
+body.voice-mode #region-menu-wrap,
+body.voice-mode #region-divider,
+body.voice-mode #desktop-audio-row {
+  display: none;
+}
+
+.voice-pads {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.voice-pad {
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.voice-pad:hover {
+  background: rgba(79, 109, 245, 0.22);
+  border-color: rgba(79, 109, 245, 0.55);
+}
+
+.record-voice-pads {
+  display: flex;
+  gap: 4px;
+  margin: 0 4px;
+}
+
+.record-voice-pads.hidden {
+  display: none;
+}
+
+.record-voice-pads .voice-pad {
+  width: 30px;
+  height: 28px;
+  flex: 0 0 auto;
 }
 
 body.countdown #canvas {

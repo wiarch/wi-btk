@@ -6,6 +6,8 @@ type TrayStrings = {
   colorPicker: string;
   colorPickerPanel: string;
   screenRecord: string;
+  voiceRecord: string;
+  wiview: string;
   settings: string;
   quit: string;
   tooltip: string;
@@ -25,6 +27,10 @@ type NotificationStrings = {
   colorCopied: string;
   recordingSaved: string;
   recordingSavedHint: string;
+  voiceSaved: string;
+  voiceSavedHint: string;
+  loomSaved: string;
+  loomSavedHint: string;
   trayHintTitle: string;
   trayHintBody: string;
   alreadyRunningTitle: string;
@@ -89,6 +95,22 @@ type RecordingStrings = {
   microphone: string;
   micMute: string;
   micDefault: string;
+  camera: string;
+  cameraMute: string;
+  camDefault: string;
+  voiceFx: string;
+  voiceFxLabel: string;
+  voiceMonitor: string;
+  voicePads: string;
+  fxNone: string;
+  fxRobot: string;
+  fxRadio: string;
+  fxEcho: string;
+  fxReverb: string;
+  fxDeep: string;
+  fxHelium: string;
+  fxMonster: string;
+  fxAlien: string;
   fullScreen: string;
   selectRegion: string;
   startRecord: string;
@@ -116,6 +138,8 @@ type OverlayStrings = {
 type SnipStrings = {
   screenshot: string;
   record: string;
+  voice: string;
+  loom: string;
   rectangle: string;
   fullScreen: string;
   close: string;
@@ -131,6 +155,11 @@ type SettingsStrings = {
   searchNoResults: string;
   compactSidebar: string;
   compactSidebarExpand: string;
+  navGroupCapture: string;
+  navGroupInput: string;
+  navGroupProductivity: string;
+  navGroupSystem: string;
+  navGroupSoon: string;
   navHome: string;
   navWirec: string;
   navClick: string;
@@ -143,11 +172,15 @@ type SettingsStrings = {
   navClock: string;
   navNotes: string;
   navRate: string;
+  navWeather: string;
   navSystem: string;
   navDimmer: string;
   navTranslate: string;
   navNetest: string;
   navCam: string;
+  navColor: string;
+  navWidget: string;
+  navView: string;
   navDevice: string;
   homeTitle: string;
   homeSubtitle: string;
@@ -168,11 +201,15 @@ type SettingsStrings = {
   descClock: string;
   descNotes: string;
   descRate: string;
+  descWeather: string;
   descSystem: string;
   descDimmer: string;
   descTranslate: string;
   descNetest: string;
   descCam: string;
+  descColor: string;
+  descWidget: string;
+  descView: string;
   descDevice: string;
   soonTitle: string;
   soonBody: string;
@@ -208,6 +245,7 @@ type SettingsStrings = {
   hotkeyColorPicker: string;
   hotkeyColorPickerPanel: string;
   hotkeyScreenRecord: string;
+  hotkeyVoiceRecord: string;
   hotkeyArrow: string;
   hotkeyRect: string;
   hotkeySave: string;
@@ -278,6 +316,8 @@ const en: Dictionary = {
     colorPicker: 'Color picker',
     colorPickerPanel: 'Color picker panel',
     screenRecord: 'Record screen',
+    voiceRecord: 'Record voice',
+    wiview: 'WI-View (media)',
     settings: 'WI-BTK',
     quit: 'Quit',
     tooltip: 'WI-BTK — {hotkey}',
@@ -296,6 +336,10 @@ const en: Dictionary = {
     colorCopied: 'Color copied: {hex}',
     recordingSaved: '{filename}',
     recordingSavedHint: 'Recording saved — click to open folder',
+    voiceSaved: '{filename}',
+    voiceSavedHint: 'Voice recording saved — click to open folder',
+    loomSaved: '{filename}',
+    loomSavedHint: 'Loom recording saved — click to open folder',
     trayHintTitle: 'WI-Rec is running',
     trayHintBody:
       'Look for the WI-Rec icon in the system tray (next to the clock). If you do not see it, open the "^" hidden icons menu.\n\nLeft-click the icon to open Settings. Right-click for the menu (Capture, Settings, Quit).',
@@ -317,6 +361,8 @@ const en: Dictionary = {
   snip: {
     screenshot: 'Screenshot',
     record: 'Record',
+    voice: 'Voice',
+    loom: 'Loom',
     rectangle: 'Rectangle',
     fullScreen: 'Full screen',
     close: 'Close',
@@ -374,6 +420,22 @@ const en: Dictionary = {
     microphone: 'Microphone',
     micMute: 'Mute microphone',
     micDefault: 'Default microphone',
+    camera: 'Camera',
+    cameraMute: 'Hide camera',
+    camDefault: 'Default camera',
+    voiceFx: 'Voice FX',
+    voiceFxLabel: 'Voice effect',
+    voiceMonitor: 'Monitor (hear FX)',
+    voicePads: 'Soundboard',
+    fxNone: 'None',
+    fxRobot: 'Robot',
+    fxRadio: 'Radio',
+    fxEcho: 'Echo',
+    fxReverb: 'Reverb / Cave',
+    fxDeep: 'Deep voice',
+    fxHelium: 'Helium',
+    fxMonster: 'Monster',
+    fxAlien: 'Alien',
     fullScreen: 'Full screen',
     selectRegion: 'Select region',
     startRecord: 'Start recording',
@@ -398,6 +460,11 @@ const en: Dictionary = {
     searchNoResults: 'No tools match your search',
     compactSidebar: 'Icons only',
     compactSidebarExpand: 'Show labels',
+    navGroupCapture: 'Capture',
+    navGroupInput: 'Input',
+    navGroupProductivity: 'Productivity',
+    navGroupSystem: 'System',
+    navGroupSoon: 'Coming soon',
     navHome: 'Home',
     navWirec: 'WI-Rec',
     navClick: 'WI-Click',
@@ -410,11 +477,15 @@ const en: Dictionary = {
     navClock: 'WI-Clock',
     navNotes: 'WI-Notes',
     navRate: 'WI-Rate',
+    navWeather: 'WI-Weather',
     navSystem: 'WI-System',
     navDimmer: 'WI-Dimmer',
     navTranslate: 'WI-Translate',
     navNetest: 'WI-Netest',
     navCam: 'WI-Cam',
+    navColor: 'WI-Color',
+    navWidget: 'WI-Widget',
+    navView: 'WI-View',
     navDevice: 'WI-Device',
     homeTitle: 'Home',
     homeSubtitle: 'All your micro tools in one place',
@@ -424,9 +495,9 @@ const en: Dictionary = {
     moduleOff: 'Off',
     moduleSoon: 'Coming soon',
     appEnable: 'Enable app',
-    descWirec: 'Screenshot, recording and color picker',
+    descWirec: 'Screenshot, recording, voice and color picker',
     descClick: 'Auto-clicker like OP Auto Clicker',
-    descRemote: 'Remote desktop control',
+    descRemote: 'Remote desktop like AnyDesk (LAN)',
     descBoard: 'Virtual whiteboard',
     descDraw: 'Excalidraw-style whiteboard',
     descButton: 'Remap mouse buttons (simple X-Mouse)',
@@ -435,11 +506,15 @@ const en: Dictionary = {
     descClock: 'Clock, stopwatch, alarms and world times',
     descNotes: 'Quick notes like Google Keep',
     descRate: 'Bs ↔ USD ↔ EUR with custom rates',
+    descWeather: 'Current weather and 7-day forecast',
     descSystem: 'PC specs like Speccy (CPU, RAM, GPU, disks…)',
     descDimmer: 'Brightness and warm light like f.lux',
     descTranslate: 'Translate ES / EN / PT — text, speech, images',
     descNetest: 'Internet speed test',
     descCam: 'Webcam toys — filters and snaps',
+    descColor: 'Desktop color picker with Colorsbook and tint',
+    descWidget: 'Add floating widgets to the Windows desktop',
+    descView: 'Image viewer, video and music player',
     descDevice: 'Switch playback, mic and cameras',
     soonTitle: 'Coming soon',
     soonBody: 'This micro software will arrive soon in WI-BTK.',
@@ -475,6 +550,7 @@ const en: Dictionary = {
     hotkeyColorPicker: 'Color picker (eyedropper)',
     hotkeyColorPickerPanel: 'Color picker panel (direct)',
     hotkeyScreenRecord: 'Record screen',
+    hotkeyVoiceRecord: 'Record voice',
     hotkeyArrow: 'Arrow tool',
     hotkeyRect: 'Rectangle tool',
     hotkeySave: 'Save screenshot',
@@ -539,6 +615,8 @@ const es: Dictionary = {
     colorPicker: 'Cuentagotas de color',
     colorPickerPanel: 'Panel de color',
     screenRecord: 'Grabar pantalla',
+    voiceRecord: 'Grabar voz',
+    wiview: 'WI-View (medios)',
     settings: 'WI-BTK',
     quit: 'Salir',
     tooltip: 'WI-BTK — {hotkey}',
@@ -557,6 +635,10 @@ const es: Dictionary = {
     colorCopied: 'Color copiado: {hex}',
     recordingSaved: '{filename}',
     recordingSavedHint: 'Grabación guardada — clic para abrir carpeta',
+    voiceSaved: '{filename}',
+    voiceSavedHint: 'Grabación de voz guardada — clic para abrir carpeta',
+    loomSaved: '{filename}',
+    loomSavedHint: 'Grabación Loom guardada — clic para abrir carpeta',
     trayHintTitle: 'WI-Rec está activo',
     trayHintBody:
       'Busca el icono de WI-Rec en la bandeja del sistema (junto al reloj). Si no lo ves, abre el menú "^" de iconos ocultos.\n\nClic izquierdo: Configuración. Clic derecho: menú (Capturar, Configuración, Salir).',
@@ -578,6 +660,8 @@ const es: Dictionary = {
   snip: {
     screenshot: 'Captura',
     record: 'Grabar',
+    voice: 'Voz',
+    loom: 'Loom',
     rectangle: 'Rectángulo',
     fullScreen: 'Pantalla completa',
     close: 'Cerrar',
@@ -635,6 +719,22 @@ const es: Dictionary = {
     microphone: 'Micrófono',
     micMute: 'Silenciar micrófono',
     micDefault: 'Micrófono predeterminado',
+    camera: 'Cámara',
+    cameraMute: 'Ocultar cámara',
+    camDefault: 'Cámara predeterminada',
+    voiceFx: 'Efectos de voz',
+    voiceFxLabel: 'Efecto de voz',
+    voiceMonitor: 'Monitorear (oír FX)',
+    voicePads: 'Soundboard',
+    fxNone: 'Ninguno',
+    fxRobot: 'Robot',
+    fxRadio: 'Radio',
+    fxEcho: 'Eco',
+    fxReverb: 'Reverb / Cueva',
+    fxDeep: 'Voz grave',
+    fxHelium: 'Helio',
+    fxMonster: 'Monstruo',
+    fxAlien: 'Alienígena',
     fullScreen: 'Pantalla completa',
     selectRegion: 'Seleccionar región',
     startRecord: 'Iniciar grabación',
@@ -659,6 +759,11 @@ const es: Dictionary = {
     searchNoResults: 'Ninguna herramienta coincide',
     compactSidebar: 'Solo iconos',
     compactSidebarExpand: 'Mostrar nombres',
+    navGroupCapture: 'Captura',
+    navGroupInput: 'Entrada',
+    navGroupProductivity: 'Productividad',
+    navGroupSystem: 'Sistema',
+    navGroupSoon: 'Próximamente',
     navHome: 'Inicio',
     navWirec: 'WI-Rec',
     navClick: 'WI-Click',
@@ -671,11 +776,15 @@ const es: Dictionary = {
     navClock: 'WI-Clock',
     navNotes: 'WI-Notes',
     navRate: 'WI-Rate',
+    navWeather: 'WI-Weather',
     navSystem: 'WI-System',
     navDimmer: 'WI-Dimmer',
     navTranslate: 'WI-Translate',
     navNetest: 'WI-Netest',
     navCam: 'WI-Cam',
+    navColor: 'WI-Color',
+    navWidget: 'WI-Widget',
+    navView: 'WI-View',
     navDevice: 'WI-Device',
     homeTitle: 'Inicio',
     homeSubtitle: 'Todos tus micro softwares en un solo lugar',
@@ -685,9 +794,9 @@ const es: Dictionary = {
     moduleOff: 'Inactivo',
     moduleSoon: 'Próximamente',
     appEnable: 'Activar app',
-    descWirec: 'Captura, grabación y cuentagotas',
+    descWirec: 'Captura, grabación, voz y cuentagotas',
     descClick: 'Auto-clicker estilo OP Auto Clicker',
-    descRemote: 'Control remoto de escritorio',
+    descRemote: 'Escritorio remoto estilo AnyDesk (LAN)',
     descBoard: 'Pizarra virtual',
     descDraw: 'Whiteboard estilo Excalidraw',
     descButton: 'Remapear botones del mouse (X-Mouse simple)',
@@ -696,11 +805,15 @@ const es: Dictionary = {
     descClock: 'Reloj, cronómetro, alarmas y zonas',
     descNotes: 'Notas rápidas estilo Google Keep',
     descRate: 'Bs ↔ USD ↔ EUR con tasa personalizada',
+    descWeather: 'Clima actual y pronóstico a 7 días',
     descSystem: 'Info del PC estilo Speccy (CPU, RAM, GPU, discos…)',
     descDimmer: 'Brillo y luz cálida estilo f.lux',
     descTranslate: 'Traduce ES / EN / PT — texto, voz e imágenes',
     descNetest: 'Prueba de velocidad de internet',
     descCam: 'Webcam toys — filtros y fotos',
+    descColor: 'Color picker de escritorio con Colorsbook y tint',
+    descWidget: 'Agrega widgets flotantes al escritorio de Windows',
+    descView: 'Visor de imágenes, video y música',
     descDevice: 'Cambiar salida, micrófono y cámaras',
     soonTitle: 'Próximamente',
     soonBody: 'Este micro software llegará pronto a WI-BTK.',
@@ -736,6 +849,7 @@ const es: Dictionary = {
     hotkeyColorPicker: 'Cuentagotas de color',
     hotkeyColorPickerPanel: 'Panel de color (directo)',
     hotkeyScreenRecord: 'Grabar pantalla',
+    hotkeyVoiceRecord: 'Grabar voz',
     hotkeyArrow: 'Herramienta flecha',
     hotkeyRect: 'Herramienta rectángulo',
     hotkeySave: 'Guardar captura',
@@ -825,6 +939,7 @@ export function hotkeyLabel(language: Language, action: HotkeyAction): string {
     colorPicker: 'settings.hotkeyColorPicker',
     colorPickerPanel: 'settings.hotkeyColorPickerPanel',
     screenRecord: 'settings.hotkeyScreenRecord',
+    voiceRecord: 'settings.hotkeyVoiceRecord',
     arrow: 'settings.hotkeyArrow',
     rect: 'settings.hotkeyRect',
     save: 'settings.hotkeySave',

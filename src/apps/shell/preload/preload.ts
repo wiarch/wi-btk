@@ -20,6 +20,8 @@ export type ScreenshotPayload = {
   snipLabels: {
     screenshot: string;
     record: string;
+    voice: string;
+    loom: string;
     rectangle: string;
     fullScreen: string;
     close: string;
@@ -56,6 +58,12 @@ contextBridge.exposeInMainWorld('wiRec', {
   },
   switchToRecord(): void {
     ipcRenderer.send('overlay:switchToRecord');
+  },
+  switchToVoiceRecord(): void {
+    ipcRenderer.send('overlay:switchToVoiceRecord');
+  },
+  switchToLoomRecord(): void {
+    ipcRenderer.send('overlay:switchToLoomRecord');
   },
   ready(): void {
     ipcRenderer.send('overlay:ready');
@@ -112,8 +120,8 @@ contextBridge.exposeInMainWorld('wiRecRecording', {
   playSound(cue: 'start' | 'pause' | 'stop'): void {
     ipcRenderer.send('recording:playSound', cue);
   },
-  saveRecording(buffer: ArrayBuffer): Promise<string> {
-    return ipcRenderer.invoke('recording:save', buffer);
+  saveRecording(buffer: ArrayBuffer, options?: { kind?: 'screen' | 'voice' | 'loom' }): Promise<string> {
+    return ipcRenderer.invoke('recording:save', buffer, options);
   },
   persistPreferences(options: {
     desktopAudio: boolean;
@@ -127,6 +135,12 @@ contextBridge.exposeInMainWorld('wiRecRecording', {
   },
   switchToCapture(): void {
     ipcRenderer.send('recording:switchToCapture');
+  },
+  switchToScreenRecord(): void {
+    ipcRenderer.send('recording:switchToScreenRecord');
+  },
+  switchToLoomRecord(): void {
+    ipcRenderer.send('recording:switchToLoomRecord');
   },
   signalReady(): void {
     ipcRenderer.send('recording:shell-ready');
@@ -419,6 +433,237 @@ contextBridge.exposeInMainWorld('wiRate', {
     ipcRenderer.on('wirate:settingsChanged', handler);
     return () => {
       ipcRenderer.removeListener('wirate:settingsChanged', handler);
+    };
+  },
+});
+
+contextBridge.exposeInMainWorld('wiWidget', {
+  getSettings(): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:getSettings');
+  },
+  saveSettings(settings: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:saveSettings', settings);
+  },
+  add(payload?: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:add', payload);
+  },
+  remove(id: string): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:remove', id);
+  },
+  show(id: string): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:show', id);
+  },
+  hide(id: string): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:hide', id);
+  },
+  focus(id: string): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:focus', id);
+  },
+  update(payload: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:update', payload);
+  },
+  getInstance(id: string): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:getInstance', id);
+  },
+  openIds(): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:openIds');
+  },
+  stats(): Promise<unknown> {
+    return ipcRenderer.invoke('wiwidget:stats');
+  },
+  closeSelf(): void {
+    ipcRenderer.send('wiwidget:closeSelf');
+  },
+  notify(message: string): void {
+    ipcRenderer.send('wiwidget:notify', message);
+  },
+  onSettingsChanged(listener: (settings: unknown) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, settings: unknown): void => {
+      listener(settings);
+    };
+    ipcRenderer.on('wiwidget:settingsChanged', handler);
+    return () => {
+      ipcRenderer.removeListener('wiwidget:settingsChanged', handler);
+    };
+  },
+  onInstance(listener: (widget: unknown) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, widget: unknown): void => {
+      listener(widget);
+    };
+    ipcRenderer.on('wiwidget:instance', handler);
+    return () => {
+      ipcRenderer.removeListener('wiwidget:instance', handler);
+    };
+  },
+});
+
+contextBridge.exposeInMainWorld('wiWeather', {
+  getSettings(): Promise<unknown> {
+    return ipcRenderer.invoke('wiweather:getSettings');
+  },
+  saveSettings(settings: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wiweather:saveSettings', settings);
+  },
+  search(query: string): Promise<unknown> {
+    return ipcRenderer.invoke('wiweather:search', query);
+  },
+  forecast(place?: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wiweather:forecast', place);
+  },
+  notify(message: string): void {
+    ipcRenderer.send('wiweather:notify', message);
+  },
+  onSettingsChanged(listener: (settings: unknown) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, settings: unknown): void => {
+      listener(settings);
+    };
+    ipcRenderer.on('wiweather:settingsChanged', handler);
+    return () => ipcRenderer.removeListener('wiweather:settingsChanged', handler);
+  },
+});
+
+contextBridge.exposeInMainWorld('wiRemote', {
+  getSettings(): Promise<unknown> {
+    return ipcRenderer.invoke('wiremote:getSettings');
+  },
+  saveSettings(settings: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wiremote:saveSettings', settings);
+  },
+  getInfo(): Promise<unknown> {
+    return ipcRenderer.invoke('wiremote:getInfo');
+  },
+  hostStart(): Promise<unknown> {
+    return ipcRenderer.invoke('wiremote:hostStart');
+  },
+  connect(payload: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wiremote:connect', payload);
+  },
+  stop(): Promise<unknown> {
+    return ipcRenderer.invoke('wiremote:stop');
+  },
+  sendInput(payload: unknown): void {
+    ipcRenderer.send('wiremote:input', payload);
+  },
+  notify(message: string): void {
+    ipcRenderer.send('wiremote:notify', message);
+  },
+  onStatus(listener: (status: string) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, payload: { status?: string }): void => {
+      if (payload?.status) listener(payload.status);
+    };
+    ipcRenderer.on('wiremote:status', handler);
+    return () => ipcRenderer.removeListener('wiremote:status', handler);
+  },
+  onConnected(listener: (role: string) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, payload: { role?: string }): void => {
+      if (payload?.role) listener(payload.role);
+    };
+    ipcRenderer.on('wiremote:connected', handler);
+    return () => ipcRenderer.removeListener('wiremote:connected', handler);
+  },
+  onDisconnected(listener: () => void): () => void {
+    const handler = (): void => listener();
+    ipcRenderer.on('wiremote:disconnected', handler);
+    return () => ipcRenderer.removeListener('wiremote:disconnected', handler);
+  },
+  onFrame(listener: (frame: { data: string; width: number; height: number }) => void): () => void {
+    const handler = (
+      _event: Electron.IpcRendererEvent,
+      frame: { data: string; width: number; height: number },
+    ): void => listener(frame);
+    ipcRenderer.on('wiremote:frame', handler);
+    return () => ipcRenderer.removeListener('wiremote:frame', handler);
+  },
+  onError(listener: (message: string) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, payload: { message?: string }): void => {
+      if (payload?.message) listener(payload.message);
+    };
+    ipcRenderer.on('wiremote:error', handler);
+    return () => ipcRenderer.removeListener('wiremote:error', handler);
+  },
+  onSettingsChanged(listener: (settings: unknown) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, settings: unknown): void => {
+      listener(settings);
+    };
+    ipcRenderer.on('wiremote:settingsChanged', handler);
+    return () => ipcRenderer.removeListener('wiremote:settingsChanged', handler);
+  },
+});
+
+contextBridge.exposeInMainWorld('wiView', {
+  getSettings(): Promise<unknown> {
+    return ipcRenderer.invoke('wiview:getSettings');
+  },
+  saveSettings(settings: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wiview:saveSettings', settings);
+  },
+  pickFiles(): Promise<unknown> {
+    return ipcRenderer.invoke('wiview:pickFiles');
+  },
+  resolveMedia(path: string): Promise<unknown> {
+    return ipcRenderer.invoke('wiview:resolveMedia', path);
+  },
+  clearRecent(): Promise<unknown> {
+    return ipcRenderer.invoke('wiview:clearRecent');
+  },
+  notify(message: string): void {
+    ipcRenderer.send('wiview:notify', message);
+  },
+  onSettingsChanged(listener: (settings: unknown) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, settings: unknown): void => {
+      listener(settings);
+    };
+    ipcRenderer.on('wiview:settingsChanged', handler);
+    return () => {
+      ipcRenderer.removeListener('wiview:settingsChanged', handler);
+    };
+  },
+  onOpenFiles(listener: (paths: string[]) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, paths: string[]): void => {
+      listener(paths);
+    };
+    ipcRenderer.on('wiview:openFiles', handler);
+    return () => {
+      ipcRenderer.removeListener('wiview:openFiles', handler);
+    };
+  },
+});
+
+contextBridge.exposeInMainWorld('wiColor', {
+  getSettings(): Promise<unknown> {
+    return ipcRenderer.invoke('wicolor:getSettings');
+  },
+  saveSettings(settings: unknown): Promise<unknown> {
+    return ipcRenderer.invoke('wicolor:saveSettings', settings);
+  },
+  pickScreen(): Promise<unknown> {
+    return ipcRenderer.invoke('wicolor:pickScreen');
+  },
+  getPickHotkey(): Promise<string> {
+    return ipcRenderer.invoke('wicolor:getPickHotkey');
+  },
+  copyHex(hex: string): Promise<unknown> {
+    return ipcRenderer.invoke('wicolor:copyHex', hex);
+  },
+  notify(message: string): void {
+    ipcRenderer.send('wicolor:notify', message);
+  },
+  onSettingsChanged(listener: (settings: unknown) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, settings: unknown): void => {
+      listener(settings);
+    };
+    ipcRenderer.on('wicolor:settingsChanged', handler);
+    return () => {
+      ipcRenderer.removeListener('wicolor:settingsChanged', handler);
+    };
+  },
+  onPicked(listener: (hex: string) => void): () => void {
+    const handler = (_event: Electron.IpcRendererEvent, hex: string): void => {
+      listener(hex);
+    };
+    ipcRenderer.on('wicolor:picked', handler);
+    return () => {
+      ipcRenderer.removeListener('wicolor:picked', handler);
     };
   },
 });

@@ -15,6 +15,11 @@ export const MICRO_APP_IDS = [
   'widevice',
   'winetest',
   'wicam',
+  'wicolor',
+  'wiwidget',
+  'wiview',
+  'wiremote',
+  'wiweather',
 ] as const;
 
 export type MicroAppId = (typeof MICRO_APP_IDS)[number] | (string & {});
@@ -37,6 +42,11 @@ export const DEFAULT_APP_ENABLEMENT: AppEnablement = {
   widevice: true,
   winetest: true,
   wicam: true,
+  wicolor: true,
+  wiwidget: true,
+  wiview: true,
+  wiremote: true,
+  wiweather: true,
 };
 
 export function mergeAppEnablement(partial?: Partial<AppEnablement> | null): AppEnablement {

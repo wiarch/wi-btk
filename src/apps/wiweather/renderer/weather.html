@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Weather</title>
+    <link rel="stylesheet" href="weather.css" />
+  </head>
+  <body>
+    <div class="weather-app">
+      <header class="top">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">☁</span>
+          <div>
+            <h1>WI-Weather</h1>
+            <p class="sub">Clima · Open-Meteo</p>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn ghost" id="unit-btn" title="Unidades">°C</button>
+          <button type="button" class="btn ghost" id="refresh-btn" title="Actualizar">↻</button>
+          <button type="button" class="btn ghost" id="popout-btn" title="Ventana aparte">⧉</button>
+        </div>
+      </header>
+
+      <section class="search card">
+        <input id="city-input" type="search" placeholder="Buscar ciudad…" autocomplete="off" />
+        <div id="suggestions" class="suggestions hidden"></div>
+      </section>
+
+      <section class="hero card">
+        <div class="hero-main">
+          <div id="weather-icon" class="weather-icon">☁</div>
+          <div>
+            <p id="place-name" class="place">—</p>
+            <p id="condition" class="condition">Cargando…</p>
+          </div>
+        </div>
+        <div id="temp" class="temp">--°</div>
+        <div class="meta">
+          <span id="feels">Sensación --°</span>
+          <span id="humidity">Humedad --%</span>
+          <span id="wind">Viento --</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Próximos días</h2>
+        <div id="forecast" class="forecast"></div>
+      </section>
+
+      <p id="status" class="status" aria-live="polite"></p>
+    </div>
+    <script type="module" src="weather.js"></script>
+  </body>
+</html>

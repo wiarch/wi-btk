@@ -37,6 +37,8 @@ export {
   RECORDING_HOTKEY_ACTIONS,
   getRecordMimeType,
   getRecordingFileExtension,
+  getVoiceRecordingMimeType,
+  getVoiceRecordingFileExtension,
 } from './wirec';
 
 /** Combined settings used by the shell UI (shell + wirec). */

@@ -84,6 +84,51 @@ const SPECS: Record<string, PopoutSpec> = {
     minHeight: 560,
     backgroundColor: '#12141a',
   },
+  wicolor: {
+    title: 'WI-Color',
+    htmlParts: ['apps', 'wicolor', 'renderer', 'color.html'],
+    width: 720,
+    height: 860,
+    minWidth: 520,
+    minHeight: 640,
+    backgroundColor: '#1a1d24',
+  },
+  wiwidget: {
+    title: 'WI-Widget',
+    htmlParts: ['apps', 'wiwidget', 'renderer', 'manager.html'],
+    width: 640,
+    height: 720,
+    minWidth: 480,
+    minHeight: 560,
+    backgroundColor: '#171a20',
+  },
+  wiview: {
+    title: 'WI-View',
+    htmlParts: ['apps', 'wiview', 'renderer', 'view.html'],
+    width: 960,
+    height: 720,
+    minWidth: 640,
+    minHeight: 480,
+    backgroundColor: '#0f1115',
+  },
+  wiremote: {
+    title: 'WI-Remote',
+    htmlParts: ['apps', 'wiremote', 'renderer', 'remote.html'],
+    width: 980,
+    height: 820,
+    minWidth: 720,
+    minHeight: 640,
+    backgroundColor: '#10141c',
+  },
+  wiweather: {
+    title: 'WI-Weather',
+    htmlParts: ['apps', 'wiweather', 'renderer', 'weather.html'],
+    width: 440,
+    height: 720,
+    minWidth: 360,
+    minHeight: 560,
+    backgroundColor: '#0f1724',
+  },
   winetest: {
     title: 'WI-Netest',
     htmlParts: ['apps', 'winetest', 'renderer', 'netest.html'],
@@ -103,6 +148,14 @@ function broadcast(appId: string, open: boolean): void {
       win.webContents.send('shell:popoutState', { appId, open });
     }
   }
+}
+
+export function getPopoutWindow(appId: string): BrowserWindow | null {
+  const win = windows.get(appId);
+  if (!win || win.isDestroyed()) {
+    return null;
+  }
+  return win;
 }
 
 export function isPopoutOpen(appId: string): boolean {

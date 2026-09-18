@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Widget</title>
+    <link rel="stylesheet" href="manager.css" />
+  </head>
+  <body>
+    <div class="manager">
+      <header>
+        <div>
+          <h1>WI-Widget</h1>
+          <p class="sub">Widgets flotantes en el escritorio de Windows</p>
+        </div>
+        <label class="check">
+          <input id="restore" type="checkbox" checked />
+          <span>Restaurar al iniciar</span>
+        </label>
+      </header>
+
+      <section class="card">
+        <h2>Agregar widget</h2>
+        <div class="add-grid">
+          <button type="button" class="add-card" data-type="clock">
+            <span class="ico">⏱</span>
+            <strong>Reloj</strong>
+            <small>Hora en escritorio</small>
+          </button>
+          <button type="button" class="add-card" data-type="note">
+            <span class="ico">📝</span>
+            <strong>Nota</strong>
+            <small>Sticky note</small>
+          </button>
+          <button type="button" class="add-card" data-type="stats">
+            <span class="ico">⌁</span>
+            <strong>Stats</strong>
+            <small>CPU y RAM</small>
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Widgets</h2>
+          <span id="count" class="muted">0</span>
+        </div>
+        <div id="list" class="list"></div>
+        <p id="empty" class="empty">No hay widgets. Agrega uno arriba.</p>
+      </section>
+
+      <p class="hint">Arrastra las ventanas en el escritorio. Se guardan posición y tamaño.</p>
+      <p id="status" class="status" aria-live="polite"></p>
+    </div>
+    <script type="module" src="manager.js"></script>
+  </body>
+</html>
