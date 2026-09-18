@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-System</title>
+    <link rel="stylesheet" href="system.css" />
+  </head>
+  <body>
+    <div class="sys" id="sys-app">
+      <aside class="side" id="side-nav">
+        <button type="button" class="side-item active" data-section="summary">
+          <span class="side-ico summary"></span>Summary
+        </button>
+        <button type="button" class="side-item" data-section="os">
+          <span class="side-ico os"></span>Operating System
+        </button>
+        <button type="button" class="side-item" data-section="cpu">
+          <span class="side-ico cpu"></span>CPU
+        </button>
+        <button type="button" class="side-item" data-section="ram">
+          <span class="side-ico ram"></span>RAM
+        </button>
+        <button type="button" class="side-item" data-section="motherboard">
+          <span class="side-ico mb"></span>Motherboard
+        </button>
+        <button type="button" class="side-item" data-section="graphics">
+          <span class="side-ico gpu"></span>Graphics
+        </button>
+        <button type="button" class="side-item" data-section="storage">
+          <span class="side-ico disk"></span>Storage
+        </button>
+        <button type="button" class="side-item" data-section="network">
+          <span class="side-ico net"></span>Network
+        </button>
+      </aside>
+
+      <main class="main">
+        <header class="top">
+          <div>
+            <h1>WI-System</h1>
+            <p class="sub" id="collected-at">Loading…</p>
+          </div>
+          <button type="button" class="btn" id="refresh-btn">Refresh</button>
+        </header>
+        <div class="content" id="content"></div>
+      </main>
+    </div>
+    <script type="module" src="system.js"></script>
+  </body>
+</html>

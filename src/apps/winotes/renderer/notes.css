@@ -1,0 +1,48 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #202020; --card: #2c2c2c; --text: #fff; --muted: #9a9a9a;
+  --accent: #fbbf24; --radius: 12px;
+}
+html, body { width: 100%; height: 100%; overflow: auto; font-family: "Segoe UI", Tahoma, sans-serif; background: var(--bg); color: var(--text); }
+.notes-app { display: flex; flex-direction: column; gap: 14px; min-height: 100%; padding: 16px; }
+header { display: flex; justify-content: space-between; align-items: flex-start; }
+h1 { font-size: 1.15rem; }
+.sub, .empty { color: var(--muted); }
+.card {
+  padding: 12px 14px; border-radius: var(--radius); background: var(--card);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.composer input, .composer textarea, .note-card input, .note-card textarea {
+  width: 100%; border: 0; background: transparent; color: var(--text); font: inherit; resize: vertical;
+}
+.composer input, .note-card input { font-weight: 600; margin-bottom: 6px; }
+.composer textarea, .note-card textarea { min-height: 64px; outline: none; }
+.composer-bar, .note-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; }
+.colors { display: flex; gap: 6px; }
+.swatch {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; cursor: pointer;
+}
+.swatch.active { border-color: #fff; }
+.swatch[data-color="default"] { background: #3a3a3a; }
+.swatch[data-color="yellow"] { background: #fbbf24; }
+.swatch[data-color="green"] { background: #34d399; }
+.swatch[data-color="blue"] { background: #60cdff; }
+.swatch[data-color="pink"] { background: #f472b6; }
+.swatch[data-color="orange"] { background: #fb923c; }
+.grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;
+}
+.note-card { display: flex; flex-direction: column; min-height: 140px; }
+.note-card.yellow { background: #3d3218; }
+.note-card.green { background: #163528; }
+.note-card.blue { background: #163040; }
+.note-card.pink { background: #3a1f2e; }
+.note-card.orange { background: #3a2718; }
+.note-card.pinned { outline: 1px solid rgba(251,191,36,.45); }
+.btn {
+  min-height: 34px; padding: 6px 12px; border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px; background: #333; color: var(--text); font: inherit; font-weight: 600; cursor: pointer;
+}
+.btn.primary { background: rgba(251,191,36,.18); border-color: rgba(251,191,36,.4); color: var(--accent); }
+.btn.ghost { width: 36px; background: transparent; color: var(--muted); }
+.btn.tiny { min-height: 28px; padding: 4px 8px; font-size: .8rem; }

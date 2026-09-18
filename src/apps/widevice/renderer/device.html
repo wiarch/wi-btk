@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Device</title>
+    <link rel="stylesheet" href="device.css" />
+  </head>
+  <body>
+    <div class="device-app" id="device-app">
+      <nav class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="playback">Playback</button>
+        <button type="button" class="tab" data-tab="recording">Recording</button>
+        <button type="button" class="tab" data-tab="cameras">Cameras</button>
+        <button type="button" class="tab" data-tab="hotkeys">Hotkeys</button>
+      </nav>
+
+      <main class="panels">
+        <section class="panel active" id="tab-playback" data-panel="playback">
+          <div class="section-head">
+            <span>Connected</span>
+            <button type="button" class="refresh-btn" data-refresh="playback" title="Refresh">↻</button>
+          </div>
+          <div class="device-list" id="playback-list"></div>
+          <p class="empty" id="playback-empty" hidden>No playback devices found</p>
+        </section>
+
+        <section class="panel" id="tab-recording" data-panel="recording" hidden>
+          <div class="section-head">
+            <span>Connected</span>
+            <button type="button" class="refresh-btn" data-refresh="recording" title="Refresh">↻</button>
+          </div>
+          <div class="device-list" id="recording-list"></div>
+          <p class="empty" id="recording-empty" hidden>No recording devices found</p>
+        </section>
+
+        <section class="panel" id="tab-cameras" data-panel="cameras" hidden>
+          <div class="section-head">
+            <span>Connected</span>
+            <button type="button" class="refresh-btn" data-refresh="cameras" title="Refresh">↻</button>
+          </div>
+          <div class="device-list" id="camera-list"></div>
+          <p class="empty" id="camera-empty" hidden>No cameras found. Allow camera permission if prompted.</p>
+        </section>
+
+        <section class="panel" id="tab-hotkeys" data-panel="hotkeys" hidden>
+          <label class="check-row">
+            <input type="checkbox" id="hotkeys-enabled" checked />
+            <span>Hotkeys enabled</span>
+          </label>
+          <div class="hotkey-grid">
+            <label class="hotkey-row">
+              <span>Switch playback device</span>
+              <input class="hotkey-input" id="hk-playback" type="text" readonly />
+            </label>
+            <label class="hotkey-row">
+              <span>Switch recording device</span>
+              <input class="hotkey-input" id="hk-recording" type="text" readonly />
+            </label>
+            <label class="hotkey-row">
+              <span>Switch camera</span>
+              <input class="hotkey-input" id="hk-camera" type="text" readonly />
+            </label>
+          </div>
+          <p class="hint">Click a field and press the key combo. Only checked devices are included in the cycle.</p>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p id="device-status" class="status" aria-live="polite"></p>
+        <button type="button" class="btn" id="device-refresh-all">Refresh all</button>
+      </footer>
+    </div>
+    <script type="module" src="device.js"></script>
+  </body>
+</html>

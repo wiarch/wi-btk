@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Dimmer</title>
+    <link rel="stylesheet" href="dimmer.css" />
+  </head>
+  <body>
+    <div class="dimmer" id="dimmer-app">
+      <header>
+        <div>
+          <h1>WI-Dimmer</h1>
+          <p class="sub">Brillo y luz cálida por separado</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="enabled" checked />
+          <span class="track"></span>
+          <span class="label" id="enabled-label">On</span>
+        </label>
+      </header>
+
+      <section class="preview" id="preview" aria-hidden="true">
+        <div class="preview-sky"></div>
+        <div class="preview-label" id="preview-label">6500 K · Daylight · 100%</div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>1 · Brillo</h2>
+          <button type="button" class="btn ghost" id="refresh-monitors">Refresh</button>
+        </div>
+        <p class="hint">Oscurece la pantalla real (capa + gamma). Independiente de la luz amarilla.</p>
+
+        <label class="check">
+          <input type="checkbox" id="link-all" checked />
+          <span>Mismo brillo en todas las pantallas</span>
+        </label>
+
+        <label class="field" id="global-bri-field">
+          <div class="field-head">
+            <span>Brillo general</span>
+            <strong id="bri-val">100%</strong>
+          </div>
+          <input id="brightness" type="range" min="1" max="100" step="1" value="100" />
+          <div class="scale"><span>1%</span><span>crítico &lt;50%</span><span>100%</span></div>
+        </label>
+
+        <label class="check">
+          <input type="checkbox" id="hw-bri" />
+          <span>También backlight del portátil (hardware)</span>
+        </label>
+
+        <div class="monitors" id="monitors"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>2 · Luz amarilla</h2>
+        </div>
+        <p class="hint">Temperatura de color (estilo f.lux). No cambia el brillo.</p>
+
+        <label class="field">
+          <div class="field-head">
+            <span>Temperatura</span>
+            <strong id="kelvin-val">6500 K</strong>
+          </div>
+          <input id="kelvin" type="range" min="1900" max="6500" step="50" value="6500" />
+          <div class="scale"><span>Candle</span><span>Night</span><span>Day</span></div>
+        </label>
+
+        <div class="presets">
+          <button type="button" class="preset" data-k="1900">Candle</button>
+          <button type="button" class="preset" data-k="2700">Warm</button>
+          <button type="button" class="preset" data-k="3400">Evening</button>
+          <button type="button" class="preset" data-k="4500">Office</button>
+          <button type="button" class="preset" data-k="6500">Day</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="check">
+          <input type="checkbox" id="auto" />
+          <span>Auto schedule (día / noche)</span>
+        </label>
+
+        <div class="schedule" id="schedule" hidden>
+          <div class="pair">
+            <label class="field">
+              <span>Día desde</span>
+              <input id="day-start" type="time" value="07:00" />
+            </label>
+            <label class="field">
+              <span>Noche desde</span>
+              <input id="night-start" type="time" value="20:00" />
+            </label>
+          </div>
+          <div class="pair">
+            <label class="field">
+              <span>Día K</span>
+              <input id="day-k" type="number" min="1900" max="6500" step="50" value="6500" />
+            </label>
+            <label class="field">
+              <span>Noche K</span>
+              <input id="night-k" type="number" min="1900" max="6500" step="50" value="3400" />
+            </label>
+          </div>
+          <div class="pair">
+            <label class="field">
+              <span>Brillo día %</span>
+              <input id="day-b" type="number" min="1" max="100" step="1" value="100" />
+            </label>
+            <label class="field">
+              <span>Brillo noche %</span>
+              <input id="night-b" type="number" min="1" max="100" step="1" value="85" />
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <div class="row">
+        <button type="button" class="btn" id="reset-btn">Reset pantallas</button>
+        <p class="status" id="status"></p>
+      </div>
+    </div>
+    <script type="module" src="dimmer.js"></script>
+  </body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Netest</title>
+    <link rel="stylesheet" href="netest.css" />
+  </head>
+  <body>
+    <div class="fast" id="netest-app" data-phase="idle">
+      <header class="fast-top">
+        <strong>WI-Netest</strong>
+        <div class="top-actions">
+          <button type="button" class="text-btn" id="btn-results">Resultados</button>
+          <button type="button" class="text-btn" id="btn-settings">Configuración</button>
+        </div>
+      </header>
+
+      <main class="fast-main" id="view-main">
+        <p class="lead" id="lead-text">Tu velocidad de internet es</p>
+
+        <div class="hero-speed">
+          <div class="speed-num" id="speed-num">—</div>
+          <div class="speed-side">
+            <div class="speed-unit">Mbps</div>
+            <button type="button" class="run-btn" id="run-btn" aria-label="Iniciar o detener">
+              <svg class="ring" viewBox="0 0 48 48" aria-hidden="true">
+                <circle class="ring-track" cx="24" cy="24" r="20" />
+                <circle class="ring-prog" id="ring-prog" cx="24" cy="24" r="20" />
+              </svg>
+              <span class="run-icon" id="run-icon">▶</span>
+            </button>
+          </div>
+        </div>
+
+        <p class="phase-label" id="phase-label">Pulsa ▶ para medir</p>
+
+        <div class="detail">
+          <div class="detail-col">
+            <h3>Latencia</h3>
+            <div class="detail-pair">
+              <div>
+                <span class="lbl">Sin carga</span>
+                <strong id="lat-idle">— <small>ms</small></strong>
+              </div>
+              <div>
+                <span class="lbl">Con carga</span>
+                <strong id="lat-load">— <small>ms</small></strong>
+              </div>
+            </div>
+          </div>
+          <div class="detail-col">
+            <h3>Carga</h3>
+            <div class="detail-pair">
+              <div>
+                <span class="lbl">Velocidad</span>
+                <strong id="ul-speed">— <small>Mbps</small></strong>
+              </div>
+              <div>
+                <span class="lbl">Jitter</span>
+                <strong id="jitter-val">— <small>ms</small></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="meta">
+          <div>
+            <span class="lbl">Cliente</span>
+            <strong id="client-ip">—</strong>
+          </div>
+          <div>
+            <span class="lbl">Servidor</span>
+            <strong id="server-name">Cloudflare · Auto</strong>
+          </div>
+        </div>
+      </main>
+
+      <section class="sheet" id="view-settings" hidden>
+        <h2>Configuración</h2>
+        <label class="setting-row">
+          <span>Conexiones</span>
+          <select id="settings-mode">
+            <option value="multi">Multi (más preciso)</option>
+            <option value="single">Single</option>
+          </select>
+        </label>
+        <p class="hint">Multi usa varios streams en paralelo (como FAST.com).</p>
+        <button type="button" class="sheet-back" id="settings-back">Volver</button>
+      </section>
+
+      <section class="sheet" id="view-history" hidden>
+        <h2>Último resultado</h2>
+        <div id="history-empty" class="hint">Aún no hay pruebas.</div>
+        <div id="history-card" class="history-card" hidden>
+          <div><span>Descarga</span><strong id="hist-dl">—</strong></div>
+          <div><span>Carga</span><strong id="hist-ul">—</strong></div>
+          <div><span>Latencia</span><strong id="hist-ping">—</strong></div>
+          <div><span>Jitter</span><strong id="hist-jitter">—</strong></div>
+          <div class="hist-when" id="hist-when"></div>
+        </div>
+        <button type="button" class="sheet-back" id="history-back">Volver</button>
+      </section>
+    </div>
+    <script type="module" src="netest.js"></script>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Booster</title>
+    <link rel="stylesheet" href="booster.css" />
+  </head>
+  <body>
+    <div class="booster-app">
+      <header>
+        <div>
+          <h1>WI-Booster</h1>
+          <p class="sub">CPU · RAM · Power · Display Hz</p>
+        </div>
+        <button type="button" class="btn ghost" id="refresh-btn">Refresh</button>
+      </header>
+
+      <p class="status" id="status" aria-live="polite"></p>
+
+      <section class="card">
+        <h2>System</h2>
+        <div class="stats">
+          <div><span class="muted">CPU cores</span><strong id="stat-cores">—</strong></div>
+          <div><span class="muted">RAM total</span><strong id="stat-ram">—</strong></div>
+          <div><span class="muted">RAM free</span><strong id="stat-free">—</strong></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Boot limits <span class="badge">msconfig</span></h2>
+        <p class="hint" id="boot-hint">Like msconfig → Boot → Advanced. Needs Admin + reboot.</p>
+        <div class="grid-2">
+          <label class="field">
+            <span>Processors</span>
+            <select id="boot-processors"></select>
+          </label>
+          <label class="field">
+            <span>Max memory (MB)</span>
+            <input id="boot-memory" type="number" min="0" step="256" />
+          </label>
+        </div>
+        <p class="current" id="boot-current">Current BCD: all processors / all memory</p>
+        <button type="button" class="btn primary" id="boot-apply">Apply boot limits</button>
+      </section>
+
+      <section class="card">
+        <h2>Power plan</h2>
+        <div class="plan-list" id="plan-list"></div>
+        <p class="empty" id="plan-empty" hidden>No power plans found</p>
+      </section>
+
+      <section class="card">
+        <h2>Display refresh rate</h2>
+        <p class="current" id="display-current">—</p>
+        <label class="field">
+          <span>Hz</span>
+          <select id="display-hz"></select>
+        </label>
+        <button type="button" class="btn primary" id="display-apply">Apply Hz</button>
+      </section>
+    </div>
+    <script type="module" src="booster.js"></script>
+  </body>
+</html>

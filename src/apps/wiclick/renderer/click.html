@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Click</title>
+    <link rel="stylesheet" href="click.css" />
+  </head>
+  <body>
+    <div class="click-app" id="click-app">
+      <header class="app-head">
+        <h1>WI-Click</h1>
+        <p class="status" id="status" aria-live="polite">Idle</p>
+      </header>
+
+      <fieldset class="group">
+        <legend>Click interval</legend>
+        <div class="interval-row">
+          <label><input id="hours" type="number" min="0" max="99" value="0" /><span>hours</span></label>
+          <label><input id="mins" type="number" min="0" max="59" value="0" /><span>mins</span></label>
+          <label><input id="secs" type="number" min="0" max="59" value="0" /><span>secs</span></label>
+          <label><input id="ms" type="number" min="0" max="999" value="100" /><span>milliseconds</span></label>
+        </div>
+      </fieldset>
+
+      <div class="two-col">
+        <fieldset class="group">
+          <legend>Click options</legend>
+          <label class="field">
+            <span>Mouse button</span>
+            <select id="mouse-button">
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+              <option value="middle">Middle</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Click type</span>
+            <select id="click-type">
+              <option value="single">Single</option>
+              <option value="double">Double</option>
+            </select>
+          </label>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>Click repeat</legend>
+          <label class="radio-row">
+            <input type="radio" name="repeat-mode" id="repeat-count" value="count" />
+            <span>Repeat</span>
+            <input id="repeat-times" type="number" min="1" max="999999" value="1" />
+            <span>times</span>
+          </label>
+          <label class="radio-row">
+            <input type="radio" name="repeat-mode" id="repeat-until" value="untilStopped" checked />
+            <span>Repeat until stopped</span>
+          </label>
+        </fieldset>
+      </div>
+
+      <fieldset class="group">
+        <legend>Cursor position</legend>
+        <label class="radio-row">
+          <input type="radio" name="position-mode" id="pos-current" value="current" checked />
+          <span>Current location</span>
+        </label>
+        <div class="pick-row">
+          <label class="radio-row">
+            <input type="radio" name="position-mode" id="pos-fixed" value="fixed" />
+            <span>Pick location</span>
+          </label>
+          <button type="button" class="btn ghost" id="pick-btn">Pick location</button>
+          <label class="coord">X <input id="pos-x" type="number" value="0" /></label>
+          <label class="coord">Y <input id="pos-y" type="number" value="0" /></label>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="btn primary" id="start-btn">Start (F6)</button>
+        <button type="button" class="btn" id="stop-btn" disabled>Stop (F6)</button>
+        <button type="button" class="btn" id="hotkey-btn">Hotkey setting</button>
+        <button type="button" class="btn" id="help-btn">Help? &gt;&gt;</button>
+      </div>
+
+      <dialog id="hotkey-dialog">
+        <form method="dialog" class="hotkey-form">
+          <h2>Hotkey setting</h2>
+          <p>Press a key combination for Start/Stop</p>
+          <input id="hotkey-input" type="text" readonly value="F6" />
+          <div class="dialog-actions">
+            <button type="submit" class="btn" value="cancel">Cancel</button>
+            <button type="button" class="btn primary" id="hotkey-save">Save</button>
+          </div>
+        </form>
+      </dialog>
+    </div>
+    <script type="module" src="click.js"></script>
+  </body>
+</html>

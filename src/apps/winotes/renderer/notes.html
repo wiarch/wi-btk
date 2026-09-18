@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Notes</title>
+    <link rel="stylesheet" href="notes.css" />
+  </head>
+  <body>
+    <div class="notes-app">
+      <header>
+        <div>
+          <h1>WI-Notes</h1>
+          <p class="sub">Quick notes · Keep style</p>
+        </div>
+        <button type="button" class="btn ghost" id="popout-btn" title="Open separate">⧉</button>
+      </header>
+
+      <section class="composer card" id="composer">
+        <input id="note-title" type="text" placeholder="Title" />
+        <textarea id="note-body" rows="3" placeholder="Take a note…"></textarea>
+        <div class="composer-bar">
+          <div class="colors" id="color-picks"></div>
+          <button type="button" class="btn primary" id="note-save">Save</button>
+        </div>
+      </section>
+
+      <div class="grid" id="notes-grid"></div>
+      <p class="empty" id="empty" hidden>No notes yet</p>
+    </div>
+    <script type="module" src="notes.js"></script>
+  </body>
+</html>

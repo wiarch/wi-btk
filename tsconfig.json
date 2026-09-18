@@ -13,6 +13,12 @@
     "sourceMap": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/renderer/**/*.ts"],
-  "exclude": ["node_modules", "dist", "release"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "release",
+    "src/apps/**/renderer/**/*.ts",
+    "src/shared/hotkeyInput.ts",
+    "src/shared/hotkeyMatch.ts"
+  ]
 }

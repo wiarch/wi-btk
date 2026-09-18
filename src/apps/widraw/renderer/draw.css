@@ -1,0 +1,210 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap");
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  color: #1e1e1e;
+}
+
+.draw-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.04) 1px, transparent 0) 0 0 / 24px 24px;
+}
+
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.toolbar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid #e6e6ec;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  z-index: 5;
+}
+
+.tool {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #1e1e1e;
+  cursor: pointer;
+}
+
+.tool:hover {
+  background: #f2f2f7;
+}
+
+.tool.active {
+  background: #e3d7ff;
+}
+
+.tool .icon {
+  font-size: 1rem;
+  line-height: 1;
+  font-family: "Caveat", "Segoe UI", cursive;
+  font-weight: 700;
+}
+
+.tool kbd {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  font-size: 0.55rem;
+  color: #9a9aab;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.sep {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  background: #ececf2;
+}
+
+.hint {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #8b8b9a;
+  font-size: 0.78rem;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid #d8d8e0;
+  border-radius: 4px;
+  background: #f7f7fb;
+  font-size: 0.72rem;
+}
+
+.welcome {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 24px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.welcome[hidden] {
+  display: none;
+}
+
+.welcome-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #6c5ce7;
+  font-family: "Caveat", cursive;
+}
+
+.welcome-brand .logo {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 2px solid currentColor;
+  border-radius: 10px;
+  font-size: 1.4rem;
+}
+
+.welcome-brand strong {
+  font-size: 2.2rem;
+  letter-spacing: 0.02em;
+}
+
+.welcome p {
+  max-width: 420px;
+  margin: 0 auto;
+  color: #6b6b7a;
+  font-family: "Caveat", cursive;
+  font-size: 1.25rem;
+  line-height: 1.35;
+}
+
+.welcome-action {
+  pointer-events: auto;
+  justify-self: center;
+  margin-top: 8px;
+  padding: 10px 18px;
+  border: 1px solid #d9d0ff;
+  border-radius: 10px;
+  background: #f4efff;
+  color: #5b4bcc;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.menu {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  transform: translateX(180px);
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 6px;
+  border: 1px solid #e6e6ec;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 6;
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.menu button {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.menu button:hover {
+  background: #f2f2f7;
+}

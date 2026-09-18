@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Cam</title>
+    <link rel="stylesheet" href="cam.css" />
+  </head>
+  <body>
+    <div class="cam-app" id="cam-app">
+      <header class="cam-bar">
+        <div class="brand">
+          <strong>WI-Cam</strong>
+          <span>toys</span>
+        </div>
+        <div class="bar-actions">
+          <select id="camera-select" title="Cámara"></select>
+          <button type="button" class="icon-btn" id="btn-mirror" title="Espejo" aria-pressed="true">Espejo</button>
+          <button type="button" class="icon-btn" id="btn-popout" title="Ventana">Popout</button>
+        </div>
+      </header>
+
+      <div class="stage-wrap">
+        <div class="stage" id="stage">
+          <video id="cam-video" playsinline muted autoplay></video>
+          <canvas id="cam-canvas"></canvas>
+          <div class="flash" id="flash" hidden></div>
+          <div class="countdown" id="countdown" hidden></div>
+          <p class="status" id="status">Iniciando cámara…</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button type="button" class="snap-btn" id="btn-snap" title="Capturar">
+          <span class="snap-ring"></span>
+        </button>
+        <button type="button" class="text-btn" id="btn-timer">3s</button>
+        <button type="button" class="text-btn" id="btn-clear" hidden>Limpiar</button>
+      </div>
+
+      <div class="filters" id="filters" role="listbox" aria-label="Filtros"></div>
+
+      <div class="shots" id="shots" hidden>
+        <div class="shots-scroll" id="shots-scroll"></div>
+      </div>
+    </div>
+    <script type="module" src="cam.js"></script>
+  </body>
+</html>

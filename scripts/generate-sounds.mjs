@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = join(root, 'assets', 'sounds');
+const outDir = join(root, 'src', 'apps', 'wirec', 'assets', 'sounds');
 mkdirSync(outDir, { recursive: true });
 
 function writeWav(filePath, samples, sampleRate = 44100) {

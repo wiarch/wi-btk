@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Clock</title>
+    <link rel="stylesheet" href="clock.css" />
+  </head>
+  <body>
+    <div class="clock-app">
+      <header>
+        <h1>WI-Clock</h1>
+        <button type="button" class="btn ghost" id="popout-btn" title="Open separate">⧉</button>
+      </header>
+      <nav class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="now">Clock</button>
+        <button type="button" class="tab" data-tab="stop">Stopwatch</button>
+        <button type="button" class="tab" data-tab="alarm">Alarm</button>
+        <button type="button" class="tab" data-tab="world">World</button>
+      </nav>
+
+      <section class="panel active" id="tab-now">
+        <div class="big-time" id="local-time">--:--:--</div>
+        <p class="muted" id="local-date">—</p>
+        <label class="check"><input type="checkbox" id="use-24h" checked /> 24-hour</label>
+      </section>
+
+      <section class="panel" id="tab-stop" hidden>
+        <div class="big-time mono" id="stop-time">00:00.00</div>
+        <div class="row">
+          <button type="button" class="btn" id="stop-reset">Reset</button>
+          <button type="button" class="btn primary" id="stop-toggle">Start</button>
+        </div>
+      </section>
+
+      <section class="panel" id="tab-alarm" hidden>
+        <div class="alarm-form">
+          <input id="alarm-label" type="text" placeholder="Label" value="Alarm" />
+          <input id="alarm-hour" type="number" min="0" max="23" value="7" />
+          <input id="alarm-minute" type="number" min="0" max="59" value="0" />
+          <button type="button" class="btn primary" id="alarm-add">Add</button>
+        </div>
+        <div class="list" id="alarm-list"></div>
+      </section>
+
+      <section class="panel" id="tab-world" hidden>
+        <div class="world-form">
+          <input id="world-label" type="text" placeholder="Label" />
+          <select id="world-tz"></select>
+          <button type="button" class="btn primary" id="world-add">Add</button>
+        </div>
+        <div class="list" id="world-list"></div>
+      </section>
+    </div>
+    <script type="module" src="clock.js"></script>
+  </body>
+</html>

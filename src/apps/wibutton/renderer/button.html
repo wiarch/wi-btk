@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Button</title>
+    <link rel="stylesheet" href="button.css" />
+  </head>
+  <body>
+    <div class="button-app">
+      <header>
+        <div>
+          <h1>WI-Button</h1>
+          <p class="sub">Remap mouse buttons · simple X-Mouse style</p>
+        </div>
+        <p class="status" id="status">Remapping off</p>
+      </header>
+
+      <section class="card">
+        <label class="check">
+          <input type="checkbox" id="remap-enabled" checked />
+          <span>Enable remapping</span>
+        </label>
+        <label class="field">
+          <span>Toggle hotkey</span>
+          <input id="toggle-hotkey" type="text" readonly value="Ctrl+Alt+B" />
+        </label>
+      </section>
+
+      <section class="card">
+        <h2>Button assignments</h2>
+        <p class="hint">Left / Right stay default. Only Middle, Mouse 4 and Mouse 5.</p>
+        <div class="bind-table" id="bind-table"></div>
+      </section>
+
+      <p class="foot-hint">Changes apply instantly. Hotkey toggles remap on/off globally.</p>
+    </div>
+    <script type="module" src="button.js"></script>
+  </body>
+</html>

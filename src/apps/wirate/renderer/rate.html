@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Rate</title>
+    <link rel="stylesheet" href="rate.css" />
+  </head>
+  <body>
+    <div class="rate-app">
+      <header>
+        <div>
+          <h1>WI-Rate</h1>
+          <p class="sub">Bs · USD · EUR</p>
+        </div>
+        <button type="button" class="btn ghost" id="popout-btn" title="Open separate">⧉</button>
+      </header>
+
+      <section class="card convert">
+        <label class="field">
+          <span>Amount</span>
+          <input id="amount" type="number" min="0" step="any" value="1" />
+        </label>
+        <div class="pair">
+          <label class="field">
+            <span>From</span>
+            <select id="from">
+              <option value="VES">Bs (VES)</option>
+              <option value="USD" selected>USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </label>
+          <button type="button" class="btn swap" id="swap-btn" title="Swap">⇄</button>
+          <label class="field">
+            <span>To</span>
+            <select id="to">
+              <option value="VES" selected>Bs (VES)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </label>
+        </div>
+        <div class="result">
+          <span class="muted">Result</span>
+          <strong id="result">—</strong>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Custom rates</h2>
+        <p class="hint">Bs rates are always custom (BCV / paralelo). EUR/USD can sync from market.</p>
+        <label class="field">
+          <span>1 USD = Bs</span>
+          <input id="bs-usd" type="number" min="0" step="any" />
+        </label>
+        <label class="field">
+          <span>1 EUR = Bs</span>
+          <input id="bs-eur" type="number" min="0" step="any" />
+        </label>
+        <label class="field">
+          <span>1 EUR = USD</span>
+          <input id="usd-eur" type="number" min="0" step="any" />
+        </label>
+        <label class="check">
+          <input type="checkbox" id="lock-eur" />
+          <span>Lock EUR/USD (don’t overwrite on refresh)</span>
+        </label>
+        <div class="row">
+          <button type="button" class="btn" id="save-rates">Save rates</button>
+          <button type="button" class="btn primary" id="refresh-market">Refresh EUR/USD</button>
+        </div>
+        <p class="muted" id="fetched">—</p>
+      </section>
+
+      <p class="status" id="status"></p>
+    </div>
+    <script type="module" src="rate.js"></script>
+  </body>
+</html>

@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-BTK</title>
+    <link rel="stylesheet" href="shell.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">W</div>
+          <div class="brand-text">
+            <strong id="shell-brand">WI-BTK</strong>
+            <span id="shell-tagline">Basic Tool Kit</span>
+          </div>
+        </div>
+
+        <label class="search" for="shell-search">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+            />
+          </svg>
+          <input
+            id="shell-search"
+            type="search"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Buscar una herramienta"
+          />
+        </label>
+
+        <nav class="nav" id="shell-nav" aria-label="WI-BTK">
+          <button
+            type="button"
+            class="nav-item active"
+            data-panel="home"
+            data-search="inicio home principal dashboard"
+            title="Inicio"
+          >
+            <span class="nav-icon" aria-hidden="true">⌂</span>
+            <span class="nav-label" data-i18n="navHome">Inicio</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wirec"
+            data-search="wi-rec wirec captura screenshot grabacion recording color picker cuentagotas"
+            title="WI-Rec"
+          >
+            <span class="nav-icon" aria-hidden="true">◉</span>
+            <span class="nav-label" data-i18n="navWirec">WI-Rec</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wiclick"
+            data-search="wi-click autoclicker macros click"
+            title="WI-Click"
+          >
+            <span class="nav-icon" aria-hidden="true">▶</span>
+            <span class="nav-label" data-i18n="navClick">WI-Click</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wibutton"
+            data-search="wi-button wibutton x-mouse mouse button remap middle x1 x2"
+            title="WI-Button"
+          >
+            <span class="nav-icon" aria-hidden="true">🖱</span>
+            <span class="nav-label" data-i18n="navButton">WI-Button</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wibooster"
+            data-search="wi-booster wibooster ram cpu nucleos energia power hz refresh msconfig"
+            title="WI-Booster"
+          >
+            <span class="nav-icon" aria-hidden="true">⚡</span>
+            <span class="nav-label" data-i18n="navBooster">WI-Booster</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wicalc"
+            data-search="wi-calc wicalc calculadora calculator"
+            title="WI-Calc"
+          >
+            <span class="nav-icon" aria-hidden="true">＝</span>
+            <span class="nav-label" data-i18n="navCalc">WI-Calc</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wiclock"
+            data-search="wi-clock wiclock reloj cronometro alarma world time zona"
+            title="WI-Clock"
+          >
+            <span class="nav-icon" aria-hidden="true">⏱</span>
+            <span class="nav-label" data-i18n="navClock">WI-Clock</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="winotes"
+            data-search="wi-notes winotes notas keep sticky notes"
+            title="WI-Notes"
+          >
+            <span class="nav-icon" aria-hidden="true">📝</span>
+            <span class="nav-label" data-i18n="navNotes">WI-Notes</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wirate"
+            data-search="wi-rate wirate dolar euro bolivar bs tasa cambio currency"
+            title="WI-Rate"
+          >
+            <span class="nav-icon" aria-hidden="true">⇄$</span>
+            <span class="nav-label" data-i18n="navRate">WI-Rate</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wisystem"
+            data-search="wi-system wisystem speccy pc hardware cpu ram gpu motherboard disco info sistema"
+            title="WI-System"
+          >
+            <span class="nav-icon" aria-hidden="true">🖥</span>
+            <span class="nav-label" data-i18n="navSystem">WI-System</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="widimmer"
+            data-search="wi-dimmer widimmer flux brillo brightness night light temperatura azul monitor"
+            title="WI-Dimmer"
+          >
+            <span class="nav-icon" aria-hidden="true">🌤</span>
+            <span class="nav-label" data-i18n="navDimmer">WI-Dimmer</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="witranslate"
+            data-search="wi-translate witranslate traductor translate español ingles portugues ocr imagen"
+            title="WI-Translate"
+          >
+            <span class="nav-icon" aria-hidden="true">文A</span>
+            <span class="nav-label" data-i18n="navTranslate">WI-Translate</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wiremote"
+            data-soon="1"
+            data-search="wi-remote control remoto escritorio anydesk"
+            title="WI-Remote"
+          >
+            <span class="nav-icon" aria-hidden="true">⇄</span>
+            <span class="nav-label" data-i18n="navRemote">WI-Remote</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="widraw"
+            data-search="wi-draw widraw wi-board pizarra whiteboard dibujo excalidraw"
+            title="WI-Draw"
+          >
+            <span class="nav-icon" aria-hidden="true">✎</span>
+            <span class="nav-label" data-i18n="navDraw">WI-Draw</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="widevice"
+            data-search="wi-device widevice audio playback recording camera mic headphones dispositivos"
+            title="WI-Device"
+          >
+            <span class="nav-icon" aria-hidden="true">◎</span>
+            <span class="nav-label" data-i18n="navDevice">WI-Device</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="winetest"
+            data-search="wi-netest winetest netest red velocidad internet speed ping download upload ookla"
+            title="WI-Netest"
+          >
+            <span class="nav-icon" aria-hidden="true">⌁</span>
+            <span class="nav-label" data-i18n="navNetest">WI-Netest</span>
+          </button>
+          <button
+            type="button"
+            class="nav-item"
+            data-panel="wicam"
+            data-search="wi-cam wicam cam webcam toy filtros foto camera selfie"
+            title="WI-Cam"
+          >
+            <span class="nav-icon" aria-hidden="true">◉</span>
+            <span class="nav-label" data-i18n="navCam">WI-Cam</span>
+          </button>
+          <p id="search-empty" class="search-empty" hidden>Ninguna herramienta coincide</p>
+        </nav>
+
+        <button type="button" id="sidebar-compact-toggle" class="sidebar-compact-toggle" title="Solo iconos">
+          <span class="compact-icon" aria-hidden="true">☰</span>
+          <span id="sidebar-compact-label" class="compact-label">Solo iconos</span>
+        </button>
+      </aside>
+
+      <main class="content">
+        <section class="panel active" id="panel-home" data-panel="home">
+          <header class="page-header">
+            <h1 id="home-title">Inicio</h1>
+            <p id="home-subtitle" class="page-subtitle">Kit de herramientas WI-BTK</p>
+          </header>
+
+          <div class="home-hero card flat">
+            <div class="home-hero-copy">
+              <h2 id="title">WI-BTK</h2>
+              <p id="subtitle" class="subtitle">Hotkeys, startup and language</p>
+            </div>
+            <div class="home-hero-meta">
+              <span class="pill" id="module-active-pill">Activo</span>
+            </div>
+          </div>
+
+          <section class="card flat">
+            <h2 id="general-title">General</h2>
+            <div class="field">
+              <label id="language-label" for="language">Language</label>
+              <select id="language">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+              </select>
+            </div>
+            <label class="checkbox-row">
+              <input id="launch-at-startup" type="checkbox" />
+              <span id="launch-label">Launch at system startup</span>
+            </label>
+          </section>
+
+          <div class="section-heading-row">
+            <div>
+              <h3 id="home-recommended" class="section-heading">Herramientas</h3>
+              <p id="home-recommended-hint" class="hint">Micro software incluidos en WI-BTK</p>
+            </div>
+            <div class="view-toggle" role="group" aria-label="Vista de herramientas">
+              <button type="button" class="view-toggle-btn" id="modules-view-list" data-modules-view="list" title="Lista">
+                ☰
+              </button>
+              <button type="button" class="view-toggle-btn active" id="modules-view-grid" data-modules-view="grid" title="Cuadrícula">
+                ▦
+              </button>
+            </div>
+          </div>
+          <div class="module-list is-grid" id="home-module-list">
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wirec"
+              data-search="wi-rec wirec captura screenshot grabacion recording color picker cuentagotas"
+            >
+              <span class="module-icon">◉</span>
+              <span class="module-copy">
+                <strong data-i18n="navWirec">WI-Rec</strong>
+                <small id="desc-wirec">Captura, grabación y cuentagotas</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wirec" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wirec" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wiclick"
+              data-search="wi-click autoclicker macros click"
+            >
+              <span class="module-icon">▶</span>
+              <span class="module-copy">
+                <strong data-i18n="navClick">WI-Click</strong>
+                <small id="desc-click">AutoClicker y macros</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wiclick" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wiclick" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wibutton"
+              data-search="wi-button wibutton x-mouse mouse button remap middle x1 x2"
+            >
+              <span class="module-icon">🖱</span>
+              <span class="module-copy">
+                <strong data-i18n="navButton">WI-Button</strong>
+                <small id="desc-button">Remapear botones del mouse</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wibutton" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wibutton" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wibooster"
+              data-search="wi-booster wibooster ram cpu nucleos energia power hz refresh msconfig"
+            >
+              <span class="module-icon">⚡</span>
+              <span class="module-copy">
+                <strong data-i18n="navBooster">WI-Booster</strong>
+                <small id="desc-booster">CPU, RAM, energía y Hz</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wibooster" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wibooster" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wicalc"
+              data-search="wi-calc wicalc calculadora calculator"
+            >
+              <span class="module-icon">＝</span>
+              <span class="module-copy">
+                <strong data-i18n="navCalc">WI-Calc</strong>
+                <small id="desc-calc">Calculadora</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wicalc" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wicalc" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wiclock"
+              data-search="wi-clock wiclock reloj cronometro alarma world time zona"
+            >
+              <span class="module-icon">⏱</span>
+              <span class="module-copy">
+                <strong data-i18n="navClock">WI-Clock</strong>
+                <small id="desc-clock">Reloj, cronómetro y alarmas</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wiclock" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wiclock" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="winotes"
+              data-search="wi-notes winotes notas keep sticky notes"
+            >
+              <span class="module-icon">📝</span>
+              <span class="module-copy">
+                <strong data-i18n="navNotes">WI-Notes</strong>
+                <small id="desc-notes">Notas rápidas estilo Keep</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="winotes" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="winotes" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wirate"
+              data-search="wi-rate wirate dolar euro bolivar bs tasa cambio currency"
+            >
+              <span class="module-icon">⇄$</span>
+              <span class="module-copy">
+                <strong data-i18n="navRate">WI-Rate</strong>
+                <small id="desc-rate">Bs ↔ USD ↔ EUR</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wirate" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wirate" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wisystem"
+              data-search="wi-system wisystem speccy pc hardware cpu ram gpu motherboard disco info sistema"
+            >
+              <span class="module-icon">🖥</span>
+              <span class="module-copy">
+                <strong data-i18n="navSystem">WI-System</strong>
+                <small id="desc-system">Info del PC estilo Speccy</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wisystem" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wisystem" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="widimmer"
+              data-search="wi-dimmer widimmer flux brillo brightness night light temperatura azul monitor"
+            >
+              <span class="module-icon">🌤</span>
+              <span class="module-copy">
+                <strong data-i18n="navDimmer">WI-Dimmer</strong>
+                <small id="desc-dimmer">Brillo y luz cálida estilo f.lux</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="widimmer" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="widimmer" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="witranslate"
+              data-search="wi-translate witranslate traductor translate español ingles portugues ocr imagen"
+            >
+              <span class="module-icon">文A</span>
+              <span class="module-copy">
+                <strong data-i18n="navTranslate">WI-Translate</strong>
+                <small id="desc-translate">Traduce ES / EN / PT — texto, voz e imágenes</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="witranslate" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="witranslate" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wiremote"
+              data-search="wi-remote control remoto escritorio anydesk"
+            >
+              <span class="module-icon">⇄</span>
+              <span class="module-copy">
+                <strong data-i18n="navRemote">WI-Remote</strong>
+                <small id="desc-remote">Control remoto</small>
+              </span>
+              <span class="module-badge soon" data-i18n="moduleSoon">Próximamente</span>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="widraw"
+              data-search="wi-draw widraw wi-board pizarra whiteboard dibujo excalidraw"
+            >
+              <span class="module-icon">✎</span>
+              <span class="module-copy">
+                <strong data-i18n="navDraw">WI-Draw</strong>
+                <small id="desc-draw">Whiteboard estilo Excalidraw</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="widraw" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="widraw" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="widevice"
+              data-search="wi-device widevice audio playback recording camera mic headphones dispositivos"
+            >
+              <span class="module-icon">◎</span>
+              <span class="module-copy">
+                <strong data-i18n="navDevice">WI-Device</strong>
+                <small id="desc-device">Audio y cámaras</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="widevice" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="widevice" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="winetest"
+              data-search="wi-netest winetest netest red velocidad internet speed ping download upload"
+            >
+              <span class="module-icon">⌁</span>
+              <span class="module-copy">
+                <strong data-i18n="navNetest">WI-Netest</strong>
+                <small id="desc-netest">Prueba de velocidad de internet</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="winetest" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="winetest" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+            <div
+              class="module-row"
+              role="button"
+              tabindex="0"
+              data-open="wicam"
+              data-search="wi-cam wicam cam webcam toy filtros foto camera selfie"
+            >
+              <span class="module-icon">◉</span>
+              <span class="module-copy">
+                <strong data-i18n="navCam">WI-Cam</strong>
+                <small id="desc-cam">Webcam toys — filtros y fotos</small>
+              </span>
+              <label class="app-enable" data-stop-nav>
+                <input type="checkbox" data-app-enable="wicam" checked />
+                <span class="app-enable-track" aria-hidden="true"></span>
+                <span class="module-badge" data-app-status="wicam" data-i18n="moduleActive">Activo</span>
+              </label>
+              <span class="chevron" aria-hidden="true">›</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-wirec" data-panel="wirec" hidden>
+          <header class="page-header">
+            <h1 data-i18n="navWirec">WI-Rec</h1>
+            <p id="wirec-subtitle" class="page-subtitle">Captura, grabación y color</p>
+          </header>
+
+          <section class="card">
+            <h2 id="capture-general-title">Captura</h2>
+            <label class="checkbox-row">
+              <input id="auto-save-captures" type="checkbox" />
+              <span id="auto-save-label">Always save captures to disk (including copy)</span>
+            </label>
+            <h3 id="capture-sound-title" class="section-label">Capture sound</h3>
+            <label class="checkbox-row">
+              <input id="capture-sound-enabled" type="checkbox" checked />
+              <span id="capture-sound-enabled-label">Play sound on capture</span>
+            </label>
+            <div class="field" id="capture-sound-preset-field">
+              <label id="capture-sound-preset-label" for="capture-sound-preset">Sound</label>
+              <select id="capture-sound-preset">
+                <option value="chime">Chime</option>
+                <option value="pop">Pop</option>
+                <option value="shutter">Shutter</option>
+                <option value="ding">Ding</option>
+              </select>
+            </div>
+            <div class="field">
+              <label id="save-directory-label" for="save-directory">Save folder</label>
+              <div class="path-row">
+                <input
+                  id="save-directory"
+                  type="text"
+                  spellcheck="false"
+                  placeholder="~/Pictures/WI-Rec"
+                />
+                <button type="button" id="browse-save-directory" class="btn secondary compact">
+                  Browse…
+                </button>
+              </div>
+            </div>
+            <label class="checkbox-row">
+              <input id="use-capture-subfolders" type="checkbox" checked />
+              <span id="use-subfolders-label">Organize into subfolders (rango / edit / completa)</span>
+            </label>
+            <p id="subfolders-hint" class="hint inline-hint">
+              rango: region only · edit: region with annotations · completa: full screen
+            </p>
+            <h3 id="filename-section-title" class="section-label">File name</h3>
+            <div class="field">
+              <label id="filename-mode-label" for="filename-mode">Naming mode</label>
+              <select id="filename-mode">
+                <option value="datetime">Date and time</option>
+                <option value="sequential">Sequential (WI-Rec-1, 2, 3…)</option>
+              </select>
+            </div>
+            <div class="field" id="filename-date-field">
+              <label id="filename-date-label" for="filename-date-style">Date format</label>
+              <select id="filename-date-style">
+                <option value="iso">ISO (YYYY-MM-DD)</option>
+                <option value="latin">Latin (DD-MM-YYYY)</option>
+              </select>
+            </div>
+            <div class="field" id="filename-time-field">
+              <label id="filename-time-label" for="filename-time-style">Time format</label>
+              <select id="filename-time-style">
+                <option value="h24">24 hours (17:45:32)</option>
+                <option value="h12">12 hours (05:45:32 PM)</option>
+              </select>
+            </div>
+            <p id="filename-preview-label" class="hint">Example</p>
+            <p id="filename-preview" class="filename-preview">WI-Rec-2026-06-09_17:45:32.jpg</p>
+            <label class="checkbox-row">
+              <input id="save-as-jpeg" type="checkbox" checked />
+              <span id="save-as-jpeg-label">Save as JPEG (lighter files)</span>
+            </label>
+            <div class="field">
+              <label id="jpeg-quality-label" for="jpeg-quality">JPEG quality</label>
+              <input id="jpeg-quality" type="range" min="50" max="100" value="85" />
+              <span id="jpeg-quality-value" class="range-value">85</span>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 id="recording-section-title">Screen recording</h2>
+            <div class="field">
+              <label id="record-format-label" for="record-format">File format</label>
+              <select id="record-format">
+                <option value="webm-vp9">WebM (VP9 + Opus)</option>
+                <option value="webm-vp8">WebM (VP8 + Opus)</option>
+                <option value="webm">WebM (default codecs)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label id="record-quality-label" for="record-quality">Video quality</label>
+              <select id="record-quality">
+                <option value="low">Low (smaller file)</option>
+                <option value="medium">Medium (balanced)</option>
+                <option value="high">High (best quality)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label id="record-frame-rate-label" for="record-frame-rate">Frame rate</label>
+              <select id="record-frame-rate">
+                <option value="15">15 fps</option>
+                <option value="30">30 fps</option>
+                <option value="60">60 fps</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2 id="hotkeys-title">Hotkeys</h2>
+            <p id="hotkeys-hint" class="hint">Click a field and press the desired key combination.</p>
+            <h3 id="global-hotkeys-title" class="section-label">Global</h3>
+            <div class="hotkey-grid" id="global-hotkey-grid"></div>
+            <h3 id="capture-hotkeys-title" class="section-label">In capture overlay</h3>
+            <div class="hotkey-grid" id="overlay-hotkey-grid"></div>
+            <h3 id="recording-hotkeys-title" class="section-label">In recording overlay</h3>
+            <div class="hotkey-grid" id="recording-hotkey-grid"></div>
+          </section>
+        </section>
+
+        <section class="panel panel-embed" id="panel-wibooster" data-panel="wibooster" hidden>
+          <iframe
+            id="wibooster-frame"
+            title="WI-Booster"
+            src="../../wibooster/renderer/booster.html"
+          ></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-wicalc" data-panel="wicalc" hidden>
+          <iframe id="wicalc-frame" title="WI-Calc" src="../../wicalc/renderer/calc.html"></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-wiclock" data-panel="wiclock" hidden>
+          <iframe id="wiclock-frame" title="WI-Clock" src="../../wiclock/renderer/clock.html"></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-winotes" data-panel="winotes" hidden>
+          <iframe id="winotes-frame" title="WI-Notes" src="../../winotes/renderer/notes.html"></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-wirate" data-panel="wirate" hidden>
+          <iframe id="wirate-frame" title="WI-Rate" src="../../wirate/renderer/rate.html"></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-wisystem" data-panel="wisystem" hidden>
+          <iframe id="wisystem-frame" title="WI-System" src="../../wisystem/renderer/system.html"></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-widimmer" data-panel="widimmer" hidden>
+          <iframe id="widimmer-frame" title="WI-Dimmer" src="../../widimmer/renderer/dimmer.html"></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-witranslate" data-panel="witranslate" hidden>
+          <iframe
+            id="witranslate-frame"
+            title="WI-Translate"
+            src="../../witranslate/renderer/translate.html"
+          ></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-wibutton" data-panel="wibutton" hidden>
+          <iframe
+            id="wibutton-frame"
+            title="WI-Button"
+            src="../../wibutton/renderer/button.html"
+          ></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-widraw" data-panel="widraw" hidden>
+          <iframe
+            id="widraw-frame"
+            title="WI-Draw"
+            src="../../widraw/renderer/settings.html"
+          ></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-wiclick" data-panel="wiclick" hidden>
+          <iframe
+            id="wiclick-frame"
+            title="WI-Click"
+            src="../../wiclick/renderer/click.html"
+          ></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-widevice" data-panel="widevice" hidden>
+          <iframe
+            id="widevice-frame"
+            title="WI-Device"
+            src="../../widevice/renderer/device.html"
+          ></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-winetest" data-panel="winetest" hidden>
+          <iframe
+            id="winetest-frame"
+            title="WI-Netest"
+            src="../../winetest/renderer/netest.html"
+          ></iframe>
+        </section>
+
+        <section class="panel panel-embed" id="panel-wicam" data-panel="wicam" hidden>
+          <iframe
+            id="wicam-frame"
+            title="WI-Cam"
+            src="../../wicam/renderer/cam.html"
+            allow="camera; microphone"
+          ></iframe>
+        </section>
+
+        <section class="panel" id="panel-soon" data-panel="soon" hidden>
+          <header class="page-header">
+            <h1 id="soon-title">Próximamente</h1>
+            <p id="soon-body" class="page-subtitle">Este micro software llegará pronto a WI-BTK.</p>
+          </header>
+          <div class="card soon-card">
+            <div class="soon-icon" id="soon-icon" aria-hidden="true">+</div>
+            <h2 id="soon-module-name">WI-Click</h2>
+            <p id="soon-module-desc">AutoClicker y macros</p>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <p id="status" class="status" aria-live="polite"></p>
+          <button type="button" id="close-btn" class="btn primary">Close</button>
+        </footer>
+      </main>
+    </div>
+    <script type="module" src="shell.js"></script>
+  </body>
+</html>

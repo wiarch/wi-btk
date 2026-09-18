@@ -4,5 +4,6 @@ release/
 landing/dist/
 landing/node_modules/
 landing/deploy/downloads/
+*.traineddata
 *.log
 .DS_Store

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Translate</title>
+    <link rel="stylesheet" href="translate.css" />
+  </head>
+  <body>
+    <div class="translate" id="translate-app">
+      <header>
+        <div>
+          <h1>WI-Translate</h1>
+          <p class="sub">ES · EN · PT</p>
+        </div>
+        <button type="button" class="btn ghost" id="popout-btn" title="Ventana aparte">⧉</button>
+      </header>
+
+      <section class="langs">
+        <label class="field">
+          <span>Desde</span>
+          <select id="from-lang">
+            <option value="auto">Auto</option>
+            <option value="es">Español</option>
+            <option value="en">English</option>
+            <option value="pt">Português</option>
+          </select>
+        </label>
+        <button type="button" class="btn swap" id="swap-btn" title="Intercambiar">⇄</button>
+        <label class="field">
+          <span>Hacia</span>
+          <select id="to-lang">
+            <option value="es">Español</option>
+            <option value="en" selected>English</option>
+            <option value="pt">Português</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="panels">
+        <div class="panel">
+          <div class="panel-head">
+            <strong>Original</strong>
+            <div class="actions">
+              <button type="button" class="btn ghost" id="paste-btn" title="Pegar">Pegar</button>
+              <button type="button" class="btn ghost" id="clear-btn" title="Limpiar">Limpiar</button>
+              <button type="button" class="btn ghost" id="listen-src" title="Escuchar">🔊</button>
+            </div>
+          </div>
+          <textarea id="source" rows="8" placeholder="Escribe o pega texto…"></textarea>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <strong>Traducción</strong>
+            <div class="actions">
+              <button type="button" class="btn ghost" id="copy-btn" title="Copiar">Copiar</button>
+              <button type="button" class="btn ghost" id="listen-out" title="Escuchar">🔊</button>
+            </div>
+          </div>
+          <textarea id="output" rows="8" placeholder="Traducción…" readonly></textarea>
+        </div>
+      </section>
+
+      <div class="row">
+        <button type="button" class="btn primary" id="translate-btn">Traducir</button>
+        <p class="status" id="status"></p>
+      </div>
+
+      <section class="card image-card">
+        <div class="card-head">
+          <h2>Traducir imagen</h2>
+        </div>
+        <p class="hint">
+          Detecta el idioma, OCR y pinta la traducción sobre la imagen (antes / después).
+          La 1ª vez puede tardar en bajar idiomas.
+        </p>
+        <div class="image-row">
+          <label class="btn file">
+            Elegir imagen
+            <input type="file" id="image-input" accept="image/*" hidden />
+          </label>
+          <button type="button" class="btn" id="paste-image-btn">Pegar imagen</button>
+          <button type="button" class="btn primary" id="translate-image-btn" disabled>
+            Traducir imagen
+          </button>
+        </div>
+        <div class="img-tabs" id="img-tabs" hidden>
+          <button type="button" class="img-tab active" data-view="original">Original</button>
+          <button type="button" class="img-tab" data-view="translated">Traducción</button>
+          <span class="detected" id="img-detected"></span>
+        </div>
+        <div class="preview-wrap" id="image-preview-wrap" hidden>
+          <img id="image-preview" alt="Original" />
+          <img id="image-translated" alt="Traducción" hidden />
+        </div>
+      </section>
+    </div>
+    <script type="module" src="translate.js"></script>
+  </body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Draw</title>
+    <link rel="stylesheet" href="draw.css" />
+  </head>
+  <body>
+    <div class="draw-root" id="draw-root">
+      <canvas id="canvas"></canvas>
+
+      <div class="toolbar" role="toolbar" aria-label="WI-Draw tools">
+        <button type="button" class="tool" data-tool="lock" title="Lock" data-key="">
+          <span class="icon">🔒</span>
+        </button>
+        <span class="sep"></span>
+        <button type="button" class="tool" data-tool="hand" title="Hand (H)" data-key="H">
+          <span class="icon">✋</span><kbd>H</kbd>
+        </button>
+        <button type="button" class="tool active" data-tool="select" title="Select (V)" data-key="V">
+          <span class="icon">↖</span><kbd>V</kbd>
+        </button>
+        <button type="button" class="tool" data-tool="rect" title="Rectangle (R)" data-key="R">
+          <span class="icon">▭</span><kbd>R</kbd>
+        </button>
+        <button type="button" class="tool" data-tool="diamond" title="Diamond (D)" data-key="D">
+          <span class="icon">◇</span><kbd>D</kbd>
+        </button>
+        <button type="button" class="tool" data-tool="ellipse" title="Ellipse (O)" data-key="O">
+          <span class="icon">○</span><kbd>O</kbd>
+        </button>
+        <button type="button" class="tool" data-tool="arrow" title="Arrow (A)" data-key="A">
+          <span class="icon">→</span><kbd>A</kbd>
+        </button>
+        <button type="button" class="tool" data-tool="line" title="Line (L)" data-key="L">
+          <span class="icon">／</span><kbd>L</kbd>
+        </button>
+        <button type="button" class="tool" data-tool="pencil" title="Draw (P)" data-key="P">
+          <span class="icon">✎</span><kbd>P</kbd>
+        </button>
+        <button type="button" class="tool" data-tool="text" title="Text (T)" data-key="T">
+          <span class="icon">A</span><kbd>T</kbd>
+        </button>
+        <button type="button" class="tool" data-tool="image" title="Image" data-key="">
+          <span class="icon">🖼</span>
+        </button>
+        <button type="button" class="tool" data-tool="eraser" title="Eraser (E)" data-key="E">
+          <span class="icon">⌫</span><kbd>E</kbd>
+        </button>
+        <span class="sep"></span>
+        <button type="button" class="tool" id="menu-btn" title="Menu" data-key="">
+          <span class="icon">⋮</span>
+        </button>
+      </div>
+
+      <p class="hint" id="hint">
+        Hold <kbd>Space</kbd> or middle mouse to pan · Scroll to zoom · Hotkey closes WI-Draw
+      </p>
+
+      <div class="welcome" id="welcome">
+        <div class="welcome-brand">
+          <span class="logo" aria-hidden="true">✎</span>
+          <strong>WI-DRAW</strong>
+        </div>
+        <p>
+          Whiteboard estilo Excalidraw. El dibujo se guarda en WI-BTK. Usa el acceso directo
+          para abrir o cerrar.
+        </p>
+        <button type="button" class="welcome-action" id="welcome-start">Empezar a dibujar</button>
+      </div>
+
+      <div class="menu" id="menu" hidden>
+        <button type="button" data-action="clear">Clear canvas</button>
+        <button type="button" data-action="save">Save now</button>
+        <button type="button" data-action="close">Close WI-Draw</button>
+      </div>
+    </div>
+    <script type="module" src="draw.js"></script>
+  </body>
+</html>

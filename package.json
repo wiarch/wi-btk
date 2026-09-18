@@ -1,15 +1,15 @@
 {
-  "name": "wi-rec",
-  "productName": "WI-Rec",
+  "name": "wi-btk",
+  "productName": "WI-BTK",
   "version": "1.0.0",
-  "description": "Global screenshot tool for Windows and Linux",
+  "description": "WI Basic Tool Kit for Windows and Linux",
   "author": {
     "name": "wiarch",
     "email": "dev@wiarch.local"
   },
-  "desktopName": "wi-rec",
+  "desktopName": "wi-btk",
   "license": "MIT",
-  "main": "dist/main/index.js",
+  "main": "dist/apps/shell/main/index.js",
   "scripts": {
     "build": "node scripts/generate-sounds.mjs && node scripts/generate-tray-icon.mjs && tsc && tsc -p tsconfig.renderer.json && node scripts/copy-static.mjs",
     "dev": "npm run build && electron . --enable-logging",
@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "dbus-next": "^0.10.2",
-    "screenshot-desktop": "^1.15.0"
+    "koffi": "^3.3.0",
+    "screenshot-desktop": "^1.15.0",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
@@ -31,8 +33,8 @@
     "typescript": "^5.8.3"
   },
   "build": {
-    "appId": "com.wiarch.wirec",
-    "productName": "WI-Rec",
+    "appId": "com.wiarch.wibtk",
+    "productName": "WI-BTK",
     "forceCodeSigning": false,
     "directories": {
       "output": "release"
@@ -43,7 +45,10 @@
       "package.json"
     ],
     "asarUnpack": [
-      "**/node_modules/screenshot-desktop/lib/win32/**"
+      "**/node_modules/screenshot-desktop/lib/win32/**",
+      "**/node_modules/koffi/**",
+      "**/node_modules/tesseract.js/**",
+      "**/node_modules/tesseract.js-core/**"
     ],
     "extraResources": [
       {

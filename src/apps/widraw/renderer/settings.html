@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WI-Draw settings</title>
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+  <body>
+    <div class="settings-app">
+      <header>
+        <div class="brand">
+          <span class="logo">✎</span>
+          <div>
+            <h1>WI-Draw</h1>
+            <p>Whiteboard estilo Excalidraw</p>
+          </div>
+        </div>
+        <p class="status" id="status">Closed</p>
+      </header>
+
+      <section class="card">
+        <h2>Acceso directo</h2>
+        <p class="hint">Abre o cierra la pizarra desde cualquier sitio</p>
+        <label class="check">
+          <input type="checkbox" id="hotkey-enabled" checked />
+          <span>Hotkey enabled</span>
+        </label>
+        <label class="field">
+          <span>Hotkey</span>
+          <input id="hotkey" type="text" readonly value="Ctrl+Alt+D" />
+        </label>
+      </section>
+
+      <section class="card">
+        <h2>Apariencia</h2>
+        <label class="field">
+          <span>Stroke</span>
+          <input id="stroke-color" type="color" value="#1e1e1e" />
+        </label>
+        <label class="field">
+          <span>Background</span>
+          <input id="bg-color" type="color" value="#ffffff" />
+        </label>
+        <label class="field">
+          <span>Stroke width</span>
+          <input id="stroke-width" type="range" min="1" max="8" value="2" />
+          <span id="stroke-width-value">2</span>
+        </label>
+      </section>
+
+      <div class="actions">
+        <button type="button" class="btn primary" id="toggle-btn">Open WI-Draw</button>
+        <button type="button" class="btn" id="close-btn" disabled>Close</button>
+      </div>
+    </div>
+    <script type="module" src="settings.js"></script>
+  </body>
+</html>

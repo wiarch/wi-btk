@@ -125,6 +125,59 @@ type SnipStrings = {
 type SettingsStrings = {
   title: string;
   subtitle: string;
+  shellBrand: string;
+  shellTagline: string;
+  searchPlaceholder: string;
+  searchNoResults: string;
+  compactSidebar: string;
+  compactSidebarExpand: string;
+  navHome: string;
+  navWirec: string;
+  navClick: string;
+  navRemote: string;
+  navBoard: string;
+  navDraw: string;
+  navButton: string;
+  navBooster: string;
+  navCalc: string;
+  navClock: string;
+  navNotes: string;
+  navRate: string;
+  navSystem: string;
+  navDimmer: string;
+  navTranslate: string;
+  navNetest: string;
+  navCam: string;
+  navDevice: string;
+  homeTitle: string;
+  homeSubtitle: string;
+  homeRecommended: string;
+  homeRecommendedHint: string;
+  moduleActive: string;
+  moduleOff: string;
+  moduleSoon: string;
+  appEnable: string;
+  descWirec: string;
+  descClick: string;
+  descRemote: string;
+  descBoard: string;
+  descDraw: string;
+  descButton: string;
+  descBooster: string;
+  descCalc: string;
+  descClock: string;
+  descNotes: string;
+  descRate: string;
+  descSystem: string;
+  descDimmer: string;
+  descTranslate: string;
+  descNetest: string;
+  descCam: string;
+  descDevice: string;
+  soonTitle: string;
+  soonBody: string;
+  wirecSubtitle: string;
+  captureSection: string;
   general: string;
   language: string;
   languageEn: string;
@@ -225,12 +278,12 @@ const en: Dictionary = {
     colorPicker: 'Color picker',
     colorPickerPanel: 'Color picker panel',
     screenRecord: 'Record screen',
-    settings: 'Settings',
+    settings: 'WI-BTK',
     quit: 'Quit',
-    tooltip: 'WI-Rec — {hotkey}',
+    tooltip: 'WI-BTK — {hotkey}',
   },
   notifications: {
-    active: 'Active. {hotkey} or tray click.',
+    active: 'WI-BTK is running',
     hotkeyUnavailable: '{hotkey} unavailable. Use tray → Capture screen.',
     hotkeyUbuntuConflict: 'Disable the screenshot shortcut in Ubuntu Settings → Keyboard.',
     saved: '{filename}',
@@ -245,7 +298,7 @@ const en: Dictionary = {
     recordingSavedHint: 'Recording saved — click to open folder',
     trayHintTitle: 'WI-Rec is running',
     trayHintBody:
-      'Look for the WI-Rec icon in the system tray (next to the clock). If you do not see it, open the "^" hidden icons menu.\n\nRight-click the icon for Settings and Quit. Left-click to capture.',
+      'Look for the WI-Rec icon in the system tray (next to the clock). If you do not see it, open the "^" hidden icons menu.\n\nLeft-click the icon to open Settings. Right-click for the menu (Capture, Settings, Quit).',
     alreadyRunningTitle: 'WI-Rec is already running',
     alreadyRunningBody:
       'WI-Rec is already active. Look for the icon in the system tray (next to the clock).',
@@ -337,8 +390,61 @@ const en: Dictionary = {
     selectRegionFirst: 'Select a region first',
   },
   settings: {
-    title: 'Settings',
-    subtitle: 'Hotkeys, startup and language',
+    title: 'WI-BTK',
+    subtitle: 'Basic toolkit for Windows and Linux',
+    shellBrand: 'WI-BTK',
+    shellTagline: 'Basic Tool Kit',
+    searchPlaceholder: 'Search a tool',
+    searchNoResults: 'No tools match your search',
+    compactSidebar: 'Icons only',
+    compactSidebarExpand: 'Show labels',
+    navHome: 'Home',
+    navWirec: 'WI-Rec',
+    navClick: 'WI-Click',
+    navRemote: 'WI-Remote',
+    navBoard: 'WI-Board',
+    navDraw: 'WI-Draw',
+    navButton: 'WI-Button',
+    navBooster: 'WI-Booster',
+    navCalc: 'WI-Calc',
+    navClock: 'WI-Clock',
+    navNotes: 'WI-Notes',
+    navRate: 'WI-Rate',
+    navSystem: 'WI-System',
+    navDimmer: 'WI-Dimmer',
+    navTranslate: 'WI-Translate',
+    navNetest: 'WI-Netest',
+    navCam: 'WI-Cam',
+    navDevice: 'WI-Device',
+    homeTitle: 'Home',
+    homeSubtitle: 'All your micro tools in one place',
+    homeRecommended: 'Tools',
+    homeRecommendedHint: 'Micro software included in WI-BTK',
+    moduleActive: 'Active',
+    moduleOff: 'Off',
+    moduleSoon: 'Coming soon',
+    appEnable: 'Enable app',
+    descWirec: 'Screenshot, recording and color picker',
+    descClick: 'Auto-clicker like OP Auto Clicker',
+    descRemote: 'Remote desktop control',
+    descBoard: 'Virtual whiteboard',
+    descDraw: 'Excalidraw-style whiteboard',
+    descButton: 'Remap mouse buttons (simple X-Mouse)',
+    descBooster: 'CPU, RAM, power plan and display Hz',
+    descCalc: 'Calculator',
+    descClock: 'Clock, stopwatch, alarms and world times',
+    descNotes: 'Quick notes like Google Keep',
+    descRate: 'Bs ↔ USD ↔ EUR with custom rates',
+    descSystem: 'PC specs like Speccy (CPU, RAM, GPU, disks…)',
+    descDimmer: 'Brightness and warm light like f.lux',
+    descTranslate: 'Translate ES / EN / PT — text, speech, images',
+    descNetest: 'Internet speed test',
+    descCam: 'Webcam toys — filters and snaps',
+    descDevice: 'Switch playback, mic and cameras',
+    soonTitle: 'Coming soon',
+    soonBody: 'This micro software will arrive soon in WI-BTK.',
+    wirecSubtitle: 'Capture, recording and color tools',
+    captureSection: 'Capture',
     general: 'General',
     language: 'Language',
     languageEn: 'English',
@@ -433,12 +539,12 @@ const es: Dictionary = {
     colorPicker: 'Cuentagotas de color',
     colorPickerPanel: 'Panel de color',
     screenRecord: 'Grabar pantalla',
-    settings: 'Configuración',
+    settings: 'WI-BTK',
     quit: 'Salir',
-    tooltip: 'WI-Rec — {hotkey}',
+    tooltip: 'WI-BTK — {hotkey}',
   },
   notifications: {
-    active: 'Activo. {hotkey} o click en bandeja.',
+    active: 'WI-BTK está en ejecución',
     hotkeyUnavailable: '{hotkey} no disponible. Usa bandeja → Capturar pantalla.',
     hotkeyUbuntuConflict: 'Desactiva el atajo de captura en Ajustes de Ubuntu → Teclado.',
     saved: '{filename}',
@@ -453,7 +559,7 @@ const es: Dictionary = {
     recordingSavedHint: 'Grabación guardada — clic para abrir carpeta',
     trayHintTitle: 'WI-Rec está activo',
     trayHintBody:
-      'Busca el icono de WI-Rec en la bandeja del sistema (junto al reloj). Si no lo ves, abre el menú "^" de iconos ocultos.\n\nClic derecho: Configuración y Salir. Clic izquierdo: capturar.',
+      'Busca el icono de WI-Rec en la bandeja del sistema (junto al reloj). Si no lo ves, abre el menú "^" de iconos ocultos.\n\nClic izquierdo: Configuración. Clic derecho: menú (Capturar, Configuración, Salir).',
     alreadyRunningTitle: 'WI-Rec ya está en ejecución',
     alreadyRunningBody:
       'WI-Rec ya está activo. Busca el icono en la bandeja del sistema (junto al reloj).',
@@ -545,8 +651,61 @@ const es: Dictionary = {
     selectRegionFirst: 'Selecciona una región primero',
   },
   settings: {
-    title: 'Configuración',
-    subtitle: 'Atajos, inicio con el sistema e idioma',
+    title: 'WI-BTK',
+    subtitle: 'Kit de herramientas básicas para Windows y Linux',
+    shellBrand: 'WI-BTK',
+    shellTagline: 'Basic Tool Kit',
+    searchPlaceholder: 'Buscar una herramienta',
+    searchNoResults: 'Ninguna herramienta coincide',
+    compactSidebar: 'Solo iconos',
+    compactSidebarExpand: 'Mostrar nombres',
+    navHome: 'Inicio',
+    navWirec: 'WI-Rec',
+    navClick: 'WI-Click',
+    navRemote: 'WI-Remote',
+    navBoard: 'WI-Board',
+    navDraw: 'WI-Draw',
+    navButton: 'WI-Button',
+    navBooster: 'WI-Booster',
+    navCalc: 'WI-Calc',
+    navClock: 'WI-Clock',
+    navNotes: 'WI-Notes',
+    navRate: 'WI-Rate',
+    navSystem: 'WI-System',
+    navDimmer: 'WI-Dimmer',
+    navTranslate: 'WI-Translate',
+    navNetest: 'WI-Netest',
+    navCam: 'WI-Cam',
+    navDevice: 'WI-Device',
+    homeTitle: 'Inicio',
+    homeSubtitle: 'Todos tus micro softwares en un solo lugar',
+    homeRecommended: 'Herramientas',
+    homeRecommendedHint: 'Micro software incluidos en WI-BTK',
+    moduleActive: 'Activo',
+    moduleOff: 'Inactivo',
+    moduleSoon: 'Próximamente',
+    appEnable: 'Activar app',
+    descWirec: 'Captura, grabación y cuentagotas',
+    descClick: 'Auto-clicker estilo OP Auto Clicker',
+    descRemote: 'Control remoto de escritorio',
+    descBoard: 'Pizarra virtual',
+    descDraw: 'Whiteboard estilo Excalidraw',
+    descButton: 'Remapear botones del mouse (X-Mouse simple)',
+    descBooster: 'CPU, RAM, plan de energía y Hz',
+    descCalc: 'Calculadora',
+    descClock: 'Reloj, cronómetro, alarmas y zonas',
+    descNotes: 'Notas rápidas estilo Google Keep',
+    descRate: 'Bs ↔ USD ↔ EUR con tasa personalizada',
+    descSystem: 'Info del PC estilo Speccy (CPU, RAM, GPU, discos…)',
+    descDimmer: 'Brillo y luz cálida estilo f.lux',
+    descTranslate: 'Traduce ES / EN / PT — texto, voz e imágenes',
+    descNetest: 'Prueba de velocidad de internet',
+    descCam: 'Webcam toys — filtros y fotos',
+    descDevice: 'Cambiar salida, micrófono y cámaras',
+    soonTitle: 'Próximamente',
+    soonBody: 'Este micro software llegará pronto a WI-BTK.',
+    wirecSubtitle: 'Captura, grabación y color',
+    captureSection: 'Captura',
     general: 'General',
     language: 'Idioma',
     languageEn: 'Inglés',
