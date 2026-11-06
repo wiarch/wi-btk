@@ -6,57 +6,57 @@ export type Feature = {
 
 export const features: Feature[] = [
   {
+    icon: '🧩',
+    title: 'Suite modular',
+    description:
+      'Instala solo el núcleo y añade herramientas desde un catálogo integrado cuando estén disponibles. Cada módulo podrá actualizarse o desinstalarse por separado.',
+  },
+  {
     icon: '📷',
-    title: 'Captura de región',
+    title: 'WI-Rec · Captura y grabación',
     description:
-      'Atajo global, congela la pantalla y selecciona la zona. Guarda, copia o anota con flechas y rectángulos.',
-  },
-  {
-    icon: '🎥',
-    title: 'Grabación de pantalla',
-    description:
-      'Región o pantalla completa con audio del sistema y micrófono. Cuenta atrás, pausa, reanuda y controles minimizables.',
-  },
-  {
-    icon: '🎨',
-    title: 'Selector de color',
-    description:
-      'Cuentagotas con HSV, armonías, variaciones, contraste WCAG y biblioteca de colores con nombre.',
+      'Capturas de pantalla, anotaciones, grabación, cámara superpuesta y selector de color en un módulo dedicado.',
   },
   {
     icon: '⌨️',
-    title: 'Atajos globales',
+    title: 'Automatización',
     description:
-      'Captura, grabación, color, guardar, copiar y cancelar — todos personalizables desde ajustes.',
-  },
-  {
-    icon: '🔔',
-    title: 'Bandeja y sonidos',
-    description:
-      'Icono en bandeja del sistema, notificaciones nativas y sonidos al capturar o grabar.',
+      'Herramientas como autoclicker, botones y utilidades de automatización, con compatibilidad declarada por plataforma.',
   },
   {
     icon: '⚙️',
-    title: 'Ajustes completos',
+    title: 'Sistema y dispositivos',
     description:
-      'Idioma ES/EN, autostart, carpeta de guardado, JPEG, WebM VP8/VP9, calidad, FPS y nombres de archivo.',
+      'Módulos de control del sistema, dispositivos, brillo y widgets. Algunas operaciones avanzadas son específicas de Windows.',
+  },
+  {
+    icon: '📝',
+    title: 'Productividad y utilidades',
+    description:
+      'Notas, calculadora, reloj, dibujo, visor multimedia, traducción, clima y utilidades de red.',
+  },
+  {
+    icon: '🐧',
+    title: 'Windows y Linux',
+    description:
+      'Distribuciones para ambos sistemas. Cada módulo indica su compatibilidad real con Windows, Linux, X11 y Wayland.',
   },
 ];
 
 export const hotkeys = [
-  { action: 'Captura región', keys: 'Alt+Shift+S' },
-  { action: 'Grabación', keys: 'Alt+Shift+R' },
+  { action: 'Captura región (WI-Rec)', keys: 'Alt+Shift+S' },
+  { action: 'Grabación (WI-Rec)', keys: 'Alt+Shift+R' },
   { action: 'Iniciar grabación', keys: 'Enter' },
   { action: 'Pausar / reanudar', keys: 'F2' },
   { action: 'Detener grabación', keys: 'F3' },
 ];
 
 export const meta = {
-  name: 'WI-Rec',
+  name: 'WI-BTK',
   version: '1.0.0',
   license: 'MIT',
-  repo: 'https://github.com/wiarch/wi-rec',
-  author: 'Wi Arch',
-  authorUrl: 'https://wiarch.williamache.dev/',
-  tagline: 'Captura y graba tu pantalla en Windows y Linux.',
+  repo: 'https://github.com/wiarch/wi-btk',
+  author: 'WI Arch',
+  authorUrl: 'https://wiarch.com/',
+  tagline: 'Una suite modular de herramientas de escritorio para Windows y Linux.',
 };
