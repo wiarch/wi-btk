@@ -2,11 +2,7 @@ import { Linking, StyleSheet, Text, View } from 'react-native';
 import { meta } from '../data/features';
 import { colors, spacing } from '../theme';
 
-type Props = {
-  unlocked: boolean;
-};
-
-export function DownloadSection({ unlocked }: Props) {
+export function DownloadSection() {
   return (
     <View style={styles.wrap}>
       <Text style={styles.title}>Instala solo lo que necesitas</Text>
