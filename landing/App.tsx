@@ -107,7 +107,7 @@ export default function App() {
             </Text>
           </Text>
           <Text style={styles.footerSub}>
-            Zero-Knowledge Architecture ·{' '}
+            Modular Desktop Suite ·{' '}
             <Text
               style={styles.footerLink}
               onPress={() => void Linking.openURL(meta.authorUrl)}
@@ -117,7 +117,7 @@ export default function App() {
           </Text>
           <Text style={styles.footerSub}>
             <Text style={styles.footerLink} onPress={() => void Linking.openURL(meta.repo)}>
-              github.com/wiarch/wi-rec
+              github.com/wiarch/wi-btk
             </Text>
             {' · '}
             Licencia libre {meta.license}
