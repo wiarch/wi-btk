@@ -1,5 +1,4 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
 import {
   Image,
   Linking,
@@ -11,14 +10,11 @@ import {
   View,
 } from 'react-native';
 import { DownloadSection } from './src/components/DownloadSection';
-import { RecaptchaGate } from './src/components/RecaptchaGate';
 import { UiMockups } from './src/components/UiMockups';
 import { features, hotkeys, meta } from './src/data/features';
 import { colors, spacing } from './src/theme';
 
 export default function App() {
-  const [captchaOk, setCaptchaOk] = useState(false);
-
   return (
     <View style={styles.root}>
       <StatusBar style="light" />
@@ -43,7 +39,7 @@ export default function App() {
                 }
               }}
             >
-              <Text style={styles.primaryBtnText}>Descargar gratis</Text>
+              <Text style={styles.primaryBtnText}>Explorar la suite</Text>
             </Pressable>
             <Pressable
               style={styles.secondaryBtn}
@@ -54,7 +50,7 @@ export default function App() {
           </View>
         </View>
 
-        <Section title="Interfaz">
+        <Section title="Un módulo de la suite: WI-Rec">
           <UiMockups />
         </Section>
 
@@ -89,11 +85,7 @@ export default function App() {
         </Section>
 
         <View nativeID="download" style={styles.downloadBlock}>
-          <RecaptchaGate
-            verified={captchaOk}
-            onVerify={(token) => setCaptchaOk(Boolean(token))}
-          />
-          <DownloadSection unlocked={captchaOk} />
+          <DownloadSection />
         </View>
 
         <View style={styles.footer}>
@@ -107,7 +99,7 @@ export default function App() {
             </Text>
           </Text>
           <Text style={styles.footerSub}>
-            Zero-Knowledge Architecture ·{' '}
+            Modular Desktop Suite ·{' '}
             <Text
               style={styles.footerLink}
               onPress={() => void Linking.openURL(meta.authorUrl)}
@@ -117,7 +109,7 @@ export default function App() {
           </Text>
           <Text style={styles.footerSub}>
             <Text style={styles.footerLink} onPress={() => void Linking.openURL(meta.repo)}>
-              github.com/wiarch/wi-rec
+              github.com/wiarch/wi-btk
             </Text>
             {' · '}
             Licencia libre {meta.license}

@@ -1,64 +1,80 @@
-# WI-BTK 🚀 (WI Basic Tool Kit)
+# WI-BTK — WI Basic Tool Kit
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey.svg)
-![Status](https://img.shields.io/badge/status-In_Development-orange.svg)
+**WI-BTK** es una suite modular de herramientas de escritorio para **Windows y Linux**. Reúne utilidades de captura, multimedia, automatización, productividad, sistema y conectividad en una sola aplicación base.
 
-**WI-BTK** es un kit de herramientas básicas y avanzadas todo en uno para Windows y Linux. Inspirado en el minimalismo y la potencia de herramientas de optimización, WI-BTK unifica utilidades multimedia, automatización, productividad y control remoto en una sola aplicación nativa, ligera y fluida.
+## Una aplicación base, solo las herramientas que necesitas
 
-Olvídate de instalar 15 aplicaciones diferentes. WI-BTK lo tiene todo bajo el mismo techo.
+WI-BTK está evolucionando hacia un modelo modular:
 
-## 🛠️ Características Principales (Módulos)
+- Instala únicamente el núcleo de WI-BTK.
+- Explora un catálogo de módulos desde el panel integrado.
+- Descarga e instala cada herramienta bajo demanda.
+- Actualiza o desinstala módulos individualmente.
+- Consulta compatibilidad, tamaño de descarga, espacio requerido y permisos antes de instalar.
+- Mantén los módulos opcionales separados del núcleo para reducir el tamaño inicial y el consumo de recursos.
 
-El ecosistema se divide en 5 categorías clave:
+**El catálogo e instalador modular todavía están planificados; no están implementados en la versión actual.** Actualmente, los módulos existentes forman parte del mismo paquete de la aplicación y algunos se inicializan desde el proceso principal.
 
-### 📹 1. Multimedia & Captura
-* **Captura de Pantalla Avanzada:** Captura de áreas, ventanas, pantalla completa, con editor integrado (flechas, texto, difuminado).
-* **Grabador de Pantalla (+ Estilo Loom):** Grabación de pantalla completa o ventanas con superposición de cámara web circular, ideal para tutoriales y feedback rápido.
-* **Cámara con Filtros y Efectos:** Utilidad de cámara independiente con filtros en tiempo real, fondos virtuales y efectos visuales.
-* **Grabador de Audio + Efectos:** Grabación de notas de voz y audio del sistema con moduladores de voz, cancelación de ruido y efectos.
-* **Visor de Imágenes y Reproductor de Video:** Visores nativos ultra rápidos, compatibles con múltiples formatos, ligeros y sin lag de carga.
+## WI-Rec: módulo de captura
 
-### 🤖 2. Automatización & Productividad
-* **AutoClicker con Grabación de Macros:** Registra de forma inteligente los movimientos del mouse, clics y pulsaciones de teclado para reproducirlos en bucle o con temporizador.
-* **Gestor de Macros de Sistema:** Automatiza tareas complejas dentro de la PC (abrir apps, ejecutar comandos, automatizar flujos de archivos) mediante disparadores o atajos de teclado.
+**WI-Rec** es el módulo dedicado a captura de pantalla, grabación, anotación y selección de color. No es el nombre de toda la suite.
 
-### 🌐 3. Conectividad & Herramientas de Red
-* **Control Remoto (Tipo AnyDesk):** Conexión segura de escritorio remoto (peer-to-peer) para controlar o compartir tu pantalla entre dispositivos Windows/Linux.
-* **Probador de Velocidad de Internet:** Medidor integrado de Ping, Jitter, velocidad de bajada y subida con historial de pruebas.
+El repositorio contiene además módulos de utilidades como WI-Click, WI-Booster, WI-Calc, WI-Clock, WI-Notes, WI-Rate, WI-Netest, WI-Cam, WI-View, WI-Remote, WI-Weather, WI-Widget, WI-System, WI-Dimmer, WI-Translate, WI-Draw y WI-Device. La disponibilidad y el grado de soporte varían según el módulo y el sistema operativo.
 
-### 🎨 4. Creatividad & Utilidades de Diseño
-* **Pizarra Virtual (Tipo Excalidraw):** Lienzo infinito con estética de dibujo a mano alzada para diagramar, hacer brainstorming y esbozar ideas rápidamente de forma local.
-* **Color Picker (Selector de Color):** Herramientas para desarrolladores y diseñadores. Lupa de pantalla, selector de color con un clic y conversión instantánea a HEX, RGB, HSL.
+## Plataformas
 
-### 📅 5. Utilidades Diarias & Widgets
-* **Traductor Instantáneo:** Traducción de texto multilingüe sin necesidad de abrir el navegador.
-* **El Clima:** Información meteorológica detallada y pronósticos basados en tu ubicación actual.
-* **Tiempo Completo:** Reloj mundial, Alarmas personalizadas, Cronómetro preciso y Temporizador Pomodoro.
-* **Calendario Dinámico:** Agenda ligera para organizar tus días y recordatorios locales.
-* **Calculadora Avanzada:** Modo estándar, científico y conversor de unidades integrado.
+- **Windows 10/11 x64:** plataforma de soporte principal para las funciones que dependen de APIs de Windows.
+- **Linux x64:** objetivo de distribución mediante paquetes Debian/Ubuntu y AppImage; existe también un comando de empaquetado Arch/pacman. El soporte funcional depende del entorno gráfico, compositor, permisos y herramientas del sistema.
+- **Wayland/X11:** las funciones de captura, atajos globales y control de ventanas pueden comportarse de forma diferente según el compositor. No se debe asumir paridad total entre escritorios.
 
----
+Cada módulo deberá declarar sus plataformas compatibles y capacidades. Las funciones no disponibles deben aparecer como incompatibles o deshabilitadas, no fallar silenciosamente.
 
-## 🚀 Arquitectura y Stack Tecnológico
+## Arquitectura y tecnologías actuales
 
-WI-BTK está construido con un enfoque **Offline-First** y un modelo de seguridad **Zero-Knowledge** (tus datos de control remoto, grabaciones y configuraciones nunca tocan servidores de terceros de manera insegura).
+- **Runtime de escritorio:** Electron 35.
+- **Lenguaje:** TypeScript 5.8.
+- **Empaquetado:** electron-builder.
+- **Sistema:** adaptadores nativos y herramientas específicas por plataforma.
+- **Configuración:** almacenamiento local por módulo.
 
-* **Frontend / UI:** [Tu Framework favorito, ej: React / Tailwind CSS o Flutter]
-* **Core / Backend de Sistema:** [Ej: Rust / Tauri / C# o C++ para interactuar con las APIs nativas de Windows/Linux]
-* **Base de Datos Local:** SQLite / LocalStorage cifrado.
+La arquitectura modular del catálogo, la descarga bajo demanda y el aislamiento de módulos son objetivos de desarrollo, no capacidades ya entregadas.
 
----
+## Desarrollo
 
-## 📦 Instalación (Próximamente)
+Requisitos: Node.js compatible con las dependencias del proyecto y npm.
 
 ```bash
-# Clonar el repositorio
-git clone [https://github.com/tu-usuario/wi-btk.git](https://github.com/tu-usuario/wi-btk.git)
-
-# Instalar dependencias
+git clone https://github.com/wiarch/wi-btk.git
 cd wi-btk
-npm install # o el comando de tu stack
-
-# Compilar en modo desarrollo
+npm install
 npm run dev
+```
+
+### Compilación
+
+```bash
+npm run build
+npm run build:win
+npm run build:ubuntu
+npm run build:arch
+```
+
+Los comandos de empaquetado deben ejecutarse y validarse en sus sistemas objetivo; su presencia no garantiza por sí sola que todos los módulos funcionen en cada distribución.
+
+## Documentación
+
+- [Definición del producto](./docs/PRODUCT.md)
+- [Arquitectura modular y catálogo](./docs/MODULE-ARCHITECTURE.md)
+- [Compatibilidad Windows/Linux](./docs/PLATFORM-SUPPORT.md)
+- [Roadmap](./docs/ROADMAP.md)
+- [Política de seguridad](./SECURITY.md)
+- [Instrucciones para agentes de desarrollo](./CLAUDE.md)
+- [Brief de implementación](./PROMPT.md)
+
+## Estado del proyecto
+
+WI-BTK está en desarrollo activo. La suite contiene código funcional en distintos módulos, pero no todos tienen el mismo nivel de madurez ni soporte multiplataforma. Consulta el roadmap y la documentación antes de asumir que una función está lista para producción.
+
+## Licencia
+
+MIT. Consulta el archivo de licencia correspondiente y conserva los avisos de terceros incluidos en el proyecto.
