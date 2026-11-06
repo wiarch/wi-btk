@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "WI-Rec",
-    "slug": "wi-rec",
+    "name": "WI-BTK",
+    "slug": "wi-btk",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "scheme": "wirec",
+    "scheme": "wibtk",
     "ios": {
       "supportsTablet": true
     },
@@ -20,9 +20,9 @@
       "bundler": "metro",
       "output": "single",
       "favicon": "./assets/favicon.png",
-      "name": "WI-Rec — Captura y grabación de pantalla",
-      "shortName": "WI-Rec",
-      "description": "Captura y graba tu pantalla en Windows y Linux. Open source por Wi Arch.",
+      "name": "WI-BTK — Suite modular de herramientas",
+      "shortName": "WI-BTK",
+      "description": "Suite modular de herramientas de escritorio para Windows y Linux. Instala solo los módulos que necesitas.",
       "themeColor": "#0c0e14",
       "backgroundColor": "#0c0e14"
     }
