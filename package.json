@@ -2,7 +2,7 @@
   "name": "wi-btk",
   "productName": "WI-BTK",
   "version": "1.0.0",
-  "description": "WI Basic Tool Kit for Windows and Linux",
+  "description": "Modular desktop utility suite for Windows and Linux",
   "author": {
     "name": "wiarch",
     "email": "dev@wiarch.local"
@@ -76,7 +76,7 @@
           ]
         }
       ],
-      "artifactName": "WI-Rec-${version}-${arch}.${ext}"
+      "artifactName": "WI-BTK-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -91,12 +91,12 @@
       ],
       "category": "Graphics",
       "maintainer": "wiarch <dev@wiarch.local>",
-      "executableName": "wi-rec",
-      "artifactName": "WI-Rec-${version}-${arch}.${ext}",
+      "executableName": "wi-btk",
+      "artifactName": "WI-BTK-${version}-${arch}.${ext}",
       "syncDesktopName": true,
       "desktop": {
         "entry": {
-          "StartupWMClass": "wi-rec"
+          "StartupWMClass": "wi-btk"
         }
       }
     },
