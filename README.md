@@ -77,4 +77,8 @@ WI-BTK está en desarrollo activo. La suite contiene código funcional en distin
 
 ## Licencia
 
-MIT. Consulta el archivo de licencia correspondiente y conserva los avisos de terceros incluidos en el proyecto.
+MIT. Consulta el archivo [LICENSE](LICENSE) y conserva los avisos de terceros incluidos en el proyecto.
+
+---
+
+Parte del ecosistema **[WI Arch](https://github.com/wiarch)**.
